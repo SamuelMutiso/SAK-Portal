@@ -17,13 +17,16 @@ class AssessmentSchema(SQLAlchemyAutoSchema):
     exam = fields.String(load_default="End-Term", validate=validate.OneOf(EXAMS))
     score = fields.Integer(allow_none=True, validate=validate.Range(min=0, max=100))
     level = fields.String(validate=validate.OneOf(LEVELS))
+    reason = fields.String(load_only=True, validate=validate.Length(max=300))
     student_name = fields.Function(lambda obj: obj.student.full_name, dump_only=True)
+    times_changed = fields.Function(lambda obj: len(obj.changes), dump_only=True)
 
 
 class SheetEntrySchema(Schema):
     student_id = fields.Integer(required=True)
     score = fields.Integer(allow_none=True, validate=validate.Range(min=0, max=100))
     level = fields.String(allow_none=True, validate=validate.OneOf(LEVELS))
+    reason = fields.String(allow_none=True, validate=validate.Length(max=300))
 
     @validates_schema
     def needs_score_or_level(self, data, **kwargs):
@@ -36,3 +39,20 @@ class GradeSheetSchema(Schema):
     term = fields.String(required=True)
     exam = fields.String(required=True, validate=validate.OneOf(EXAMS))
     scores = fields.List(fields.Nested(SheetEntrySchema), required=True)
+
+
+class MarkChangeSchema(Schema):
+    id = fields.Integer()
+    old_score = fields.Integer()
+    old_level = fields.String()
+    new_score = fields.Integer()
+    new_level = fields.String()
+    reason = fields.String()
+    changed_at = fields.DateTime()
+    changed_by = fields.Function(lambda obj: obj.changed_by.full_name if obj.changed_by else None)
+    student_id = fields.Function(lambda obj: obj.assessment.student_id)
+    student_name = fields.Function(lambda obj: obj.assessment.student.full_name)
+    classroom_name = fields.Function(lambda obj: obj.assessment.student.classroom.name if obj.assessment.student.classroom else None)
+    subject = fields.Function(lambda obj: obj.assessment.subject)
+    term = fields.Function(lambda obj: obj.assessment.term)
+    exam = fields.Function(lambda obj: obj.assessment.exam)
