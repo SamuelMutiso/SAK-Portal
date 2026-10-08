@@ -4,6 +4,7 @@ from marshmallow import ValidationError
 
 from app.commands import register_commands
 from app.config import Config
+from app.services.audit import register_audit
 from app.extensions import bcrypt, cors, db, jwt, limiter, mail, migrate
 from app.routes import register_routes
 
@@ -26,6 +27,18 @@ def create_app(config_class=Config):
 
     register_routes(app)
     register_commands(app)
+    register_audit(app)
+
+    from app.models import User
+
+    @jwt.token_in_blocklist_loader
+    def account_disabled(jwt_header, jwt_payload):
+        user = db.session.get(User, int(jwt_payload["sub"]))
+        return user is None or not user.is_active
+
+    @jwt.revoked_token_loader
+    def revoked(jwt_header, jwt_payload):
+        return jsonify(error="This account has been switched off. Contact the school office."), 401
 
     @app.get("/api/health")
     def health():
