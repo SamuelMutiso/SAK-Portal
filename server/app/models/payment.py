@@ -19,3 +19,11 @@ class Payment(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     student = db.relationship("Student", back_populates="payments")
+
+    @property
+    def audit_label(self):
+        from app.models.student import Student
+
+        student = self.student or db.session.get(Student, self.student_id)
+        name = student.full_name if student else f"learner #{self.student_id}"
+        return f"KES {self.amount:,} for {name}"
