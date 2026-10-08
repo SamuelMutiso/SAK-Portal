@@ -59,7 +59,10 @@ ACTIONS = {
     "library.lend": "Lent a library book",
     "library.return_book": "Returned a library book",
     "timetable.set_slot": "Changed the timetable",
-    "director.update_staff": "Changed a staff account",
+    "owner.update_account": "Changed an account",
+    "owner.remove_account": "Removed an account",
+    "owner.create_account": "Created an account",
+    "consent.accept": "Accepted the Terms and Privacy Policy",
 }
 
 TABLE_NAMES = {
@@ -86,6 +89,7 @@ TABLE_NAMES = {
     "loans": "Library loan",
     "timetable_slots": "Timetable",
     "club_members": "Club member",
+    "consents": "Consent",
 }
 
 
@@ -229,7 +233,7 @@ def request_user():
 def log_request(response):
     if request.method not in WRITE_METHODS or not request.path.startswith("/api/") or request.path in SKIP_PATHS:
         return response
-    if response.status_code == 401:
+    if response.status_code == 401 or g.get("consent_block"):
         return response
 
     if response.status_code >= 400:
