@@ -14,6 +14,7 @@ import { BellRing, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SmsPreview from "../../components/SmsPreview";
+import WhatsAppShare from "../../components/WhatsAppShare";
 import { clearEventSms, createEvent, deleteEvent, fetchEvents, remindEvent } from "../../store/slices/eventsSlice";
 
 const CATEGORY_STYLES = {
@@ -104,6 +105,14 @@ export default function Calendar() {
                   {event.location && <p className="text-xs text-brand-400">{event.location}</p>}
                 </div>
                 <span className={`badge ${CATEGORY_STYLES[event.category]}`}>{event.category}</span>
+                {user.role !== "parent" && (
+                  <WhatsAppShare
+                    title={event.title}
+                    body={`${format(new Date(event.start_date), "EEEE d MMMM")}${event.location ? ` at ${event.location}` : ""}.`}
+                    label=""
+                    className="px-1.5"
+                  />
+                )}
                 {isAdmin && event.start_date >= format(new Date(), "yyyy-MM-dd") && (
                   <button onClick={() => dispatch(remindEvent(event.id))} className="rounded-lg p-1 text-brand-400 hover:text-gold-600" aria-label="SMS reminder to parents" title="SMS reminder to parents">
                     <BellRing size={15} />
