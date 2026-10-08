@@ -1,9 +1,10 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 
-from app.curriculum import CURRENT_TERM, learning_areas_for, uses_marks
+from app.curriculum import CURRENT_TERM, LEVEL_POINTS, TERMS, learning_areas_for, uses_marks
 from app.extensions import db
-from app.models import Assessment, Attendance, TermReport
+from app.models import Assessment, Attendance, Classroom, TermReport
+from app.models.assessment import EXAMS
 from app.schemas import AssessmentSchema, StudentSchema, TermReportSchema
 from app.utils.roles import current_user, roles_required, students_for, viewable_student
 
@@ -77,3 +78,52 @@ def class_progress():
             "has_head_comment": bool(report and report.head_comment),
         })
     return jsonify(rows)
+
+
+def record_value(record):
+    if record.score is not None:
+        return record.score
+    return LEVEL_POINTS.get(record.level)
+
+
+def series(records):
+    points = []
+    for term_index, term in enumerate(TERMS, start=1):
+        for exam in EXAMS:
+            values = [record_value(record) for record in records if record.term == term and record.exam == exam]
+            values = [value for value in values if value is not None]
+            if values:
+                points.append({"term": term, "exam": exam, "label": f"T{term_index} {exam}", "value": round(sum(values) / len(values), 1)})
+    return points
+
+
+@reports_bp.get("/student/<int:student_id>/trend")
+@jwt_required()
+def student_trend(student_id):
+    student = viewable_student(student_id)
+    records = Assessment.query.filter(Assessment.student_id == student.id, Assessment.term.in_(TERMS)).all()
+    areas = learning_areas_for(student.classroom.level) if student.classroom else []
+    subjects = []
+    for area in areas:
+        points = series([record for record in records if record.subject == area])
+        change = round(points[-1]["value"] - points[-2]["value"], 1) if len(points) > 1 else None
+        subjects.append({"name": area, "points": points, "change": change, "latest": points[-1]["value"] if points else None})
+    return jsonify(
+        scale="marks" if uses_marks(student.classroom.level) else "levels",
+        overall=series(records),
+        subjects=subjects,
+    )
+
+
+@reports_bp.get("/class-trend")
+@roles_required("admin", "teacher")
+def class_trend():
+    user = current_user()
+    query = Classroom.query
+    classroom_id = request.args.get("classroom_id", type=int)
+    classroom = db.get_or_404(Classroom, classroom_id) if classroom_id else query.filter_by(teacher_id=user.id).first_or_404()
+    if user.role == "teacher" and classroom.teacher_id != user.id:
+        return jsonify(error="You can only view your own class"), 403
+    student_ids = [student.id for student in classroom.students]
+    records = Assessment.query.filter(Assessment.student_id.in_(student_ids), Assessment.term.in_(TERMS)).all()
+    return jsonify(classroom=classroom.name, scale="marks" if uses_marks(classroom.level) else "levels", overall=series(records))
