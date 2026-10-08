@@ -11,3 +11,7 @@ class AuthorizedPickup(db.Model):
     phone = db.Column(db.String(20), nullable=False)
 
     student = db.relationship("Student", back_populates="pickups")
+
+    @property
+    def audit_label(self):
+        return f"{self.full_name} ({self.relationship})"
