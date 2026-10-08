@@ -40,7 +40,7 @@ export default function ClubDetail() {
     try {
       const { data: student } = await api.post(`/clubs/${id}/members`, { admission_number: admission });
       if (!data.members.some((member) => member.id === student.id)) {
-        setData({ ...data, members: [...data.members, student], club: { ...data.club, member_count: data.club.member_count + 1 } });
+        setData({ ...data, members: [...data.members, student], editable_ids: [...(data.editable_ids || []), student.id], club: { ...data.club, member_count: data.club.member_count + 1 } });
       }
       setAdmission("");
       setError(null);
@@ -50,7 +50,12 @@ export default function ClubDetail() {
   }
 
   async function removeMember(studentId) {
-    await api.delete(`/clubs/${id}/members/${studentId}`);
+    try {
+      await api.delete(`/clubs/${id}/members/${studentId}`);
+    } catch (err) {
+      setError(errorMessage(err));
+      return;
+    }
     const club = { ...data.club, member_count: data.club.member_count - 1 };
     if (club.leader_id === studentId) {
       club.leader_id = null;
@@ -66,7 +71,7 @@ export default function ClubDetail() {
 
   if (!data) return <Loader />;
 
-  const { club, members, activities, can_manage: canManage } = data;
+  const { club, members, activities, can_manage: canManage, editable_ids: editable = [], is_class_teacher: classTeacher } = data;
   const today = startOfToday();
   const upcoming = activities.filter((item) => !isBefore(new Date(item.date), today)).reverse();
   const past = activities.filter((item) => isBefore(new Date(item.date), today));
@@ -160,10 +165,13 @@ export default function ClubDetail() {
             <h2 className="text-lg font-semibold text-brand-800">Members</h2>
             <span className="font-mono text-sm text-brand-500">{members.length}</span>
           </div>
-          {canManage && (
-            <form onSubmit={addMember} className="flex gap-2 px-5 pt-3">
-              <input className="input font-mono uppercase" placeholder="Admission no." value={admission} onChange={(event) => setAdmission(event.target.value)} required />
-              <button className="btn-ghost px-3" aria-label="Add member"><UserPlus size={16} /></button>
+          {(canManage || classTeacher) && (
+            <form onSubmit={addMember} className="px-5 pt-3">
+              <div className="flex gap-2">
+                <input className="input font-mono uppercase" placeholder="Admission no." value={admission} onChange={(event) => setAdmission(event.target.value)} required />
+                <button className="btn-ghost px-3" aria-label="Add member"><UserPlus size={16} /></button>
+              </div>
+              {!canManage && <p className="mt-1.5 text-xs text-brand-400">You can add and remove learners from your own class.</p>}
             </form>
           )}
           <ul className="mt-3 max-h-[60vh] divide-y divide-brand-50 overflow-y-auto">
@@ -179,7 +187,7 @@ export default function ClubDetail() {
                 {canManage && club.leader_id !== member.id && (
                   <button onClick={() => makeLeader(member.id)} className="rounded-lg px-2 py-1 text-xs font-semibold text-brand-500 hover:bg-gold-100 hover:text-gold-600">Make leader</button>
                 )}
-                {canManage && (
+                {editable.includes(member.id) && (
                   <button onClick={() => removeMember(member.id)} className="rounded-lg p-1.5 text-brand-300 hover:text-red-600" aria-label={`Remove ${member.full_name}`}><Trash2 size={15} /></button>
                 )}
               </li>

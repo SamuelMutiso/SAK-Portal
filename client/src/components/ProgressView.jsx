@@ -33,7 +33,7 @@ function Change({ value, scale }) {
   return <span className="inline-flex items-center gap-0.5 text-sm font-semibold text-brand-400"><ArrowRight size={16} />Steady</span>;
 }
 
-export default function ProgressView({ trend, name }) {
+export default function ProgressView({ trend, name, compact = false }) {
   const marks = trend.scale === "marks";
   const overall = trend.overall;
   const first = overall[0];
@@ -61,7 +61,7 @@ export default function ProgressView({ trend, name }) {
         </div>
       </div>
 
-      {(improving.length > 0 || dropping.length > 0) && (
+      {!compact && (improving.length > 0 || dropping.length > 0) && (
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm">
             <p className="font-semibold text-emerald-800">Improving since last assessment</p>
@@ -74,7 +74,7 @@ export default function ProgressView({ trend, name }) {
         </div>
       )}
 
-      <div className="card p-0">
+      {!compact && <div className="card p-0">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-brand-100 text-left text-brand-400">
@@ -95,7 +95,7 @@ export default function ProgressView({ trend, name }) {
             ))}
           </tbody>
         </table>
-      </div>
+      </div>}
     </div>
   );
 }
