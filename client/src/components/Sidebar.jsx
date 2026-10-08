@@ -8,6 +8,7 @@ import {
   Megaphone,
   Trophy,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 import { useSelector } from "react-redux";
@@ -18,6 +19,7 @@ const LINKS = {
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { to: "/admin/notices", label: "Notices & SMS", icon: Megaphone },
     { to: "/admin/students", label: "Students", icon: Users },
+    { to: "/admin/fees", label: "Fees", icon: Wallet },
     { to: "/admin/clubs", label: "Clubs", icon: Trophy },
     { to: "/admin/transport", label: "Transport", icon: Bus },
     { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
@@ -26,7 +28,7 @@ const LINKS = {
     { to: "/teacher", label: "My Class", icon: LayoutDashboard },
     { to: "/teacher/attendance", label: "Attendance", icon: ClipboardCheck },
     { to: "/teacher/homework", label: "Homework", icon: BookOpen },
-    { to: "/teacher/assessments", label: "Assessments", icon: GraduationCap },
+    { to: "/teacher/assessments", label: "Grades", icon: GraduationCap },
     { to: "/teacher/notices", label: "Class Notices", icon: Megaphone },
     { to: "/teacher/calendar", label: "Calendar", icon: CalendarDays },
   ],
@@ -42,9 +44,9 @@ export default function Sidebar({ open, onClose }) {
 
   return (
     <>
-      {open && <div className="fixed inset-0 z-30 bg-brand-900/40 md:hidden" onClick={onClose} />}
+      {open && <div className="fixed inset-0 z-30 bg-brand-900/40 md:hidden print:hidden" onClick={onClose} />}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-brand-800 text-brand-100 transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 print:hidden flex-col bg-brand-800 text-brand-100 transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
