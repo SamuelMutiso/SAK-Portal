@@ -5,9 +5,16 @@ from app.extensions import db, limiter
 from app.models import User
 from app.schemas import LoginSchema, UserSchema
 from app.services.audit import write_log
+from app.services.consent import needs_consent
 from app.utils.roles import current_user
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
+
+
+def user_payload(user):
+    data = UserSchema().dump(user)
+    data["consent_required"] = needs_consent(user)
+    return data
 
 
 def tokens_for(user):
@@ -15,7 +22,7 @@ def tokens_for(user):
     return {
         "access_token": create_access_token(identity=str(user.id), additional_claims=claims),
         "refresh_token": create_refresh_token(identity=str(user.id)),
-        "user": UserSchema().dump(user),
+        "user": user_payload(user),
     }
 
 
@@ -25,7 +32,7 @@ def login():
     data = LoginSchema().load(request.get_json() or {})
     email = data["email"].lower()
     user = User.query.filter_by(email=email).first()
-    if not user or not user.check_password(data["password"]):
+    if not user or user.removed_at or not user.check_password(data["password"]):
         write_log("login_failed", f"Failed sign-in for {email}", user=user, status=401, user_name=email)
         return jsonify(error="Invalid email or password"), 401
     if not user.is_active:
@@ -48,4 +55,4 @@ def refresh():
 @auth_bp.get("/me")
 @jwt_required()
 def me():
-    return jsonify(UserSchema().dump(current_user()))
+    return jsonify(user_payload(current_user()))

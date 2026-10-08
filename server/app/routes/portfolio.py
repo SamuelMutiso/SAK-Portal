@@ -23,6 +23,8 @@ def list_items(student_id):
 @roles_required("admin", "teacher")
 def add_item():
     student = viewable_student(request.form.get("student_id", type=int))
+    if student.parent and student.parent.photo_consent is False:
+        return jsonify(error=f"{student.first_name}'s parent has not allowed photos in the portfolio"), 403
     title = request.form.get("title", "").strip()
     learning_area = request.form.get("learning_area", "").strip()
     image = request.files.get("image")

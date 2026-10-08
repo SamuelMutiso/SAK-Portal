@@ -18,7 +18,7 @@ def list_requests():
     query = LeaveRequest.query
     if user.role == "parent":
         query = query.filter_by(parent_id=user.id)
-    elif user.role != "admin":
+    elif user.role not in ("admin", "director"):
         return jsonify(error="You do not have access to this"), 403
     requests_list = query.order_by(LeaveRequest.created_at.desc()).all()
     return jsonify(schema.dump(requests_list, many=True))

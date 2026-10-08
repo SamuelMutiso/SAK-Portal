@@ -14,6 +14,7 @@ from app.models import (
     Classroom,
     Club,
     ClubActivity,
+    Consent,
     DiaryEntry,
     Event,
     Homework,
@@ -30,6 +31,7 @@ from app.models import (
     User,
 )
 from app.models.assessment import level_for
+from app.policies import POLICY_VERSION
 from app.routes.notices import recipients_for
 
 PASSWORD = "Success@2026"
@@ -197,7 +199,8 @@ def seed():
     db.drop_all()
     db.create_all()
 
-    make_user("School Director", "superadmin", f"director@{DOMAIN}", "0723435629")
+    make_user("System Owner", "superadmin", f"owner@{DOMAIN}", "0700111222")
+    make_user("School Director", "director", f"director@{DOMAIN}", "0723435629")
     admin = make_user("School Admin", "admin", f"admin@{DOMAIN}", "0704558765")
     teachers = [make_user(name, "teacher", email_for(name), f"07{20 + i}{i:06d}") for i, name in enumerate(TEACHERS)]
     drivers = [
@@ -418,7 +421,21 @@ def seed():
 
     db.session.commit()
 
+    for user in User.query.filter(User.role != "superadmin").all():
+        db.session.add(Consent(
+            user=user, version=POLICY_VERSION, accepted_terms=True, accepted_privacy=True,
+            child_data=True if user.role == "parent" else None, photo_consent=True if user.role == "parent" else None,
+            signature=user.full_name, ip_address="105.160.1.1", user_agent="Seed",
+        ))
+        if user.role == "parent":
+            user.photo_consent = True
+    db.session.commit()
+
     simulate_activity(ethan.id, amani.id)
+
+    Consent.query.filter_by(user_id=demo_parent.id).delete()
+    demo_parent.photo_consent = None
+    db.session.commit()
 
     print(f"Seeded {len(students)} students, {len(teachers)} teachers, {len(clubs)} clubs, {len(books)} books")
     print(f"Logins (password {PASSWORD}):")
@@ -427,7 +444,8 @@ def seed():
     print(f"  {teachers[2].email}  (PP2 teacher)")
     print(f"  parent@{DOMAIN}  (Ethan G4, Neema PP2, Amani G7 boarder)")
     print(f"  driver@{DOMAIN}  (Kitengela Town bus)")
-    print(f"  director@{DOMAIN}  (School Director: audit trail)")
+    print(f"  director@{DOMAIN}  (School Director: sees everything, read-only)")
+    print(f"  owner@{DOMAIN}  (System Owner: audit trail and accounts)")
 
 
 DEVICES = {

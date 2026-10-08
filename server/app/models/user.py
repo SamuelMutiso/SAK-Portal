@@ -2,8 +2,9 @@ from datetime import datetime
 
 from app.extensions import bcrypt, db
 
-ROLES = ("superadmin", "admin", "teacher", "parent", "driver")
-STAFF_ROLES = ("admin", "teacher", "driver")
+ROLES = ("superadmin", "director", "admin", "teacher", "parent", "driver")
+STAFF_ROLES = ("director", "admin", "teacher", "driver")
+ADMIN_LIKE = ("admin", "director")
 
 
 class User(db.Model):
@@ -16,6 +17,8 @@ class User(db.Model):
     role = db.Column(db.String(20), nullable=False, default="parent")
     password_hash = db.Column(db.String(128), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
+    removed_at = db.Column(db.DateTime)
+    photo_consent = db.Column(db.Boolean)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     children = db.relationship("Student", back_populates="parent")

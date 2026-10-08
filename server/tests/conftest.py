@@ -3,7 +3,8 @@ import pytest
 from app import create_app
 from app.config import TestConfig
 from app.extensions import db
-from app.models import Book, Classroom, Club, Student, TransportRoute, User
+from app.models import Book, Classroom, Club, Consent, Student, TransportRoute, User
+from app.policies import POLICY_VERSION
 
 
 @pytest.fixture
@@ -44,6 +45,13 @@ def seed_basics():
     swimming.students = [child]
     db.session.add_all([grade4, grade5, swimming, child, other, route, Book(title="Matilda", copies=1)])
     db.session.commit()
+    for user in User.query.all():
+        accept_policies(user)
+    db.session.commit()
+
+
+def accept_policies(user):
+    db.session.add(Consent(user_id=user.id, version=POLICY_VERSION, accepted_terms=True, accepted_privacy=True, signature=user.full_name))
 
 
 def login(client, email):

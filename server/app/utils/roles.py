@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import abort, jsonify
+from flask import abort, jsonify, request
 from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
 
 from app.extensions import db
@@ -12,7 +12,9 @@ def roles_required(*roles):
         @wraps(view)
         def wrapper(*args, **kwargs):
             verify_jwt_in_request()
-            if get_jwt().get("role") not in roles:
+            role = get_jwt().get("role")
+            director_reading = role == "director" and "admin" in roles and request.method == "GET"
+            if role not in roles and not director_reading:
                 return jsonify(error="You do not have access to this"), 403
             return view(*args, **kwargs)
 
@@ -37,7 +39,7 @@ def students_for(user):
 
 
 def can_view_student(user, student):
-    if user.role == "admin":
+    if user.role in ("admin", "director"):
         return True
     if user.role == "teacher":
         return student.classroom is not None and student.classroom.teacher_id == user.id
