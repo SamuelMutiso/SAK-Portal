@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import api from "../../api/client";
 import Loader from "../../components/Loader";
 import StatCard from "../../components/StatCard";
+import TrendChart from "../../components/TrendChart";
 import WelcomeBanner from "../../components/WelcomeBanner";
 
 const ACTIONS = [
@@ -25,12 +26,13 @@ export default function TeacherDashboard() {
         setData({ classroom: null });
         return;
       }
-      const [students, attendance, homework] = await Promise.all([
+      const [students, attendance, homework, trend] = await Promise.all([
         api.get("/students"),
         api.get("/attendance", { params: { classroom_id: classroom.id, date: today } }),
         api.get("/homework"),
+        api.get("/reports/class-trend"),
       ]);
-      setData({ classroom, students: students.data, attendance: attendance.data, homework: homework.data });
+      setData({ classroom, students: students.data, attendance: attendance.data, homework: homework.data, trend: trend.data });
     });
   }, []);
 
@@ -61,6 +63,14 @@ export default function TeacherDashboard() {
             {label}
           </Link>
         ))}
+      </div>
+
+      <div className="card">
+        <h2 className="font-semibold text-brand-800">Class performance this year</h2>
+        <p className="text-sm text-brand-500">{data.trend.scale === "marks" ? "Class mean mark at every assessment" : "Class average level at every assessment"}</p>
+        <div className="mt-4">
+          <TrendChart points={data.trend.overall} scale={data.trend.scale} />
+        </div>
       </div>
 
       {absent.length > 0 && (
