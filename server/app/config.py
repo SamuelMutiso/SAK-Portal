@@ -17,7 +17,7 @@ class Config:
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-jwt-secret")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=1)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=7)
-    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
     RATELIMIT_STORAGE_URI = os.getenv("REDIS_URL", "memory://")
     RATELIMIT_DEFAULT = "200 per minute"
     SMS_USERNAME = os.getenv("AT_USERNAME", "sandbox")
