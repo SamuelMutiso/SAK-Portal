@@ -17,3 +17,7 @@ class Homework(db.Model):
 
     classroom = db.relationship("Classroom", back_populates="homework")
     teacher = db.relationship("User")
+
+    @property
+    def audit_label(self):
+        return f"Homework: {self.title}"
