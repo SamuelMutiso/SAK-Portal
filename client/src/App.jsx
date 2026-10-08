@@ -16,6 +16,9 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Child from "./pages/parent/Child";
 import ParentDashboard from "./pages/parent/Dashboard";
+import AuditTrail from "./pages/director/AuditTrail";
+import DirectorOverview from "./pages/director/Overview";
+import Staff from "./pages/director/Staff";
 import Trip from "./pages/driver/Trip";
 import Calendar from "./pages/shared/Calendar";
 import PickupCheck from "./pages/shared/PickupCheck";
@@ -83,6 +86,14 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["driver"]} />}>
         <Route path="/driver" element={<DashboardLayout />}>
           <Route index element={<Trip />} />
+        </Route>
+      </Route>
+
+      <Route element={<ProtectedRoute roles={["superadmin"]} />}>
+        <Route path="/director" element={<DashboardLayout />}>
+          <Route index element={<DirectorOverview />} />
+          <Route path="audit" element={<AuditTrail />} />
+          <Route path="staff" element={<Staff />} />
         </Route>
       </Route>
 
