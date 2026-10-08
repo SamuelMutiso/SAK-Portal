@@ -6,6 +6,7 @@ from app.routes.classes import classes_bp
 from app.routes.clubs import clubs_bp
 from app.routes.dashboard import dashboard_bp
 from app.routes.diary import diary_bp
+from app.routes.director import director_bp
 from app.routes.events import events_bp
 from app.routes.fees import fees_bp
 from app.routes.homework import homework_bp
@@ -50,6 +51,7 @@ BLUEPRINTS = (
     leave_bp,
     library_bp,
     timetable_bp,
+    director_bp,
 )
 
 
