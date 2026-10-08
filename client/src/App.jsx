@@ -26,10 +26,13 @@ import AuditTrail from "./pages/owner/AuditTrail";
 import Security from "./pages/owner/Security";
 import Trip from "./pages/driver/Trip";
 import Calendar from "./pages/shared/Calendar";
+import Compare from "./pages/shared/Compare";
+import Insights from "./pages/shared/Insights";
 import PickupCheck from "./pages/shared/PickupCheck";
 import Reports from "./pages/shared/Reports";
 import Assessments from "./pages/teacher/Assessments";
 import Attendance from "./pages/teacher/Attendance";
+import ClassClubs from "./pages/teacher/ClassClubs";
 import TeacherDashboard from "./pages/teacher/Dashboard";
 import Diary from "./pages/teacher/Diary";
 import Homework from "./pages/teacher/Homework";
@@ -55,6 +58,8 @@ export default function App() {
           <Route path="clubs/:id" element={<ClubDetail />} />
           <Route path="timetable" element={<Timetable />} />
           <Route path="reports" element={<Reports />} />
+          <Route path="insights" element={<Insights />} />
+          <Route path="compare" element={<Compare />} />
           <Route path="sba" element={<Sba />} />
           <Route path="fees" element={<Fees />} />
           <Route path="leave" element={<Leave />} />
@@ -71,6 +76,8 @@ export default function App() {
           <Route path="attendance" element={<Attendance />} />
           <Route path="homework" element={<Homework />} />
           <Route path="assessments" element={<Assessments />} />
+          <Route path="insights" element={<Insights />} />
+          <Route path="class-clubs" element={<ClassClubs />} />
           <Route path="reports" element={<Reports />} />
           <Route path="diary" element={<Diary />} />
           <Route path="portfolio" element={<Portfolio />} />
@@ -101,6 +108,8 @@ export default function App() {
         <Route path="/director" element={<DashboardLayout />}>
           <Route index element={<DirectorHome />} />
           <Route path="performance" element={<Performance />} />
+          <Route path="insights" element={<Insights />} />
+          <Route path="compare" element={<Compare />} />
           <Route path="reports" element={<Reports />} />
           <Route path="sba" element={<Sba />} />
           <Route path="notices" element={<Notices />} />
