@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import api from "../../api/client";
 import Loader from "../../components/Loader";
 import StatCard from "../../components/StatCard";
+import WelcomeBanner from "../../components/WelcomeBanner";
 
 const ACTIONS = [
   { to: "/teacher/attendance", label: "Mark today's register", icon: ClipboardCheck },
@@ -40,10 +41,7 @@ export default function TeacherDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="page-title">{data.classroom.name}</h1>
-        <p className="text-brand-500">{data.classroom.level} · {format(new Date(), "EEEE d MMMM")}</p>
-      </div>
+      <WelcomeBanner photo="/photos/class-teacher.jpg" title={data.classroom.name} subtitle={`${data.classroom.level} class register, homework and grades.`} />
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard icon={Users} label="Learners" value={data.students.length} />

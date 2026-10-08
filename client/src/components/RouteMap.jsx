@@ -19,7 +19,7 @@ export default function RouteMap({ stops, height = 360 }) {
           key={stop.name}
           center={[stop.lat, stop.lng]}
           radius={index === 0 ? 10 : 7}
-          pathOptions={{ color: "#1E3A6B", fillColor: index === 0 ? "#C8962E" : "#ffffff", fillOpacity: 1, weight: 3 }}
+          pathOptions={{ color: "#1E3A6B", fillColor: index === 0 ? "#DDA22E" : "#ffffff", fillOpacity: 1, weight: 3 }}
         >
           <Tooltip direction="top" offset={[0, -8]}>
             {index + 1}. {stop.name}

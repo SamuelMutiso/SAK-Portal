@@ -9,12 +9,12 @@ const AUDIENCE_STYLES = {
   boarders: "bg-violet-100 text-violet-700",
 };
 
-export default function NoticeCard({ notice, onDelete }) {
+export default function NoticeCard({ notice, onDelete, showSms = true }) {
   return (
     <article className="card">
       <div className="flex flex-wrap items-center gap-2">
         <span className={`badge ${AUDIENCE_STYLES[notice.audience]}`}>{notice.target_name}</span>
-        {notice.sms_count > 0 && (
+        {showSms && notice.sms_count > 0 && (
           <span className="badge bg-gold-100 text-gold-600">
             <MessageSquare size={12} />
             {notice.sms_count} SMS

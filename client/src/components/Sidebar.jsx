@@ -46,14 +46,14 @@ export default function Sidebar({ open, onClose }) {
     <>
       {open && <div className="fixed inset-0 z-30 bg-brand-900/40 md:hidden print:hidden" onClick={onClose} />}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 print:hidden flex-col bg-brand-800 text-brand-100 transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 print:hidden flex-col bg-brand-900 text-brand-100 transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex items-center gap-3 border-b border-brand-700 px-5 py-5">
-          <img src="/logo.png" alt="Success Academy logo" className="h-11 w-11 rounded-full bg-white object-contain p-0.5" />
+        <div className="flex items-center gap-3 border-b border-brand-800 px-5 py-5">
+          <img src="/logo.png" alt="Success Academy crest" className="h-12 w-12 rounded-full bg-white object-contain p-1" />
           <div className="leading-tight">
-            <p className="font-display text-sm font-bold text-white">Success Academy</p>
+            <p className="font-headline text-lg font-bold uppercase tracking-wide text-white">Success Academy</p>
             <p className="text-xs text-gold-400">Kitengela Portal</p>
           </div>
           <button onClick={onClose} className="ml-auto md:hidden" aria-label="Close menu">
@@ -70,7 +70,7 @@ export default function Sidebar({ open, onClose }) {
               onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
-                  isActive ? "bg-gold-500 text-brand-900" : "hover:bg-brand-700 hover:text-white"
+                  isActive ? "bg-gold-500 text-brand-900" : "text-brand-200 hover:bg-brand-800 hover:text-white"
                 }`
               }
             >
@@ -80,6 +80,7 @@ export default function Sidebar({ open, onClose }) {
           ))}
         </nav>
 
+        <div className="uniform-check h-2 opacity-60" />
         <p className="px-5 py-4 text-xs italic text-brand-300">In pursuit of excellence</p>
       </aside>
     </>

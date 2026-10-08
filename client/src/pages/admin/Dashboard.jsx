@@ -8,6 +8,7 @@ import api from "../../api/client";
 import Loader from "../../components/Loader";
 import NoticeCard from "../../components/NoticeCard";
 import StatCard from "../../components/StatCard";
+import WelcomeBanner from "../../components/WelcomeBanner";
 import { fetchNotices } from "../../store/slices/noticesSlice";
 
 export default function AdminDashboard() {
@@ -28,16 +29,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="page-title">Good day, Admin</h1>
-        <p className="text-brand-500">Here is what is happening at Success Academy today.</p>
-      </div>
+      <WelcomeBanner photo="/photos/assembly.jpg" title="Good day, Admin" subtitle="Here is what is happening at Success Academy today.">
+        <Link to="/admin/notices" className="btn-gold self-start md:self-auto">Post a notice</Link>
+      </WelcomeBanner>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={Users} label="Learners" value={stats.students} hint={`${stats.teachers} teachers`} />
-        <StatCard icon={UserCheck} label="Present today" value={`${attendanceRate}%`} hint={`${present} of ${marked} marked`} />
-        <StatCard icon={BedDouble} label="Boarders" value={stats.boarders} hint={`${stats.clubs} active clubs`} />
-        <StatCard icon={MessageSquare} label="SMS sent" value={stats.sms_sent} hint={`${stats.parents} parents reachable`} />
+        <StatCard icon={UserCheck} tone="green" label="Present today" value={`${attendanceRate}%`} hint={`${present} of ${marked} marked`} />
+        <StatCard icon={BedDouble} tone="violet" label="Boarders" value={stats.boarders} hint={`${stats.clubs} active clubs`} />
+        <StatCard icon={MessageSquare} tone="gold" label="SMS sent" value={stats.sms_sent} hint={`${stats.parents} parents reachable`} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#3D63A0" }} />
                 <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: "#3D63A0" }} width={40} />
                 <Tooltip formatter={(value) => `${value}%`} />
-                <Line type="monotone" dataKey="rate" name="Present" stroke="#C8962E" strokeWidth={3} dot={{ r: 4, fill: "#C8962E" }} />
+                <Line type="monotone" dataKey="rate" name="Present" stroke="#DDA22E" strokeWidth={3} dot={{ r: 4, fill: "#DDA22E" }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-brand-800">Latest notices</h2>
           <Link to="/admin/notices" className="text-sm font-semibold text-brand-600 hover:underline">
-            Post a notice
+            See all notices
           </Link>
         </div>
         <div className="mt-3 grid gap-4 md:grid-cols-2">

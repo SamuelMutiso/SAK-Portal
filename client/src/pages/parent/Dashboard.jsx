@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import api from "../../api/client";
 import Loader from "../../components/Loader";
+import WelcomeBanner from "../../components/WelcomeBanner";
 import { formatKes } from "../../constants";
 import NoticeCard from "../../components/NoticeCard";
 import { fetchEvents } from "../../store/slices/eventsSlice";
@@ -34,10 +35,11 @@ export default function ParentDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="page-title">Hello, {user.full_name.split(" ")[0]}</h1>
-        <p className="text-brand-500">Tap your child to see their report card, attendance and fees.</p>
-      </div>
+      <WelcomeBanner
+        photo="/photos/swings.jpg"
+        title={`Hello, ${user.full_name.split(" ")[0]}`}
+        subtitle="Tap your child to see their report card, attendance and fees."
+      />
 
       <div className="grid gap-4 sm:grid-cols-2">
         {children.map((child) => (
@@ -59,7 +61,7 @@ export default function ParentDashboard() {
         <div className="space-y-4 lg:col-span-2">
           <h2 className="text-lg font-semibold text-brand-800">Notices for you</h2>
           {notices.map((notice) => (
-            <NoticeCard key={notice.id} notice={notice} />
+            <NoticeCard key={notice.id} notice={notice} showSms={false} />
           ))}
         </div>
 
