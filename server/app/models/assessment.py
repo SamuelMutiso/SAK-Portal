@@ -29,3 +29,11 @@ class Assessment(db.Model):
 
     student = db.relationship("Student", back_populates="assessments")
     teacher = db.relationship("User")
+
+    @property
+    def audit_label(self):
+        from app.models.student import Student
+
+        student = self.student or db.session.get(Student, self.student_id)
+        name = student.full_name if student else f"learner #{self.student_id}"
+        return f"{name}: {self.subject}, {self.term} {self.exam}"
