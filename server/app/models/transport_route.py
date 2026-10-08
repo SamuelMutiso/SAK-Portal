@@ -10,5 +10,8 @@ class TransportRoute(db.Model):
     driver_phone = db.Column(db.String(20))
     vehicle = db.Column(db.String(40))
     stops = db.Column(db.JSON, default=list)
+    driver_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
+    driver = db.relationship("User")
 
     students = db.relationship("Student", back_populates="transport_route")
