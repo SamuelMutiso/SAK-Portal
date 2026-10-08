@@ -6,11 +6,11 @@ import AuditEntry from "../../components/AuditEntry";
 import Loader from "../../components/Loader";
 import StatCard from "../../components/StatCard";
 
-export default function DirectorOverview() {
+export default function Security() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    api.get("/director/overview").then(({ data: result }) => setData(result));
+    api.get("/owner/overview").then(({ data: result }) => setData(result));
   }, []);
 
   if (!data) return <Loader />;
@@ -83,7 +83,7 @@ export default function DirectorOverview() {
       <div>
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-brand-800">Latest changes and blocked attempts</h2>
-          <Link to="/director/audit" className="text-sm font-semibold text-brand-600 hover:underline">Open full audit trail</Link>
+          <Link to="/owner/audit" className="text-sm font-semibold text-brand-600 hover:underline">Open full audit trail</Link>
         </div>
         <ul className="mt-3 space-y-2">
           {data.latest.map((entry) => <AuditEntry key={entry.id} entry={entry} />)}

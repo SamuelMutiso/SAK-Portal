@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Navigate } from "react-router-dom";
+import { homePath } from "../roles";
 import { login } from "../store/slices/authSlice";
 
 const DEMO_ACCOUNTS = [
@@ -10,6 +11,7 @@ const DEMO_ACCOUNTS = [
   { label: "Parent", email: "parent@successacademy.ac.ke" },
   { label: "Bus driver", email: "driver@successacademy.ac.ke" },
   { label: "Director", email: "director@successacademy.ac.ke" },
+  { label: "System owner", email: "owner@successacademy.ac.ke" },
 ];
 
 export default function Login() {
@@ -18,7 +20,7 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
 
   if (user) {
-    return <Navigate to={user.role === "superadmin" ? "/director" : `/${user.role}`} replace />;
+    return <Navigate to={homePath(user.role)} replace />;
   }
 
   function handleChange(event) {
@@ -81,7 +83,10 @@ export default function Login() {
               {status === "loading" ? "Signing in..." : "Sign in"}
             </button>
           </form>
-          <p className="mt-4 text-xs text-brand-400">For security, sign-ins and changes on this portal are recorded with the device and network used.</p>
+          <p className="mt-4 text-xs text-brand-400">
+            For security, sign-ins and changes on this portal are recorded with the device and network used. By signing in you agree to the{" "}
+            <Link to="/terms" className="underline">Terms of use</Link> and <Link to="/privacy" className="underline">Privacy policy</Link>.
+          </p>
 
           <div className="mt-10 rounded-2xl bg-brand-50 p-4">
             <p className="text-sm font-semibold text-brand-700">Try a demo account</p>

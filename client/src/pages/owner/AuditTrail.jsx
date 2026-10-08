@@ -47,7 +47,7 @@ export default function AuditTrail() {
   useEffect(() => {
     const params = Object.fromEntries(Object.entries(filters).filter(([, value]) => value !== ""));
     setData(null);
-    api.get("/director/audit", { params }).then(({ data: result }) => setData(result));
+    api.get("/owner/audit", { params }).then(({ data: result }) => setData(result));
   }, [filters]);
 
   function update(field, value) {

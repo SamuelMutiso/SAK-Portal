@@ -1,5 +1,6 @@
 import { useSelector } from "react-redux";
 import { Navigate, Outlet } from "react-router-dom";
+import { homePath } from "../roles";
 
 export default function ProtectedRoute({ roles }) {
   const user = useSelector((state) => state.auth.user);
@@ -9,7 +10,7 @@ export default function ProtectedRoute({ roles }) {
   }
 
   if (!roles.includes(user.role)) {
-    return <Navigate to={user.role === "superadmin" ? "/director" : `/${user.role}`} replace />;
+    return <Navigate to={homePath(user.role)} replace />;
   }
 
   return <Outlet />;

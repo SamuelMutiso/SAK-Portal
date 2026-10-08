@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import api, { errorMessage } from "../../api/client";
 import Loader from "../../components/Loader";
 import TimetableGrid from "../../components/TimetableGrid";
 
 export default function Timetable() {
+  const canEdit = useSelector((state) => state.auth.user.role) === "admin";
   const [classes, setClasses] = useState([]);
   const [classroomId, setClassroomId] = useState("");
   const [timetable, setTimetable] = useState(null);
@@ -38,7 +40,7 @@ export default function Timetable() {
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex-1">
           <h1 className="page-title">Timetable</h1>
-          <p className="mt-2 text-brand-500">Pick a lesson in any cell to change it. Changes save as you go.</p>
+          <p className="mt-2 text-brand-500">{canEdit ? "Pick a lesson in any cell to change it. Changes save as you go." : "Weekly lessons for every class."}</p>
         </div>
         <select className="input w-auto" value={classroomId} onChange={(event) => setClassroomId(event.target.value)}>
           {classes.map((classroom) => <option key={classroom.id} value={classroom.id}>{classroom.name}</option>)}
@@ -49,7 +51,7 @@ export default function Timetable() {
         <p className={`rounded-xl px-4 py-2 text-sm ${status.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>{status.text}</p>
       )}
 
-      <div className="card">{timetable ? <TimetableGrid timetable={timetable} editable onChange={handleChange} /> : <Loader />}</div>
+      <div className="card">{timetable ? <TimetableGrid timetable={timetable} editable={canEdit} onChange={handleChange} /> : <Loader />}</div>
     </div>
   );
 }

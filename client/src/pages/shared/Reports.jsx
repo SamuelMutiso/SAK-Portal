@@ -30,6 +30,7 @@ function RubricRow({ name, value, onChange }) {
 export default function Reports() {
   const user = useSelector((state) => state.auth.user);
   const isAdmin = user.role === "admin";
+  const readOnly = user.role === "director";
   const [meta, setMeta] = useState(null);
   const [rows, setRows] = useState([]);
   const [filter, setFilter] = useState("");
@@ -37,7 +38,7 @@ export default function Reports() {
   const [data, setData] = useState(null);
   const [form, setForm] = useState(null);
   const [message, setMessage] = useState(null);
-  const [view, setView] = useState("edit");
+  const [view, setView] = useState(readOnly ? "preview" : "edit");
   const [trend, setTrend] = useState(null);
 
   useEffect(() => {
@@ -60,10 +61,11 @@ export default function Reports() {
         opening_date: report.opening_date || "",
       });
       setMessage(null);
+      setView(readOnly ? "preview" : "edit");
     });
     setTrend(null);
     api.get(`/reports/student/${selectedId}/trend`).then(({ data: result }) => setTrend(result));
-  }, [selectedId]);
+  }, [selectedId, readOnly]);
 
   async function handleSave() {
     const payload = { ...form, closing_date: form.closing_date || null, opening_date: form.opening_date || null };
@@ -86,20 +88,20 @@ export default function Reports() {
 
   const classes = [...new Set(rows.map((row) => row.classroom_name))];
   const visible = rows.filter((row) => !filter || row.classroom_name === filter);
-  const isDone = (row) => (isAdmin ? row.has_head_comment : row.has_teacher_comment && row.competencies_done === meta.competencies.length);
+  const isDone = (row) => (isAdmin || readOnly ? row.has_head_comment : row.has_teacher_comment && row.competencies_done === meta.competencies.length);
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="page-title">Report cards</h1>
         <p className="mt-2 text-brand-500">
-          {meta.term} · {isAdmin ? "Add the head teacher's comment and term dates." : "Rate competencies and values, then write your comment."}
+          {meta.term} · {readOnly ? "Open any learner's report card and progress." : isAdmin ? "Add the head teacher's comment and term dates." : "Rate competencies and values, then write your comment."}
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="card h-fit p-0">
-          {isAdmin && (
+          {(isAdmin || readOnly) && (
             <div className="border-b border-brand-100 p-3">
               <select className="input" value={filter} onChange={(event) => setFilter(event.target.value)}>
                 <option value="">All classes</option>
@@ -116,7 +118,7 @@ export default function Reports() {
                 >
                   {isDone(row) ? <CheckCircle2 size={16} className="text-emerald-600" /> : <Circle size={16} className="text-brand-300" />}
                   <span className="flex-1 font-semibold">{row.full_name}</span>
-                  {isAdmin && <span className="text-xs text-brand-400">{row.classroom_name}</span>}
+                  {(isAdmin || readOnly) && <span className="text-xs text-brand-400">{row.classroom_name}</span>}
                 </button>
               </li>
             ))}
@@ -124,12 +126,12 @@ export default function Reports() {
         </div>
 
         <div className="space-y-4 lg:col-span-2">
-          {!selectedId && <p className="card text-sm text-brand-500">Pick a learner to fill in their report.</p>}
+          {!selectedId && <p className="card text-sm text-brand-500">{readOnly ? "Pick a learner to see their report card and progress." : "Pick a learner to fill in their report."}</p>}
           {selectedId && !form && <Loader />}
           {data && form && (
             <>
               <div className="flex gap-1 rounded-xl bg-brand-50 p-1 print:hidden">
-                {[["edit", "Edit"], ["preview", "Preview"], ["progress", "Progress"]].map(([key, label]) => (
+                {(readOnly ? [["preview", "Report card"], ["progress", "Progress"]] : [["edit", "Edit"], ["preview", "Preview"], ["progress", "Progress"]]).map(([key, label]) => (
                   <button key={key} onClick={() => setView(key)} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${view === key ? "bg-white shadow-sm" : "text-brand-500"}`}>
                     {label}
                   </button>
