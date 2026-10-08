@@ -15,6 +15,15 @@ export const createEvent = createAsyncThunk("events/create", async (event, { rej
   }
 });
 
+export const remindEvent = createAsyncThunk("events/remind", async (id, { rejectWithValue }) => {
+  try {
+    const { data } = await api.post(`/events/${id}/remind`);
+    return data;
+  } catch (error) {
+    return rejectWithValue(errorMessage(error));
+  }
+});
+
 export const deleteEvent = createAsyncThunk("events/delete", async (id) => {
   await api.delete(`/events/${id}`);
   return id;
@@ -22,8 +31,12 @@ export const deleteEvent = createAsyncThunk("events/delete", async (id) => {
 
 const eventsSlice = createSlice({
   name: "events",
-  initialState: { items: [], status: "idle", error: null },
-  reducers: {},
+  initialState: { items: [], status: "idle", error: null, lastSms: null },
+  reducers: {
+    clearEventSms(state) {
+      state.lastSms = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchEvents.pending, (state) => {
@@ -35,10 +48,18 @@ const eventsSlice = createSlice({
       })
       .addCase(createEvent.fulfilled, (state, action) => {
         state.error = null;
-        state.items.push(action.payload);
+        state.lastSms = action.payload.sms;
+        state.items.push(action.payload.event);
         state.items.sort((a, b) => a.start_date.localeCompare(b.start_date));
       })
       .addCase(createEvent.rejected, (state, action) => {
+        state.error = action.payload;
+      })
+      .addCase(remindEvent.fulfilled, (state, action) => {
+        state.error = null;
+        state.lastSms = action.payload.sms;
+      })
+      .addCase(remindEvent.rejected, (state, action) => {
         state.error = action.payload;
       })
       .addCase(deleteEvent.fulfilled, (state, action) => {
@@ -47,4 +68,5 @@ const eventsSlice = createSlice({
   },
 });
 
+export const { clearEventSms } = eventsSlice.actions;
 export default eventsSlice.reducer;
