@@ -1,6 +1,6 @@
 import { CheckCircle2, X } from "lucide-react";
 
-export default function SmsPreview({ sms, onClose }) {
+export default function SmsPreview({ sms, onClose, children }) {
   return (
     <div className="card border-gold-400 bg-gold-100/40">
       <div className="flex items-start gap-3">
@@ -25,6 +25,7 @@ export default function SmsPreview({ sms, onClose }) {
           <p className="mt-2 text-right font-mono text-[10px] text-brand-300">{sms.recipients.slice(0, 3).join(", ")}{sms.recipients.length > 3 ? " ..." : ""}</p>
         </div>
       )}
+      {children && <div className="mt-4 flex justify-center">{children}</div>}
     </div>
   );
 }
