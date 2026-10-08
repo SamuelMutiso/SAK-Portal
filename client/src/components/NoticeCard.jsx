@@ -1,6 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { CheckCheck, MessageSquare, Trash2 } from "lucide-react";
 import SeenButton from "./SeenButton";
+import WhatsAppShare from "./WhatsAppShare";
 
 const AUDIENCE_STYLES = {
   all: "bg-brand-100 text-brand-700",
@@ -10,7 +11,7 @@ const AUDIENCE_STYLES = {
   boarders: "bg-violet-100 text-violet-700",
 };
 
-export default function NoticeCard({ notice, onDelete, showSms = true, seenKeys, onSeen }) {
+export default function NoticeCard({ notice, onDelete, showSms = true, seenKeys, onSeen, showShare = false }) {
   return (
     <article className="card">
       <div className="flex flex-wrap items-center gap-2">
@@ -35,6 +36,7 @@ export default function NoticeCard({ notice, onDelete, showSms = true, seenKeys,
           </span>
         )}
         <span className="ml-auto flex items-center gap-2">
+          {showShare && <WhatsAppShare title={notice.title} body={notice.body} />}
           {seenKeys && <SeenButton itemType="notice" itemId={notice.id} seen={seenKeys.includes(`notice:${notice.id}`)} onSeen={onSeen} />}
           {onDelete && (
             <button onClick={() => onDelete(notice.id)} className="rounded-lg p-1.5 hover:bg-red-50 hover:text-red-600" aria-label="Delete notice">

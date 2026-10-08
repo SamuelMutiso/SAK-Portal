@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { CheckCheck, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import api, { errorMessage } from "../../api/client";
+import WhatsAppShare from "../../components/WhatsAppShare";
 
 export default function Homework() {
   const [classroom, setClassroom] = useState(null);
@@ -82,6 +83,9 @@ export default function Homework() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">{item.subject}</p>
                 <h3 className="font-semibold text-brand-800">{item.title}</h3>
                 {item.details && <p className="text-sm text-brand-600">{item.details}</p>}
+                <div className="mt-2">
+                  <WhatsAppShare title={`${classroom?.name || "Class"} homework: ${item.title}`} body={`${item.subject}. ${item.details || ""} Due ${format(new Date(item.due_date), "EEEE d MMMM")}.`} />
+                </div>
                 {item.parent_count !== undefined && (
                   <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
                     <CheckCheck size={14} /> Seen by {item.seen_count} of {item.parent_count} parents

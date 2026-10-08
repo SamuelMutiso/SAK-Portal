@@ -5,6 +5,7 @@ import api from "../../api/client";
 import Loader from "../../components/Loader";
 import NoticeCard from "../../components/NoticeCard";
 import SmsPreview from "../../components/SmsPreview";
+import WhatsAppShare from "../../components/WhatsAppShare";
 import { clearSms, createNotice, deleteNotice, fetchNotices } from "../../store/slices/noticesSlice";
 
 const AUDIENCES = [
@@ -126,7 +127,11 @@ export default function Notices() {
         </form>}
 
         <div className={`space-y-4 ${readOnly ? "lg:col-span-5" : "lg:col-span-3"}`}>
-          {lastSms && <SmsPreview sms={lastSms} onClose={() => dispatch(clearSms())} />}
+          {lastSms && (
+            <SmsPreview sms={lastSms} onClose={() => dispatch(clearSms())}>
+              {items[0] && <WhatsAppShare title={items[0].title} body={items[0].body} label="Also post it in a WhatsApp group" className="px-3 py-2 text-sm" />}
+            </SmsPreview>
+          )}
           {status === "loading" && !items.length ? (
             <Loader />
           ) : (
@@ -135,6 +140,7 @@ export default function Notices() {
                 key={notice.id}
                 notice={notice}
                 onDelete={user.role === "admin" ? (id) => dispatch(deleteNotice(id)) : null}
+                showShare={!readOnly}
               />
             ))
           )}
