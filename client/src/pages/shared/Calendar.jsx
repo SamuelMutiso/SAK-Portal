@@ -10,10 +10,11 @@ import {
   startOfWeek,
   subMonths,
 } from "date-fns";
-import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { BellRing, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { createEvent, deleteEvent, fetchEvents } from "../../store/slices/eventsSlice";
+import SmsPreview from "../../components/SmsPreview";
+import { clearEventSms, createEvent, deleteEvent, fetchEvents, remindEvent } from "../../store/slices/eventsSlice";
 
 const CATEGORY_STYLES = {
   academic: "bg-sky-100 text-sky-700",
@@ -24,12 +25,12 @@ const CATEGORY_STYLES = {
   meeting: "bg-brand-100 text-brand-700",
 };
 
-const EMPTY_FORM = { title: "", category: "academic", location: "", start_date: "" };
+const EMPTY_FORM = { title: "", category: "academic", location: "", start_date: "", notify_parents: true };
 
 export default function Calendar() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.user);
-  const { items, error } = useSelector((state) => state.events);
+  const { items, error, lastSms } = useSelector((state) => state.events);
   const [month, setMonth] = useState(new Date());
   const [form, setForm] = useState(EMPTY_FORM);
   const isAdmin = user.role === "admin";
@@ -64,6 +65,8 @@ export default function Calendar() {
         <span className="w-36 text-center font-display font-semibold">{format(month, "MMMM yyyy")}</span>
         <button className="btn-ghost px-2.5" onClick={() => setMonth(addMonths(month, 1))} aria-label="Next month"><ChevronRight size={18} /></button>
       </div>
+
+      {lastSms && <SmsPreview sms={lastSms} onClose={() => dispatch(clearEventSms())} />}
 
       <div className="card p-3">
         <div className="grid grid-cols-7 text-center text-xs font-semibold uppercase text-brand-400">
@@ -101,6 +104,11 @@ export default function Calendar() {
                   {event.location && <p className="text-xs text-brand-400">{event.location}</p>}
                 </div>
                 <span className={`badge ${CATEGORY_STYLES[event.category]}`}>{event.category}</span>
+                {isAdmin && event.start_date >= format(new Date(), "yyyy-MM-dd") && (
+                  <button onClick={() => dispatch(remindEvent(event.id))} className="rounded-lg p-1 text-brand-400 hover:text-gold-600" aria-label="SMS reminder to parents" title="SMS reminder to parents">
+                    <BellRing size={15} />
+                  </button>
+                )}
                 {isAdmin && (
                   <button onClick={() => dispatch(deleteEvent(event.id))} className="rounded-lg p-1 text-brand-400 hover:text-red-600" aria-label="Delete event">
                     <Trash2 size={15} />
@@ -124,6 +132,10 @@ export default function Calendar() {
               <input type="date" className="input" value={form.start_date} onChange={(event) => setForm({ ...form, start_date: event.target.value })} required />
             </div>
             <input className="input" placeholder="Location (optional)" value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })} />
+            <label className="flex items-center gap-3 rounded-xl bg-brand-50 p-3 text-sm font-semibold">
+              <input type="checkbox" checked={form.notify_parents} onChange={(event) => setForm({ ...form, notify_parents: event.target.checked })} className="h-4 w-4 accent-brand-700" />
+              SMS all parents about this event
+            </label>
             {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <button className="btn-primary w-full">Add to calendar</button>
           </form>
