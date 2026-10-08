@@ -1,0 +1,25 @@
+def test_login_returns_tokens(client):
+    response = client.post("/api/auth/login", json={"email": "admin@test.com", "password": "password123"})
+    data = response.get_json()
+    assert response.status_code == 200
+    assert data["access_token"]
+    assert data["user"]["role"] == "admin"
+    assert "password_hash" not in data["user"]
+
+
+def test_login_rejects_wrong_password(client):
+    response = client.post("/api/auth/login", json={"email": "admin@test.com", "password": "wrong"})
+    assert response.status_code == 401
+
+
+def test_me_requires_token(client):
+    assert client.get("/api/auth/me").status_code == 401
+
+
+def test_me_returns_current_user(client, parent_headers):
+    response = client.get("/api/auth/me", headers=parent_headers)
+    assert response.get_json()["email"] == "parent@test.com"
+
+
+def test_parent_cannot_list_users(client, parent_headers):
+    assert client.get("/api/users", headers=parent_headers).status_code == 403
