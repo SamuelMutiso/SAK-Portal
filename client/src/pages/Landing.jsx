@@ -271,6 +271,7 @@ export default function Landing() {
           <div className="text-sm md:text-right">
             <a href="https://successacademykitengela.com" className="font-semibold text-white hover:underline">successacademykitengela.com</a>
             <p className="mt-1">© {new Date().getFullYear()} Success Academy Kitengela</p>
+            <p className="mt-1 space-x-3"><Link to="/terms" className="hover:underline">Terms of use</Link><Link to="/privacy" className="hover:underline">Privacy policy</Link></p>
           </div>
         </div>
       </footer>
