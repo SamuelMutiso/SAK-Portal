@@ -45,12 +45,24 @@
   }
 
   .page-title {
-    @apply font-display text-2xl font-bold text-brand-800 md:text-3xl;
+    @apply font-headline text-3xl font-extrabold uppercase leading-none text-brand-800 md:text-4xl;
   }
 
   .badge {
     @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold;
   }
+}
+
+.uniform-check {
+  background-color: #c7d1e2;
+  background-image: repeating-linear-gradient(0deg, rgba(21, 42, 82, 0.38) 0 6px, transparent 6px 20px),
+    repeating-linear-gradient(90deg, rgba(21, 42, 82, 0.38) 0 6px, transparent 6px 20px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.55) 0 1px, transparent 1px 10px),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.55) 0 1px, transparent 1px 10px);
+}
+
+.photo-overlay {
+  background: linear-gradient(100deg, rgba(12, 26, 54, 0.92) 0%, rgba(12, 26, 54, 0.7) 45%, rgba(12, 26, 54, 0.25) 100%);
 }
 
 .leaflet-container {
