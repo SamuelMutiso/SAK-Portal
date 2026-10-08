@@ -30,9 +30,10 @@ def summary():
         day = today - timedelta(days=offset)
         records = Attendance.query.filter_by(date=day)
         total = records.count()
+        if not total:
+            continue
         present = records.filter(Attendance.status != "absent").count()
-        rate = round(present / total * 100) if total else 0
-        week.append({"date": day.isoformat(), "rate": rate})
+        week.append({"date": day.isoformat(), "rate": round(present / total * 100)})
 
     return jsonify(
         students=Student.query.count(),
