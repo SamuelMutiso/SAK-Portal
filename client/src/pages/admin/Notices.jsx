@@ -22,19 +22,21 @@ export default function Notices() {
   const user = useSelector((state) => state.auth.user);
   const { items, status, error, lastSms } = useSelector((state) => state.notices);
   const isTeacher = user.role === "teacher";
+  const readOnly = user.role === "director";
   const [options, setOptions] = useState({ class: [], club: [], route: [] });
   const [form, setForm] = useState(EMPTY_FORM);
   const [sending, setSending] = useState(false);
 
   useEffect(() => {
     dispatch(fetchNotices());
+    if (user.role === "director") return;
     Promise.all([api.get("/classes"), api.get("/clubs"), api.get("/transport")]).then(([classes, clubs, routes]) => {
       setOptions({ class: classes.data, club: clubs.data, route: routes.data });
       if (isTeacher && classes.data[0]) {
         setForm((current) => ({ ...current, audience: "class", target: String(classes.data[0].id) }));
       }
     });
-  }, [dispatch, isTeacher]);
+  }, [dispatch, isTeacher, user.role]);
 
   function handleChange(event) {
     const { name, value, type, checked } = event.target;
@@ -70,11 +72,11 @@ export default function Notices() {
     <div className="space-y-6">
       <div>
         <h1 className="page-title">{isTeacher ? "Class notices" : "Notices & SMS"}</h1>
-        <p className="text-brand-500">Post a notice and text it straight to the parents who need it.</p>
+        <p className="text-brand-500">{readOnly ? "Everything the school has sent to parents, and how many have read it." : "Post a notice and text it straight to the parents who need it."}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-5">
-        <form onSubmit={handleSubmit} className="card space-y-4 lg:col-span-2">
+        {!readOnly && <form onSubmit={handleSubmit} className="card space-y-4 lg:col-span-2">
           <div>
             <label className="label" htmlFor="title">Title</label>
             <input id="title" name="title" className="input" value={form.title} onChange={handleChange} placeholder="Swimming this Thursday" required />
@@ -121,9 +123,9 @@ export default function Notices() {
             <Send size={16} />
             {sending ? "Posting..." : "Post notice"}
           </button>
-        </form>
+        </form>}
 
-        <div className="space-y-4 lg:col-span-3">
+        <div className={`space-y-4 ${readOnly ? "lg:col-span-5" : "lg:col-span-3"}`}>
           {lastSms && <SmsPreview sms={lastSms} onClose={() => dispatch(clearSms())} />}
           {status === "loading" && !items.length ? (
             <Loader />
