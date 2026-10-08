@@ -4,9 +4,11 @@ import api, { errorMessage } from "../../api/client";
 import Loader from "../../components/Loader";
 import SmsPreview from "../../components/SmsPreview";
 import StatCard from "../../components/StatCard";
+import { useSelector } from "react-redux";
 import { formatKes } from "../../constants";
 
 export default function Fees() {
+  const readOnly = useSelector((state) => state.auth.user.role) === "director";
   const [data, setData] = useState(null);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState([]);
@@ -62,16 +64,16 @@ export default function Fees() {
           <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-400" />
           <input className="input pl-10" placeholder="Search learner" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
-        <button className="btn-gold" onClick={sendReminders} disabled={sending}>
+        {!readOnly && <button className="btn-gold" onClick={sendReminders} disabled={sending}>
           <Send size={16} />
           {sending ? "Sending..." : selected.length ? `Remind ${selected.length} selected` : "Remind all with balance"}
-        </button>
+        </button>}
       </div>
 
       <div className="card divide-y divide-brand-100 p-0">
         {students.map((student) => (
           <label key={student.id} className="flex cursor-pointer items-center gap-4 px-5 py-3 hover:bg-brand-50">
-            <input type="checkbox" checked={selected.includes(student.id)} onChange={() => toggle(student.id)} className="h-4 w-4 accent-brand-700" />
+            {!readOnly && <input type="checkbox" checked={selected.includes(student.id)} onChange={() => toggle(student.id)} className="h-4 w-4 accent-brand-700" />}
             <div className="flex-1">
               <p className="font-semibold">{student.full_name}</p>
               <p className="text-xs text-brand-400">
