@@ -9,6 +9,7 @@ const DEMO_ACCOUNTS = [
   { label: "PP2 teacher", email: "faith.mwende@successacademy.ac.ke" },
   { label: "Parent", email: "parent@successacademy.ac.ke" },
   { label: "Bus driver", email: "driver@successacademy.ac.ke" },
+  { label: "Director", email: "director@successacademy.ac.ke" },
 ];
 
 export default function Login() {
@@ -17,7 +18,7 @@ export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
 
   if (user) {
-    return <Navigate to={`/${user.role}`} replace />;
+    return <Navigate to={user.role === "superadmin" ? "/director" : `/${user.role}`} replace />;
   }
 
   function handleChange(event) {
@@ -80,6 +81,7 @@ export default function Login() {
               {status === "loading" ? "Signing in..." : "Sign in"}
             </button>
           </form>
+          <p className="mt-4 text-xs text-brand-400">For security, sign-ins and changes on this portal are recorded with the device and network used.</p>
 
           <div className="mt-10 rounded-2xl bg-brand-50 p-4">
             <p className="text-sm font-semibold text-brand-700">Try a demo account</p>
