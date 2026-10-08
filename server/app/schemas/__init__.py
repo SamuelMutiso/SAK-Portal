@@ -7,4 +7,4 @@ from app.schemas.notice import NoticeSchema
 from app.schemas.event import EventSchema
 from app.schemas.attendance import AttendanceSchema, AttendanceBatchSchema
 from app.schemas.homework import HomeworkSchema
-from app.schemas.assessment import AssessmentSchema
+from app.schemas.assessment import AssessmentSchema, GradeSheetSchema
