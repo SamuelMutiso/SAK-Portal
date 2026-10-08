@@ -1,0 +1,85 @@
+import {
+  BookOpen,
+  Bus,
+  CalendarDays,
+  ClipboardCheck,
+  GraduationCap,
+  LayoutDashboard,
+  Megaphone,
+  Trophy,
+  Users,
+  X,
+} from "lucide-react";
+import { useSelector } from "react-redux";
+import { NavLink } from "react-router-dom";
+
+const LINKS = {
+  admin: [
+    { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/admin/notices", label: "Notices & SMS", icon: Megaphone },
+    { to: "/admin/students", label: "Students", icon: Users },
+    { to: "/admin/clubs", label: "Clubs", icon: Trophy },
+    { to: "/admin/transport", label: "Transport", icon: Bus },
+    { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+  ],
+  teacher: [
+    { to: "/teacher", label: "My Class", icon: LayoutDashboard },
+    { to: "/teacher/attendance", label: "Attendance", icon: ClipboardCheck },
+    { to: "/teacher/homework", label: "Homework", icon: BookOpen },
+    { to: "/teacher/assessments", label: "Assessments", icon: GraduationCap },
+    { to: "/teacher/notices", label: "Class Notices", icon: Megaphone },
+    { to: "/teacher/calendar", label: "Calendar", icon: CalendarDays },
+  ],
+  parent: [
+    { to: "/parent", label: "Home", icon: LayoutDashboard },
+    { to: "/parent/calendar", label: "Calendar", icon: CalendarDays },
+  ],
+};
+
+export default function Sidebar({ open, onClose }) {
+  const user = useSelector((state) => state.auth.user);
+  const links = LINKS[user.role];
+
+  return (
+    <>
+      {open && <div className="fixed inset-0 z-30 bg-brand-900/40 md:hidden" onClick={onClose} />}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-brand-800 text-brand-100 transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center gap-3 border-b border-brand-700 px-5 py-5">
+          <img src="/logo.png" alt="Success Academy logo" className="h-11 w-11 rounded-full bg-white object-contain p-0.5" />
+          <div className="leading-tight">
+            <p className="font-display text-sm font-bold text-white">Success Academy</p>
+            <p className="text-xs text-gold-400">Kitengela Portal</p>
+          </div>
+          <button onClick={onClose} className="ml-auto md:hidden" aria-label="Close menu">
+            <X size={20} />
+          </button>
+        </div>
+
+        <nav className="flex-1 space-y-1 px-3 py-4">
+          {links.map(({ to, label, icon: Icon }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end
+              onClick={onClose}
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                  isActive ? "bg-gold-500 text-brand-900" : "hover:bg-brand-700 hover:text-white"
+                }`
+              }
+            >
+              <Icon size={18} />
+              {label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <p className="px-5 py-4 text-xs italic text-brand-300">In pursuit of excellence</p>
+      </aside>
+    </>
+  );
+}
