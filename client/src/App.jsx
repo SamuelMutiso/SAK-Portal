@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
 import Clubs from "./pages/admin/Clubs";
+import Fees from "./pages/admin/Fees";
 import Notices from "./pages/admin/Notices";
 import Students from "./pages/admin/Students";
 import Transport from "./pages/admin/Transport";
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="students" element={<Students />} />
           <Route path="notices" element={<Notices />} />
           <Route path="clubs" element={<Clubs />} />
+          <Route path="fees" element={<Fees />} />
           <Route path="transport" element={<Transport />} />
           <Route path="calendar" element={<Calendar />} />
         </Route>

@@ -1,105 +1,131 @@
 import { useEffect, useState } from "react";
 import api, { errorMessage } from "../../api/client";
-import { LEVELS } from "../../constants";
-
-const SUBJECTS = ["Mathematics", "English", "Kiswahili", "Science", "Social Studies", "Creative Arts"];
-const TERM = "Term 3 2026";
+import Loader from "../../components/Loader";
+import { EXAMS, LEVELS, SUBJECTS, TERM, levelForScore } from "../../constants";
 
 export default function Assessments() {
-  const [students, setStudents] = useState([]);
-  const [studentId, setStudentId] = useState("");
-  const [records, setRecords] = useState([]);
-  const [form, setForm] = useState({ subject: SUBJECTS[0], level: "", comment: "" });
+  const [students, setStudents] = useState(null);
+  const [subject, setSubject] = useState(SUBJECTS[0]);
+  const [exam, setExam] = useState("End-Term");
+  const [scores, setScores] = useState({});
   const [message, setMessage] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    api.get("/students").then(({ data }) => {
-      setStudents(data);
-      if (data[0]) setStudentId(String(data[0].id));
-    });
+    api.get("/students").then(({ data }) => setStudents(data));
   }, []);
 
   useEffect(() => {
-    if (!studentId) return;
-    api.get(`/assessments/student/${studentId}`).then(({ data }) => setRecords(data));
-  }, [studentId]);
+    api.get("/assessments", { params: { subject, exam, term: TERM } }).then(({ data }) => {
+      const saved = {};
+      data.forEach((record) => {
+        saved[record.student_id] = record.score ?? "";
+      });
+      setScores(saved);
+      setMessage(null);
+    });
+  }, [subject, exam]);
 
-  async function handleSubmit(event) {
-    event.preventDefault();
+  function handleScore(studentId, value) {
+    if (value === "" || (/^\d+$/.test(value) && Number(value) <= 100)) {
+      setScores({ ...scores, [studentId]: value });
+    }
+  }
+
+  async function handleSave() {
+    const entries = Object.entries(scores)
+      .filter(([, score]) => score !== "")
+      .map(([studentId, score]) => ({ student_id: Number(studentId), score: Number(score) }));
+    setSaving(true);
     try {
-      const { data } = await api.post("/assessments", { ...form, student_id: Number(studentId), term: TERM });
-      setRecords([...records.filter((record) => record.id !== data.id), data]);
-      setForm({ ...form, level: "", comment: "" });
-      setMessage({ type: "success", text: `${data.subject} saved for ${data.student_name}.` });
+      await api.post("/assessments/sheet", { subject, exam, term: TERM, scores: entries });
+      setMessage({ type: "success", text: `${subject} ${exam} marks saved for ${entries.length} learners. Parents can see them now.` });
     } catch (error) {
       setMessage({ type: "error", text: errorMessage(error) });
     }
+    setSaving(false);
   }
+
+  if (!students) return <Loader />;
+
+  const entered = Object.values(scores).filter((score) => score !== "").map(Number);
+  const mean = entered.length ? Math.round(entered.reduce((sum, score) => sum + score, 0) / entered.length) : null;
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="page-title">CBC Assessments</h1>
-        <p className="text-brand-500">{TERM} · record a performance level for each learning area.</p>
+        <h1 className="page-title">Grades</h1>
+        <p className="text-brand-500">{TERM} · enter marks out of 100. The CBC level is worked out for you.</p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <form onSubmit={handleSubmit} className="card space-y-4">
-          <div>
-            <label className="label" htmlFor="student">Learner</label>
-            <select id="student" className="input" value={studentId} onChange={(event) => setStudentId(event.target.value)}>
-              {students.map((student) => (
-                <option key={student.id} value={student.id}>{student.full_name}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="label" htmlFor="subject">Learning area</label>
-            <select id="subject" className="input" value={form.subject} onChange={(event) => setForm({ ...form, subject: event.target.value })}>
-              {SUBJECTS.map((subject) => (
-                <option key={subject}>{subject}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <p className="label">Performance level</p>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              {Object.entries(LEVELS).map(([code, level]) => (
-                <button
-                  type="button"
-                  key={code}
-                  onClick={() => setForm({ ...form, level: code })}
-                  className={`rounded-xl border-2 p-2 text-left transition ${form.level === code ? `${level.style} border-current` : "border-brand-100 hover:border-brand-300"}`}
-                >
-                  <span className="font-mono font-semibold">{code}</span>
-                  <span className="block text-[11px] leading-tight">{level.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="label" htmlFor="comment">Comment</label>
-            <input id="comment" className="input" value={form.comment} onChange={(event) => setForm({ ...form, comment: event.target.value })} />
-          </div>
-          {message && (
-            <p className={`rounded-xl px-3 py-2 text-sm ${message.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>{message.text}</p>
-          )}
-          <button className="btn-primary w-full" disabled={!form.level || !studentId}>Save level</button>
-        </form>
-
-        <div className="card">
-          <h2 className="font-semibold text-brand-800">Recorded this term</h2>
-          <div className="mt-3 space-y-2">
-            {records.length === 0 && <p className="text-sm text-brand-400">Nothing recorded yet.</p>}
-            {records.map((record) => (
-              <div key={record.id} className="flex items-center justify-between rounded-xl bg-brand-50 px-3 py-2 text-sm">
-                <span>{record.subject}</span>
-                <span className={`badge font-mono ${LEVELS[record.level].style}`}>{record.level}</span>
-              </div>
+      <div className="card flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div className="flex-1">
+          <label className="label" htmlFor="subject">Learning area</label>
+          <select id="subject" className="input" value={subject} onChange={(event) => setSubject(event.target.value)}>
+            {SUBJECTS.map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <p className="label">Exam</p>
+          <div className="flex gap-1 rounded-xl bg-brand-50 p-1">
+            {EXAMS.map((item) => (
+              <button
+                key={item}
+                onClick={() => setExam(item)}
+                className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${exam === item ? "bg-brand-700 text-white" : "text-brand-600 hover:bg-white"}`}
+              >
+                {item}
+              </button>
             ))}
           </div>
         </div>
+        {mean !== null && (
+          <div className="rounded-xl bg-gold-100 px-4 py-2 text-center">
+            <p className="text-xs font-semibold uppercase text-gold-600">Class mean</p>
+            <p className="font-mono text-xl font-semibold text-brand-800">{mean}%</p>
+          </div>
+        )}
       </div>
+
+      <div className="card divide-y divide-brand-100 p-0">
+        {students.map((student) => {
+          const score = scores[student.id] ?? "";
+          const level = score === "" ? null : levelForScore(Number(score));
+          return (
+            <div key={student.id} className="flex items-center gap-3 px-5 py-3">
+              <div className="flex-1">
+                <p className="font-semibold">{student.full_name}</p>
+                <p className="font-mono text-xs text-brand-400">{student.admission_number}</p>
+              </div>
+              <input
+                inputMode="numeric"
+                className="input w-20 text-center font-mono"
+                placeholder="--"
+                value={score}
+                onChange={(event) => handleScore(student.id, event.target.value)}
+                aria-label={`Score for ${student.full_name}`}
+              />
+              <span className={`badge w-10 justify-center font-mono ${level ? LEVELS[level].style : "bg-brand-50 text-brand-300"}`}>{level || "--"}</span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-xs text-brand-500">
+        {Object.entries(LEVELS).map(([code, level]) => (
+          <span key={code} className={`badge ${level.style}`}>{code} · {level.label}</span>
+        ))}
+      </div>
+
+      {message && (
+        <p className={`rounded-xl px-4 py-3 text-sm ${message.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>{message.text}</p>
+      )}
+
+      <button className="btn-primary w-full sm:w-auto" onClick={handleSave} disabled={saving || !entered.length}>
+        {saving ? "Saving..." : "Save marks"}
+      </button>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import api from "../../api/client";
 import Loader from "../../components/Loader";
+import { formatKes } from "../../constants";
 import NoticeCard from "../../components/NoticeCard";
 import { fetchEvents } from "../../store/slices/eventsSlice";
 import { fetchNotices } from "../../store/slices/noticesSlice";
@@ -35,7 +36,7 @@ export default function ParentDashboard() {
     <div className="space-y-6">
       <div>
         <h1 className="page-title">Hello, {user.full_name.split(" ")[0]}</h1>
-        <p className="text-brand-500">Here is the latest from Success Academy.</p>
+        <p className="text-brand-500">Tap your child to see their report card, attendance and fees.</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -47,6 +48,7 @@ export default function ParentDashboard() {
             <div className="flex-1">
               <p className="text-lg font-semibold text-brand-800">{child.full_name}</p>
               <p className="text-sm text-brand-500">{child.classroom_name}{child.clubs.length ? ` · ${child.clubs.join(", ")}` : ""}</p>
+              {child.fee_balance > 0 && <p className="mt-1 font-mono text-xs font-semibold text-amber-700">Balance {formatKes(child.fee_balance)}</p>}
             </div>
             <ChevronRight className="text-brand-300" />
           </Link>

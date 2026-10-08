@@ -9,7 +9,7 @@ import StatCard from "../../components/StatCard";
 const ACTIONS = [
   { to: "/teacher/attendance", label: "Mark today's register", icon: ClipboardCheck },
   { to: "/teacher/homework", label: "Set homework", icon: BookOpen },
-  { to: "/teacher/assessments", label: "Record CBC levels", icon: GraduationCap },
+  { to: "/teacher/assessments", label: "Enter exam marks", icon: GraduationCap },
   { to: "/teacher/notices", label: "Message class parents", icon: Megaphone },
 ];
 
