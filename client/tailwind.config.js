@@ -17,14 +17,15 @@ export default {
         },
         gold: {
           100: "#FBF0D6",
-          400: "#E2B54A",
-          500: "#C8962E",
-          600: "#A3761D",
+          400: "#EDBE55",
+          500: "#DDA22E",
+          600: "#A8761B",
         },
         cream: "#F6F7FB",
       },
       fontFamily: {
         display: ["Sora", "sans-serif"],
+        headline: ["Barlow Condensed", "sans-serif"],
         body: ["Manrope", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
