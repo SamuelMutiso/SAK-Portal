@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: sak-portal-api
+    runtime: python
+    region: oregon
+    plan: free
+    branch: main
+    rootDir: server
+    buildCommand: pip install pipenv && pipenv install --system --deploy
+    startCommand: flask db upgrade && gunicorn wsgi:app
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: FLASK_APP
+        value: wsgi.py
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: AT_USERNAME
+        value: sandbox
+      - key: AT_API_KEY
+        sync: false
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: sak-portal-redis
+          property: connectionString
+
+  - type: keyvalue
+    name: sak-portal-redis
+    region: oregon
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []
