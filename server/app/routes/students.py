@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required
 from app.extensions import db
 from app.models import Student
 from app.schemas import StudentSchema
-from app.utils.roles import can_view_student, current_user, roles_required, students_for
+from app.utils.roles import can_view_student, current_user, roles_required, search_students, students_for
 
 students_bp = Blueprint("students", __name__, url_prefix="/api/students")
 schema = StudentSchema()
@@ -17,14 +17,7 @@ def list_students():
     classroom_id = request.args.get("classroom_id", type=int)
     if classroom_id:
         query = query.filter(Student.classroom_id == classroom_id)
-    search = request.args.get("search")
-    if search:
-        pattern = f"%{search}%"
-        query = query.filter(
-            Student.first_name.ilike(pattern)
-            | Student.last_name.ilike(pattern)
-            | Student.admission_number.ilike(pattern)
-        )
+    query = search_students(query, request.args.get("search", ""))
     students = query.order_by(Student.first_name).all()
     return jsonify(schema.dump(students, many=True))
 
