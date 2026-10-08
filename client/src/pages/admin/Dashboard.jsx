@@ -46,11 +46,11 @@ export default function AdminDashboard() {
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={stats.students_by_class}>
-                <CartesianGrid vertical={false} stroke="#F4E8DC" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94592F" }} interval={0} angle={-35} textAnchor="end" height={50} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#94592F" }} width={28} />
-                <Tooltip cursor={{ fill: "#FBF6F1" }} />
-                <Bar dataKey="count" name="Learners" fill="#7A4521" radius={[6, 6, 0, 0]} />
+                <CartesianGrid vertical={false} stroke="#E1EAF5" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#3D63A0" }} interval={0} angle={-35} textAnchor="end" height={50} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "#3D63A0" }} width={28} />
+                <Tooltip cursor={{ fill: "#F2F6FB" }} />
+                <Bar dataKey="count" name="Learners" fill="#2C4C84" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -61,9 +61,9 @@ export default function AdminDashboard() {
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={week}>
-                <CartesianGrid vertical={false} stroke="#F4E8DC" />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94592F" }} />
-                <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: "#94592F" }} width={40} />
+                <CartesianGrid vertical={false} stroke="#E1EAF5" />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#3D63A0" }} />
+                <YAxis domain={[0, 100]} unit="%" tick={{ fontSize: 11, fill: "#3D63A0" }} width={40} />
                 <Tooltip formatter={(value) => `${value}%`} />
                 <Line type="monotone" dataKey="rate" name="Present" stroke="#C8962E" strokeWidth={3} dot={{ r: 4, fill: "#C8962E" }} />
               </LineChart>
