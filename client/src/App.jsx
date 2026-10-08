@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
+import ClubDetail from "./pages/admin/ClubDetail";
 import Clubs from "./pages/admin/Clubs";
 import Fees from "./pages/admin/Fees";
 import Leave from "./pages/admin/Leave";
@@ -8,6 +9,7 @@ import Library from "./pages/admin/Library";
 import Notices from "./pages/admin/Notices";
 import Sba from "./pages/admin/Sba";
 import Students from "./pages/admin/Students";
+import Timetable from "./pages/admin/Timetable";
 import Transport from "./pages/admin/Transport";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -24,6 +26,7 @@ import TeacherDashboard from "./pages/teacher/Dashboard";
 import Diary from "./pages/teacher/Diary";
 import Homework from "./pages/teacher/Homework";
 import Portfolio from "./pages/teacher/Portfolio";
+import TeacherTimetable from "./pages/teacher/Timetable";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
 export default function App() {
@@ -38,6 +41,8 @@ export default function App() {
           <Route path="students" element={<Students />} />
           <Route path="notices" element={<Notices />} />
           <Route path="clubs" element={<Clubs />} />
+          <Route path="clubs/:id" element={<ClubDetail />} />
+          <Route path="timetable" element={<Timetable />} />
           <Route path="reports" element={<Reports />} />
           <Route path="sba" element={<Sba />} />
           <Route path="fees" element={<Fees />} />
@@ -59,6 +64,9 @@ export default function App() {
           <Route path="diary" element={<Diary />} />
           <Route path="portfolio" element={<Portfolio />} />
           <Route path="pickup" element={<PickupCheck />} />
+          <Route path="timetable" element={<TeacherTimetable />} />
+          <Route path="clubs" element={<Clubs />} />
+          <Route path="clubs/:id" element={<ClubDetail />} />
           <Route path="notices" element={<Notices />} />
           <Route path="calendar" element={<Calendar />} />
         </Route>
