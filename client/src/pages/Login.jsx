@@ -31,22 +31,34 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white lg:flex-row">
-      <div className="relative h-56 shrink-0 overflow-hidden sm:h-72 lg:h-auto lg:w-[55%]">
-        <img src="/photos/play-time.jpg" alt="Pre-primary learners at Success Academy" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="photo-overlay absolute inset-0" />
-        <div className="relative flex h-full flex-col justify-between p-6 lg:p-12">
+      <div className="relative overflow-hidden bg-brand-800 lg:w-[52%]">
+        <div className="uniform-check absolute inset-0 opacity-[0.1]" />
+        <div className="relative flex h-full flex-col p-6 lg:p-12">
           <Link to="/" className="flex items-center gap-3 text-white">
             <img src="/logo.png" alt="Success Academy crest" className="h-12 w-12 rounded-full bg-white object-contain p-1" />
             <span className="font-headline text-xl font-bold uppercase tracking-wide">Success Academy</span>
           </Link>
-          <div className="hidden lg:block">
-            <p className="font-headline text-xl font-bold text-gold-400">#InPursuitOfExcellence</p>
-            <p className="mt-2 max-w-md font-headline text-6xl font-extrabold uppercase leading-[0.95] text-white">
-              Welcome to the parent portal
+
+          <div className="relative mx-auto my-10 hidden h-[340px] w-full max-w-md lg:block">
+            <div className="absolute left-0 top-0 h-56 w-[64%] -rotate-3 overflow-hidden rounded-[1.75rem] border-[5px] border-white shadow-2xl">
+              <img src="/photos/choir.jpg" alt="Success Academy learners" className="h-full w-full object-cover" />
+            </div>
+            <div className="absolute bottom-0 right-0 h-48 w-[56%] rotate-3 overflow-hidden rounded-[1.75rem] border-[5px] border-white shadow-2xl">
+              <img src="/photos/swings.jpg" alt="Pre-primary learners at play" className="h-full w-full object-cover" />
+            </div>
+            <div className="absolute bottom-10 left-4 w-56 rounded-2xl bg-white p-3.5 shadow-xl">
+              <p className="text-[11px] font-semibold text-brand-400">SMS · SUCCESSACAD</p>
+              <p className="mt-1 text-xs leading-snug text-brand-800">Mid-Term results are out. View Ethan&apos;s report card on the parent portal.</p>
+            </div>
+          </div>
+
+          <div className="mt-6 lg:mt-auto">
+            <p className="font-headline text-lg font-bold text-gold-400">#InPursuitOfExcellence</p>
+            <p className="mt-1 max-w-md font-headline text-4xl font-extrabold uppercase leading-[0.95] text-white lg:text-6xl">
+              Welcome back to the parent portal
             </p>
           </div>
         </div>
-        <div className="uniform-check absolute inset-x-0 bottom-0 h-3" />
       </div>
 
       <div className="flex flex-1 items-center justify-center px-6 py-10">
