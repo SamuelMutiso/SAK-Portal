@@ -21,3 +21,4 @@ from app.models.library import Book, Loan
 from app.models.timetable import TimetableSlot
 from app.models.audit_log import AuditLog
 from app.models.consent import Consent
+from app.models.mark_change import MarkChange
