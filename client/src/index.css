@@ -69,3 +69,15 @@
   @apply rounded-2xl;
   z-index: 0;
 }
+
+.legal h2 {
+  @apply mb-2 font-display text-xl font-semibold text-brand-800;
+}
+
+.legal ul {
+  @apply list-disc space-y-1 pl-6;
+}
+
+.legal a {
+  @apply font-semibold text-brand-700 underline;
+}
