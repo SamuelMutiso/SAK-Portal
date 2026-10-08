@@ -14,7 +14,9 @@ import {
   TrendingUp,
   Trophy,
 } from "lucide-react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { homePath } from "../roles";
 
 const DAY = [
   { time: "7:12 AM", icon: Bus, title: "Ethan boarded the bus", text: "The driver taps one button and you get an SMS. No more guessing at the gate.", tone: "bg-amber-100 text-amber-700" },
@@ -113,6 +115,10 @@ function HeroCollage() {
 }
 
 export default function Landing() {
+  const user = useSelector((state) => state.auth.user);
+  const portal = user ? homePath(user.role) : "/login";
+  const portalLabel = user ? "Go to my portal" : "Sign in";
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-white">
       <header className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-5 md:px-8">
@@ -126,7 +132,7 @@ export default function Landing() {
           <a href="#everyone" className="hover:text-brand-900">Who it&apos;s for</a>
           <a href="#life" className="hover:text-brand-900">School life</a>
         </nav>
-        <Link to="/login" className="btn-primary ml-auto md:ml-4">Sign in</Link>
+        <Link to={portal} className="btn-primary ml-auto md:ml-4">{portalLabel}</Link>
       </header>
 
       <section className="relative">
@@ -143,7 +149,7 @@ export default function Landing() {
               Report cards, the bus, homework, clubs and fees for your child at Success Academy Kitengela. On any phone, with SMS for the important bits.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/login" className="btn-gold px-7 py-3.5 text-base shadow-lg shadow-gold-500/30">Open the parent portal</Link>
+              <Link to={user ? portal : "/login/parent"} className="btn-gold px-7 py-3.5 text-base shadow-lg shadow-gold-500/30">{user ? "Go to my portal" : "Open the parent portal"}</Link>
               <a href="#day" className="btn-ghost px-7 py-3.5 text-base">See how it works</a>
             </div>
             <dl className="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-brand-100 pt-6">
@@ -201,7 +207,7 @@ export default function Landing() {
           <div>
             <h2 className="font-headline text-5xl font-extrabold uppercase leading-[0.95] text-brand-800">No more waiting for the end-of-term report</h2>
             <p className="mt-4 text-brand-600">Marks arrive the day the teacher enters them, with CBC levels, competencies, values and comments. Parents see the whole year at a glance and know which learning areas need support.</p>
-            <Link to="/login" className="btn-primary mt-6">See a sample report</Link>
+            <Link to={portal} className="btn-primary mt-6">{user ? "Go to my portal" : "Sign in to see reports"}</Link>
           </div>
           <div className="rounded-3xl bg-white p-5 shadow-xl ring-1 ring-brand-100">
             <div className="flex items-center gap-3 border-b border-brand-100 pb-3">
@@ -251,7 +257,7 @@ export default function Landing() {
             <h2 className="font-headline text-4xl font-extrabold uppercase leading-none text-white md:text-5xl">Ready to see your child&apos;s day?</h2>
             <p className="mt-3 text-brand-200">Your login is sent by the school office. Lost it? Call the secretary on 0748 065 956.</p>
           </div>
-          <Link to="/login" className="btn-gold px-8 py-4 text-base"><BellRing size={18} /> Sign in to the portal</Link>
+          <Link to={portal} className="btn-gold px-8 py-4 text-base"><BellRing size={18} /> {user ? "Go to my portal" : "Sign in to the portal"}</Link>
         </div>
       </section>
 

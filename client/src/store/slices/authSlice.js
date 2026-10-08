@@ -25,6 +25,9 @@ const authSlice = createSlice({
   name: "auth",
   initialState: { user: savedUser(), status: "idle", error: null },
   reducers: {
+    clearAuthError(state) {
+      state.error = null;
+    },
     consentAccepted(state) {
       state.user = { ...state.user, consent_required: false };
       localStorage.setItem("user", JSON.stringify(state.user));
@@ -52,5 +55,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { consentAccepted, logout } = authSlice.actions;
+export const { clearAuthError, consentAccepted, logout } = authSlice.actions;
 export default authSlice.reducer;
