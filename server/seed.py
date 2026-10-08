@@ -13,6 +13,7 @@ from app.models import (
     Book,
     Classroom,
     Club,
+    ClubActivity,
     DiaryEntry,
     Event,
     Homework,
@@ -23,6 +24,7 @@ from app.models import (
     PortfolioItem,
     Student,
     TermReport,
+    TimetableSlot,
     TransportLog,
     TransportRoute,
     User,
@@ -90,18 +92,18 @@ ROUTES = [
 ]
 
 CLUBS = [
-    ("Scouts", "Kenya Scouts Association troop: camping, first aid and service", "Friday"),
-    ("Girl Guides", "Leadership, life skills and community service", "Friday"),
-    ("4K Club", "School garden, poultry and farming skills", "Thursday"),
-    ("Wildlife Club", "Conservation, tree planting and park visits", "Wednesday"),
-    ("Music and Drama", "Choir, verses and plays for the Kenya Music Festival", "Tuesday"),
-    ("Journalism Club", "School news, photography and the termly magazine", "Monday"),
-    ("Science Club", "Experiments and projects for the science fair", "Wednesday"),
-    ("Red Cross", "First aid and health awareness", "Monday"),
-    ("Chess Club", "Strategy, competitions and inter-school games", "Tuesday"),
-    ("Swimming", "Lessons for beginners and the school team", "Thursday"),
-    ("Football", "Boys and girls teams for school games", "Tuesday"),
-    ("Athletics", "Track and field for the school sports day and county games", "Wednesday"),
+    ("Scouts", "Kenya Scouts Association troop: camping, first aid and service", "Friday", "Assembly ground"),
+    ("Girl Guides", "Leadership, life skills and community service", "Friday", "Grade 6 classroom"),
+    ("4K Club", "School garden, poultry and farming skills", "Thursday", "School farm"),
+    ("Wildlife Club", "Conservation, tree planting and park visits", "Wednesday", "Science room"),
+    ("Music and Drama", "Choir, verses and plays for the Kenya Music Festival", "Tuesday", "School hall"),
+    ("Journalism Club", "School news, photography and the termly magazine", "Monday", "ICT lab"),
+    ("Science Club", "Experiments and projects for the science fair", "Wednesday", "Science room"),
+    ("Red Cross", "First aid and health awareness", "Monday", "Grade 8 classroom"),
+    ("Chess Club", "Strategy, competitions and inter-school games", "Tuesday", "Library"),
+    ("Swimming", "Lessons for beginners and the school team", "Thursday", "Swimming pool"),
+    ("Football", "Boys and girls teams for school games", "Tuesday", "School field"),
+    ("Athletics", "Track and field for the school sports day and county games", "Wednesday", "School field"),
 ]
 
 BOOKS = [
@@ -149,42 +151,44 @@ def school_days(count):
     return days
 
 
-def seed_assessments(student, ability):
+ASSESSMENT_PLAN = [
+    ("Term 1 2026", "Opener"), ("Term 1 2026", "Mid-Term"), ("Term 1 2026", "End-Term"),
+    ("Term 2 2026", "Opener"), ("Term 2 2026", "Mid-Term"), ("Term 2 2026", "End-Term"),
+    ("Term 3 2026", "Opener"), ("Term 3 2026", "Mid-Term"),
+]
+
+
+def seed_assessments(student, ability, drift):
     level = student.classroom.level
     areas = learning_areas_for(level)
-    if uses_marks(level):
-        late_class = student.classroom.name in ("Grade 6", "Grade 8")
-        skipped = {area for area in areas if late_class and random.random() < 0.06}
-        for exam in ("Opener", "Mid-Term"):
-            for area in areas:
-                if area in skipped:
-                    continue
-                score = max(10, min(99, ability + random.randint(-15, 12)))
-                db.session.add(Assessment(
-                    student=student, subject=area, term=CURRENT_TERM, exam=exam,
-                    score=score, level=level_for(score), teacher_id=student.classroom.teacher_id,
-                ))
-    else:
+    marked = uses_marks(level)
+    strengths = {area: random.randint(-10, 10) for area in areas}
+    late_class = student.classroom.name in ("Grade 6", "Grade 8")
+    skipped = {area for area in areas if marked and late_class and random.random() < 0.06}
+    plan = ASSESSMENT_PLAN if marked else [step for step in ASSESSMENT_PLAN if step[1] != "Opener"]
+    for step, (term, exam) in enumerate(plan):
         for area in areas:
-            score = max(10, min(99, ability + random.randint(-15, 12)))
+            if term == CURRENT_TERM and area in skipped:
+                continue
+            score = max(10, min(99, round(ability + strengths[area] + drift * step + random.randint(-6, 6))))
             db.session.add(Assessment(
-                student=student, subject=area, term=CURRENT_TERM, exam="Mid-Term",
-                level=level_for(score), teacher_id=student.classroom.teacher_id,
+                student=student, subject=area, term=term, exam=exam,
+                score=score if marked else None, level=level_for(score), teacher_id=student.classroom.teacher_id,
             ))
 
 
-def seed_term_report(student, head_comment=True):
+def seed_term_report(student, head_comment=True, term=CURRENT_TERM, dates=(date(2026, 10, 30), date(2027, 1, 5))):
     choices = ["EE", "ME", "ME", "AE"]
     db.session.add(TermReport(
         student=student,
-        term=CURRENT_TERM,
+        term=term,
         competencies={name: random.choice(choices) for name in COMPETENCIES},
         values={name: random.choice(["EE", "ME", "ME"]) for name in VALUES},
         co_curricular=", ".join(club.name for club in student.clubs) or "Physical education",
         teacher_comment=f"{student.first_name} participates well in class and works well with others. Keep reading every evening.",
         head_comment="A good term. Keep up the effort." if head_comment else None,
-        closing_date=date(2026, 10, 30),
-        opening_date=date(2027, 1, 5),
+        closing_date=dates[0],
+        opening_date=dates[1],
     ))
 
 
@@ -213,8 +217,8 @@ def seed():
         routes.append(route)
 
     clubs = []
-    for index, (name, description, day) in enumerate(CLUBS):
-        club = Club(name=name, description=description, meeting_day=day, patron=teachers[(index + 3) % len(teachers)])
+    for index, (name, description, day, venue) in enumerate(CLUBS):
+        club = Club(name=name, description=description, meeting_day=day, venue=venue, patron=teachers[(index + 3) % len(teachers)])
         db.session.add(club)
         clubs.append(club)
 
@@ -244,7 +248,7 @@ def seed():
                 emergency_contact_phone=f"0722{number:06d}",
             )
             if classroom.level != "Pre-Primary":
-                student.clubs = random.sample(clubs, random.randint(0, 2))
+                student.clubs = random.sample(clubs, random.randint(1, 3))
             db.session.add(student)
             students.append(student)
 
@@ -276,7 +280,12 @@ def seed():
         db.session.add(AuthorizedPickup(student=child, full_name="Rose Wanjiru", relationship="Aunt", phone="0744000000"))
 
     for student in students:
-        seed_assessments(student, random.randint(45, 88))
+        if student == ethan:
+            seed_assessments(student, 66, 2.5)
+        elif student == amani:
+            seed_assessments(student, 80, -1.2)
+        else:
+            seed_assessments(student, random.randint(45, 82), random.choice([-1.5, -0.5, 0, 0.5, 1, 1.5, 2]))
 
     for day in school_days(8):
         for student in students:
@@ -288,6 +297,8 @@ def seed():
         if student.classroom.name in ("Grade 4", "PP2", "Grade 7") and student not in (ethan, neema, amani):
             seed_term_report(student, head_comment=False)
     for child in (ethan, neema, amani):
+        seed_term_report(child, term="Term 1 2026", dates=(date(2026, 4, 2), date(2026, 4, 27)))
+        seed_term_report(child, term="Term 2 2026", dates=(date(2026, 7, 31), date(2026, 8, 24)))
         seed_term_report(child)
 
     meals = ["Porridge, rice and beans, fruit", "Uji, ugali and sukuma, banana", "Tea and bread, pilau, orange"]
@@ -353,6 +364,37 @@ def seed():
     for student in boarders[:2]:
         db.session.add(LeaveRequest(student=student, parent=student.parent, leave_date=today + timedelta(days=2), return_date=today + timedelta(days=3),
                                     reason="Dental appointment", picked_by=student.parent.full_name))
+
+    club_activities = {
+        "4K Club": [(-21, "Planted sukuma wiki and spinach seedlings", "Members prepared two new beds and planted 120 seedlings."),
+                    (-7, "Harvested first kale", "The kitchen used the harvest for Friday lunch."),
+                    (6, "Poultry house visit", "Learning to feed and care for the school's layers.")],
+        "Music and Drama": [(-14, "Zonal music festival", "Our choir placed second with a set piece in Kiswahili."),
+                            (5, "Festival rehearsals", "Extra practice after classes on Tuesday and Thursday.")],
+        "Swimming": [(-10, "Beginners' badge test", "Eight learners earned their first swimming badge."),
+                     (4, "Inter-house gala practice", "Bring costume, towel and goggles.")],
+        "Scouts": [(-18, "Tree planting at Kitengela stadium", "Scouts planted 40 indigenous trees."),
+                   (11, "Weekend camp", "Two-day camp at the school. Parents' consent forms needed.")],
+        "Football": [(-5, "Friendly match vs Kitengela Primary", "Won 2-1."), (9, "Sub-county games", "Under-13 team plays on Saturday.")],
+        "Wildlife Club": [(-25, "Nairobi National Park visit", "Learned about the black rhino and the Athi plains."), (15, "Clean-up walk", "Along the Kitengela river.")],
+        "Science Club": [(-12, "Made a water filter", "Using sand, charcoal and gravel."), (8, "Science fair projects due", "Projects on renewable energy.")],
+        "Chess Club": [(-8, "Inter-school tournament", "Two players qualified for the county round."), (7, "Weekly ladder games", "Library at 3:30pm.")],
+    }
+    for club in clubs:
+        if club.students:
+            club.leader = sorted(club.students, key=lambda student: -classrooms.index(student.classroom))[0]
+        for offset, title, description in club_activities.get(club.name, [(-9, "Weekly meeting", "Regular club session."), (6, "Next meeting", "Usual time and place.")]):
+            db.session.add(ClubActivity(club=club, date=today + timedelta(days=offset), title=title, description=description))
+
+    for classroom in classrooms:
+        areas = learning_areas_for(classroom.level)
+        extras = ["Physical Education", "Games", "Library", "Clubs", "Pastoral Programme"]
+        periods = 6 if classroom.level == "Pre-Primary" else 8
+        for day in range(5):
+            day_lessons = areas[day % len(areas):] + areas[:day % len(areas)]
+            lessons = (day_lessons + day_lessons)[:periods - 1] + [extras[day]]
+            for period, subject in enumerate(lessons, start=1):
+                db.session.add(TimetableSlot(classroom=classroom, day=day, period=period, subject=subject))
 
     books = [Book(title=title, author=author, level=level, copies=copies) for title, author, level, copies in BOOKS]
     db.session.add_all(books)
