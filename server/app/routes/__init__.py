@@ -19,6 +19,7 @@ from app.routes.portfolio import portfolio_bp
 from app.routes.reports import reports_bp
 from app.routes.sba import sba_bp
 from app.routes.students import students_bp
+from app.routes.timetable import timetable_bp
 from app.routes.transport import transport_bp
 from app.routes.trips import trips_bp
 from app.routes.users import users_bp
@@ -48,6 +49,7 @@ BLUEPRINTS = (
     diary_bp,
     leave_bp,
     library_bp,
+    timetable_bp,
 )
 
 
