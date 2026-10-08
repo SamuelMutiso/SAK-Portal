@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { BedDouble, MessageSquare, UserCheck, Users } from "lucide-react";
+import { BedDouble, BookX, ChevronRight, FileCheck2, MessageSquare, UserCheck, Users, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -8,6 +8,7 @@ import api from "../../api/client";
 import Loader from "../../components/Loader";
 import NoticeCard from "../../components/NoticeCard";
 import StatCard from "../../components/StatCard";
+import { formatKes } from "../../constants";
 import WelcomeBanner from "../../components/WelcomeBanner";
 import { fetchNotices } from "../../store/slices/noticesSlice";
 
@@ -38,6 +39,21 @@ export default function AdminDashboard() {
         <StatCard icon={UserCheck} tone="green" label="Present today" value={`${attendanceRate}%`} hint={`${present} of ${marked} marked`} />
         <StatCard icon={BedDouble} tone="violet" label="Boarders" value={stats.boarders} hint={`${stats.clubs} active clubs`} />
         <StatCard icon={MessageSquare} tone="gold" label="SMS sent" value={stats.sms_sent} hint={`${stats.parents} parents reachable`} />
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { to: "/admin/leave", icon: BedDouble, text: `${stats.pending_leave} leave-out request${stats.pending_leave === 1 ? "" : "s"} waiting`, urgent: stats.pending_leave > 0 },
+          { to: "/admin/library", icon: BookX, text: `${stats.overdue_books} overdue library book${stats.overdue_books === 1 ? "" : "s"}`, urgent: stats.overdue_books > 0 },
+          { to: "/admin/sba", icon: FileCheck2, text: "Check KNEC SBA marks", urgent: false },
+          { to: "/admin/fees", icon: Wallet, text: `${formatKes(stats.fees_collected)} paid via the portal`, urgent: false },
+        ].map(({ to, icon: Icon, text, urgent }) => (
+          <Link key={to} to={to} className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm font-semibold transition hover:shadow-sm ${urgent ? "border-amber-200 bg-amber-50 text-amber-800" : "border-brand-100 bg-white text-brand-700"}`}>
+            <Icon size={18} />
+            <span className="flex-1">{text}</span>
+            <ChevronRight size={16} />
+          </Link>
+        ))}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-5">
