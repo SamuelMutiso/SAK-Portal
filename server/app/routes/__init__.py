@@ -12,6 +12,7 @@ from app.routes.owner import owner_bp
 from app.routes.events import events_bp
 from app.routes.fees import fees_bp
 from app.routes.homework import homework_bp
+from app.routes.insights import insights_bp
 from app.routes.leave import leave_bp
 from app.routes.library import library_bp
 from app.routes.meta import meta_bp
@@ -56,6 +57,7 @@ BLUEPRINTS = (
     owner_bp,
     consent_bp,
     analytics_bp,
+    insights_bp,
 )
 
 
