@@ -28,6 +28,7 @@ ACTIONS = {
     "clubs.remove_member": "Removed a club member",
     "clubs.set_members": "Replaced club members",
     "clubs.add_activity": "Added a club activity",
+    "clubs.set_learner_clubs": "Changed a learner's clubs",
     "clubs.delete_activity": "Deleted a club activity",
     "notices.create_notice": "Posted a notice",
     "notices.delete_notice": "Deleted a notice",
@@ -90,6 +91,7 @@ TABLE_NAMES = {
     "timetable_slots": "Timetable",
     "club_members": "Club member",
     "consents": "Consent",
+    "mark_changes": "Mark change",
 }
 
 
