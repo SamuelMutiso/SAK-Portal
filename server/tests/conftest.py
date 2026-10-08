@@ -37,7 +37,7 @@ def seed_basics():
     grade4 = Classroom(name="Grade 4", level="Upper Primary", teacher=teacher)
     grade5 = Classroom(name="Grade 5", level="Upper Primary")
     swimming = Club(name="Swimming")
-    child = Student(admission_number="A1", first_name="Ethan", last_name="M", classroom=grade4, parent=parent)
+    child = Student(admission_number="A1", first_name="Ethan", last_name="M", classroom=grade4, parent=parent, fee_balance=5000)
     other = Student(admission_number="A2", first_name="Zawadi", last_name="K", classroom=grade5, parent=other_parent)
     swimming.students = [child]
     db.session.add_all([grade4, grade5, swimming, child, other])

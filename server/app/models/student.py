@@ -11,6 +11,7 @@ class Student(db.Model):
     gender = db.Column(db.String(10))
     date_of_birth = db.Column(db.Date)
     is_boarder = db.Column(db.Boolean, default=False)
+    fee_balance = db.Column(db.Integer, default=0)
     classroom_id = db.Column(db.Integer, db.ForeignKey("classrooms.id"))
     parent_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     transport_route_id = db.Column(db.Integer, db.ForeignKey("transport_routes.id"))

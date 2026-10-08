@@ -5,6 +5,7 @@ from app.routes.classes import classes_bp
 from app.routes.clubs import clubs_bp
 from app.routes.dashboard import dashboard_bp
 from app.routes.events import events_bp
+from app.routes.fees import fees_bp
 from app.routes.homework import homework_bp
 from app.routes.notices import notices_bp
 from app.routes.students import students_bp
@@ -24,6 +25,7 @@ BLUEPRINTS = (
     assessments_bp,
     transport_bp,
     dashboard_bp,
+    fees_bp,
 )
 
 
