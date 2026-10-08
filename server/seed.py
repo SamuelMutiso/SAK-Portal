@@ -15,6 +15,7 @@ from app.models import (
     TransportRoute,
     User,
 )
+from app.models.assessment import level_for
 
 PASSWORD = "Success@2026"
 
@@ -172,14 +173,17 @@ def seed():
             db.session.add(Attendance(student=student, date=day, status=status, recorded_by_id=student.classroom.teacher_id))
 
     for student in students:
+        student.fee_balance = random.choice([0, 0, 0, 2500, 5000, 8500, 12000, 18500])
         if student.classroom.level == "Pre-Primary":
             continue
-        for subject in SUBJECTS[:4]:
-            db.session.add(Assessment(
-                student=student, subject=subject, term="Term 3 2026",
-                level=random.choices(["EE", "ME", "AE", "BE"], weights=[25, 45, 22, 8])[0],
-                teacher_id=student.classroom.teacher_id,
-            ))
+        ability = random.randint(45, 88)
+        for exam in ("Opener", "Mid-Term"):
+            for subject in SUBJECTS:
+                score = max(10, min(99, ability + random.randint(-15, 12)))
+                db.session.add(Assessment(
+                    student=student, subject=subject, term="Term 3 2026", exam=exam,
+                    score=score, level=level_for(score), teacher_id=student.classroom.teacher_id,
+                ))
 
     for classroom in classrooms[3:]:
         db.session.add(Homework(
@@ -213,6 +217,7 @@ def seed():
         Notice(title="Swimming this Thursday", body="Swimming club members should carry costumes and towels.", audience="club", club=clubs[5], send_sms=True, sms_count=len(clubs[5].students), author=admin),
         Notice(title="Bus delay", body="The Kitengela Town bus will be 20 minutes late this evening due to traffic.", audience="route", transport_route=routes[0], send_sms=True, sms_count=len(routes[0].students), author=admin),
         Notice(title="Grade 4 class meeting", body="Grade 4 parents meeting on Saturday at 10am in the school hall.", audience="class", classroom=grade4, author=grade4.teacher),
+        Notice(title="Mid-Term results are out", body="Mid-Term exam results are now on the parent portal.", audience="all", send_sms=True, sms_count=len(students), author=admin),
         Notice(title="Boarders visiting day", body="Visiting day is on Sunday from 11am to 4pm.", audience="boarders", author=admin),
     ]
     db.session.add_all(notices)
