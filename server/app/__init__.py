@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify
 from marshmallow import ValidationError
 
+from app.commands import register_commands
 from app.config import Config
 from app.extensions import bcrypt, cors, db, jwt, limiter, mail, migrate
 from app.routes import register_routes
@@ -24,6 +25,7 @@ def create_app(config_class=Config):
     from app import models
 
     register_routes(app)
+    register_commands(app)
 
     @app.get("/api/health")
     def health():
