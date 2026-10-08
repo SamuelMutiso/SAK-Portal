@@ -12,3 +12,11 @@ class TimetableSlot(db.Model):
     subject = db.Column(db.String(60), nullable=False)
 
     classroom = db.relationship("Classroom")
+
+    @property
+    def audit_label(self):
+        days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        from app.models.classroom import Classroom
+
+        classroom = self.classroom or db.session.get(Classroom, self.classroom_id)
+        return f"{classroom.name if classroom else 'Class'}, {days[self.day]} lesson {self.period}"
