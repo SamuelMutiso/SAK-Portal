@@ -10,6 +10,15 @@ from app.utils.roles import current_user
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
+ROLE_NAMES = {
+    "superadmin": "System owner",
+    "director": "Director",
+    "admin": "School office",
+    "teacher": "Teacher",
+    "parent": "Parent",
+    "driver": "Bus driver",
+}
+
 
 def user_payload(user):
     data = UserSchema().dump(user)
@@ -38,6 +47,11 @@ def login():
     if not user.is_active:
         write_log("login_failed", "Sign-in blocked: account switched off", user=user, status=401)
         return jsonify(error="This account has been switched off. Contact the school office."), 401
+    expected = data["role"]
+    if expected and expected != user.role:
+        label = ROLE_NAMES.get(user.role, user.role)
+        write_log("login_failed", f"Signed in through the wrong door (chose {ROLE_NAMES.get(expected, expected)})", user=user, status=401)
+        return jsonify(error=f"This is a {label} account. Go back and choose {label}.", role=user.role), 401
     write_log("login", "Signed in", user=user, status=200)
     return jsonify(tokens_for(user))
 
