@@ -17,7 +17,7 @@ def owner_headers(client):
 def test_change_records_old_and_new_values(client, admin_headers, teacher_headers, owner_headers):
     sheet = {"subject": "Mathematics", "term": "Term 3 2026", "exam": "End-Term", "scores": [{"student_id": 1, "score": 60}]}
     client.post("/api/assessments/sheet", json=sheet, headers=teacher_headers)
-    sheet["scores"][0]["score"] = 95
+    sheet["scores"][0].update(score=95, reason="Re-marked the whole paper")
     client.post("/api/assessments/sheet", json=sheet, headers=teacher_headers, environ_base={"REMOTE_ADDR": "105.160.1.20"})
 
     entries = client.get("/api/owner/audit", query_string={"kind": "change"}, headers=owner_headers).get_json()["entries"]
@@ -25,7 +25,10 @@ def test_change_records_old_and_new_values(client, admin_headers, teacher_header
     assert latest["user_name"] == "Teacher"
     assert latest["action"] == "Saved a grade sheet"
     assert latest["ip_address"] == "105.160.1.20"
-    assert latest["changes"][0]["fields"]["score"] == {"from": 60, "to": 95}
+    grade = next(change for change in latest["changes"] if change["table"] == "Grade")
+    assert grade["fields"]["score"] == {"from": 60, "to": 95}
+    mark_change = next(change for change in latest["changes"] if change["table"] == "Mark change")
+    assert mark_change["fields"]["reason"] == "Re-marked the whole paper"
 
 
 def test_failed_login_is_recorded(client, owner_headers):

@@ -19,6 +19,7 @@ from app.models import (
     Event,
     Homework,
     LeaveRequest,
+    MarkChange,
     Loan,
     Notice,
     Payment,
@@ -194,6 +195,23 @@ def seed_term_report(student, head_comment=True, term=CURRENT_TERM, dates=(date(
     ))
 
 
+def seed_mark_changes():
+    reasons = [
+        "Missed question 5 when adding up the paper. Added 8 marks.",
+        "Learner sat the make-up paper after being away on exam day.",
+        "Typed the wrong mark on the first entry. Checked against the script.",
+    ]
+    picks = Assessment.query.filter(Assessment.term == CURRENT_TERM, Assessment.exam == "Opener", Assessment.score.isnot(None)).limit(40).all()[::13][:3]
+    for record, reason in zip(picks, reasons):
+        old = record.score
+        record.score = min(99, old + 8)
+        record.level = level_for(record.score)
+        db.session.add(MarkChange(
+            assessment=record, old_score=old, old_level=level_for(old), new_score=record.score, new_level=record.level,
+            reason=reason, changed_by_id=record.teacher_id, changed_at=datetime.utcnow() - timedelta(days=12),
+        ))
+
+
 def seed():
     random.seed(7)
     db.drop_all()
@@ -228,6 +246,7 @@ def seed():
 
     students = []
     number = 1000
+    used_names = {"Ethan Mutiso", "Neema Mutiso", "Amani Mutiso"}
     for classroom in classrooms:
         for _ in range(random.randint(6, 10)):
             number += 1
@@ -235,11 +254,15 @@ def seed():
             parent = make_user(f"{random.choice(PARENT_NAMES)} {last_name}", "parent", f"parent{number}@{DOMAIN}", f"07{random.randint(10, 99)}{number:06d}")
             boarding_level = classroom.level in ("Upper Primary", "Junior Secondary")
             is_boarder = boarding_level and random.random() < 0.4
+            first_name = random.choice(FIRST_NAMES)
+            while f"{first_name} {last_name}" in used_names:
+                first_name = random.choice(FIRST_NAMES)
+            used_names.add(f"{first_name} {last_name}")
             student = Student(
                 admission_number=f"SAK{number}",
                 upi=random_code(7),
                 assessment_number=f"4174{number:05d}" if classroom.name in ("Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9") and random.random() > 0.08 else None,
-                first_name=random.choice(FIRST_NAMES),
+                first_name=first_name,
                 last_name=last_name,
                 gender=random.choice(["Male", "Female"]),
                 date_of_birth=date(2026 - 4 - classrooms.index(classroom), random.randint(1, 12), random.randint(1, 28)),
@@ -420,6 +443,7 @@ def seed():
                                 recorded_at=datetime.utcnow().replace(hour=4, minute=12), driver_id=drivers[0].id))
 
     db.session.commit()
+    seed_mark_changes()
 
     for user in User.query.filter(User.role != "superadmin").all():
         db.session.add(Consent(
@@ -500,7 +524,7 @@ def simulate_activity(ethan_id, amani_id):
     act("parent", "PUT", f"/api/timetable/class/{grade4.id}", parent, {"day": 0, "period": 1, "subject": "Games"})
 
     late = sign_in("late", f"ann.njeri@{DOMAIN}")
-    sheet = {"subject": "Mathematics", "term": CURRENT_TERM, "exam": "Mid-Term", "scores": [{"student_id": ethan_id, "score": 99}]}
+    sheet = {"subject": "Mathematics", "term": CURRENT_TERM, "exam": "Mid-Term", "scores": [{"student_id": ethan_id, "score": 99, "reason": "Re-marked"}]}
     act("late", "POST", "/api/assessments/sheet", late, sheet)
 
     times = [
@@ -520,6 +544,8 @@ def simulate_activity(ethan_id, amani_id):
         entry.previous_hash = previous_hash
         entry.entry_hash = compute_hash(entry, previous_hash)
         previous_hash = entry.entry_hash
+    late_change = MarkChange.query.order_by(MarkChange.id.desc()).first()
+    late_change.changed_at = entries[-1].created_at
     db.session.commit()
     limiter.enabled = True
 
