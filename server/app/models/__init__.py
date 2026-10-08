@@ -19,3 +19,4 @@ from app.models.diary import DiaryEntry
 from app.models.leave_request import LeaveRequest
 from app.models.library import Book, Loan
 from app.models.timetable import TimetableSlot
+from app.models.audit_log import AuditLog
