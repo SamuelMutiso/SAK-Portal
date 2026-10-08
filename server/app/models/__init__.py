@@ -20,3 +20,4 @@ from app.models.leave_request import LeaveRequest
 from app.models.library import Book, Loan
 from app.models.timetable import TimetableSlot
 from app.models.audit_log import AuditLog
+from app.models.consent import Consent
