@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../store/slices/authSlice";
 
-const ROLE_LABELS = { admin: "Administrator", teacher: "Teacher", parent: "Parent" };
+const ROLE_LABELS = { admin: "Administrator", teacher: "Teacher", parent: "Parent", driver: "Bus driver" };
 
 export default function Navbar({ onMenuClick }) {
   const user = useSelector((state) => state.auth.user);
