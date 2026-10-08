@@ -1,4 +1,5 @@
 import os
+import tempfile
 from datetime import timedelta
 
 
@@ -24,6 +25,14 @@ class Config:
     SMS_API_KEY = os.getenv("AT_API_KEY", "")
     SMS_SENDER_ID = os.getenv("AT_SENDER_ID", "")
     SCHOOL_PAYBILL = os.getenv("SCHOOL_PAYBILL", "")
+    MPESA_ENV = os.getenv("MPESA_ENV", "sandbox")
+    MPESA_CONSUMER_KEY = os.getenv("MPESA_CONSUMER_KEY", "")
+    MPESA_CONSUMER_SECRET = os.getenv("MPESA_CONSUMER_SECRET", "")
+    MPESA_SHORTCODE = os.getenv("MPESA_SHORTCODE", "174379")
+    MPESA_PASSKEY = os.getenv("MPESA_PASSKEY", "")
+    MPESA_CALLBACK_URL = os.getenv("MPESA_CALLBACK_URL", "")
+    UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", os.path.join(os.getcwd(), "instance", "uploads"))
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
     MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
     MAIL_USE_TLS = True
@@ -39,3 +48,4 @@ class TestConfig(Config):
     JWT_SECRET_KEY = "test-jwt-secret-key-that-is-long-enough"
     RATELIMIT_ENABLED = False
     RATELIMIT_STORAGE_URI = "memory://"
+    UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), "sak-test-uploads")

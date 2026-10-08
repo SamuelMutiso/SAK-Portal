@@ -75,7 +75,10 @@ def save_grade_sheet():
     for entry in data["scores"]:
         if entry["student_id"] not in allowed_ids:
             continue
-        saved.append(save_assessment(user, entry["student_id"], data["subject"], data["term"], data["exam"], score=entry["score"]))
+        saved.append(save_assessment(
+            user, entry["student_id"], data["subject"], data["term"], data["exam"],
+            score=entry.get("score"), level=entry.get("level"),
+        ))
 
     db.session.commit()
     return jsonify(schema.dump(saved, many=True)), 201

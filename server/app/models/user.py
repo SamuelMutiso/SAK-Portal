@@ -2,7 +2,7 @@ from datetime import datetime
 
 from app.extensions import bcrypt, db
 
-ROLES = ("admin", "teacher", "parent")
+ROLES = ("admin", "teacher", "parent", "driver")
 
 
 class User(db.Model):

@@ -35,6 +35,14 @@ def create_app(config_class=Config):
     def validation_error(error):
         return jsonify(errors=error.messages), 400
 
+    @app.errorhandler(403)
+    def forbidden(error):
+        return jsonify(error="You do not have access to this"), 403
+
+    @app.errorhandler(413)
+    def too_large(error):
+        return jsonify(error="That file is too large. The limit is 5 MB"), 413
+
     @app.errorhandler(404)
     def not_found(error):
         return jsonify(error="Not found"), 404

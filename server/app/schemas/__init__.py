@@ -8,3 +8,10 @@ from app.schemas.event import EventSchema
 from app.schemas.attendance import AttendanceSchema, AttendanceBatchSchema
 from app.schemas.homework import HomeworkSchema
 from app.schemas.assessment import AssessmentSchema, GradeSheetSchema
+from app.schemas.term_report import TermReportSchema
+from app.schemas.pickup import PickupSchema
+from app.schemas.payment import PaymentSchema, PayRequestSchema
+from app.schemas.portfolio import PortfolioSchema
+from app.schemas.diary import DiarySchema, DiarySheetSchema
+from app.schemas.leave_request import LeaveRequestSchema
+from app.schemas.library import BookSchema, LoanSchema

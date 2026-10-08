@@ -4,7 +4,7 @@ from flask import Blueprint, jsonify
 from sqlalchemy import func
 
 from app.extensions import db
-from app.models import Attendance, Classroom, Club, Notice, Student, User
+from app.models import Attendance, Classroom, Club, LeaveRequest, Loan, Notice, Payment, Student, User
 from app.utils.roles import roles_required
 
 dashboard_bp = Blueprint("dashboard", __name__, url_prefix="/api/dashboard")
@@ -45,4 +45,7 @@ def summary():
         attendance_today={"present": present_today, "marked": marked_today},
         students_by_class=[{"name": name, "count": count} for name, count in by_class],
         attendance_week=week,
+        pending_leave=LeaveRequest.query.filter_by(status="pending").count(),
+        overdue_books=Loan.query.filter(Loan.returned_on.is_(None), Loan.due_on < today).count(),
+        fees_collected=db.session.query(func.coalesce(func.sum(Payment.amount), 0)).filter(Payment.status == "completed").scalar(),
     )

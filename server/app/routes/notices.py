@@ -5,6 +5,7 @@ from sqlalchemy import or_
 from app.extensions import db
 from app.models import Club, Notice, Student, User
 from app.schemas import NoticeSchema
+from app.routes.acknowledgements import seen_counts
 from app.services.sms import send_sms
 from app.utils.roles import current_user, roles_required
 
@@ -49,7 +50,13 @@ def list_notices():
     user = current_user()
     query = notices_for_parent(user) if user.role == "parent" else Notice.query
     notices = query.order_by(Notice.created_at.desc()).limit(100).all()
-    return jsonify(schema.dump(notices, many=True))
+    data = schema.dump(notices, many=True)
+    if user.role != "parent":
+        counts = seen_counts("notice", [notice.id for notice in notices])
+        for item, notice in zip(data, notices):
+            item["seen_count"] = counts.get(notice.id, 0)
+            item["recipient_count"] = len(recipients_for(notice))
+    return jsonify(data)
 
 
 @notices_bp.post("")

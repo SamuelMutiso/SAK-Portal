@@ -6,12 +6,16 @@ class Student(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     admission_number = db.Column(db.String(20), unique=True, nullable=False)
+    upi = db.Column(db.String(20))
+    assessment_number = db.Column(db.String(20))
     first_name = db.Column(db.String(60), nullable=False)
     last_name = db.Column(db.String(60), nullable=False)
     gender = db.Column(db.String(10))
     date_of_birth = db.Column(db.Date)
     is_boarder = db.Column(db.Boolean, default=False)
     fee_balance = db.Column(db.Integer, default=0)
+    emergency_contact_name = db.Column(db.String(120))
+    emergency_contact_phone = db.Column(db.String(20))
     classroom_id = db.Column(db.Integer, db.ForeignKey("classrooms.id"))
     parent_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     transport_route_id = db.Column(db.Integer, db.ForeignKey("transport_routes.id"))
@@ -22,6 +26,8 @@ class Student(db.Model):
     clubs = db.relationship("Club", secondary="club_members", back_populates="students")
     attendance = db.relationship("Attendance", back_populates="student", cascade="all, delete-orphan")
     assessments = db.relationship("Assessment", back_populates="student", cascade="all, delete-orphan")
+    pickups = db.relationship("AuthorizedPickup", back_populates="student", cascade="all, delete-orphan")
+    payments = db.relationship("Payment", back_populates="student", cascade="all, delete-orphan")
 
     @property
     def full_name(self):
