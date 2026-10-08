@@ -8,3 +8,12 @@ from app.models.event import Event
 from app.models.attendance import Attendance
 from app.models.homework import Homework
 from app.models.assessment import Assessment
+from app.models.term_report import TermReport
+from app.models.pickup import AuthorizedPickup
+from app.models.transport_log import TransportLog
+from app.models.acknowledgement import Acknowledgement
+from app.models.payment import Payment
+from app.models.portfolio import PortfolioItem
+from app.models.diary import DiaryEntry
+from app.models.leave_request import LeaveRequest
+from app.models.library import Book, Loan
