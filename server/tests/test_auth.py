@@ -23,3 +23,14 @@ def test_me_returns_current_user(client, parent_headers):
 
 def test_parent_cannot_list_users(client, parent_headers):
     assert client.get("/api/users", headers=parent_headers).status_code == 403
+
+
+def test_login_with_wrong_role_is_refused(client):
+    response = client.post("/api/auth/login", json={"email": "parent@test.com", "password": "password123", "role": "teacher"})
+    assert response.status_code == 401
+    assert "Parent account" in response.get_json()["error"]
+
+
+def test_login_with_right_role(client):
+    response = client.post("/api/auth/login", json={"email": "parent@test.com", "password": "password123", "role": "parent"})
+    assert response.status_code == 200
