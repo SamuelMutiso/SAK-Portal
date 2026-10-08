@@ -37,6 +37,13 @@ api.interceptors.response.use(
   }
 );
 
+export function assetUrl(path) {
+  if (path?.startsWith("/api/")) {
+    return api.defaults.baseURL.replace(/\/api$/, "") + path;
+  }
+  return path;
+}
+
 export function errorMessage(error) {
   const data = error.response?.data;
   if (data?.error) return data.error;

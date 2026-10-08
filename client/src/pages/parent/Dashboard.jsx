@@ -8,6 +8,7 @@ import Loader from "../../components/Loader";
 import WelcomeBanner from "../../components/WelcomeBanner";
 import { formatKes } from "../../constants";
 import NoticeCard from "../../components/NoticeCard";
+import SeenButton from "../../components/SeenButton";
 import { fetchEvents } from "../../store/slices/eventsSlice";
 import { fetchNotices } from "../../store/slices/noticesSlice";
 import { fetchStudents } from "../../store/slices/studentsSlice";
@@ -19,12 +20,14 @@ export default function ParentDashboard() {
   const notices = useSelector((state) => state.notices.items);
   const events = useSelector((state) => state.events.items);
   const [homework, setHomework] = useState(null);
+  const [seen, setSeen] = useState([]);
 
   useEffect(() => {
     dispatch(fetchStudents());
     dispatch(fetchNotices());
     dispatch(fetchEvents());
     api.get("/homework").then(({ data }) => setHomework(data));
+    api.get("/acknowledgements/mine").then(({ data }) => setSeen(data));
   }, [dispatch]);
 
   if (!homework) return <Loader />;
@@ -61,7 +64,7 @@ export default function ParentDashboard() {
         <div className="space-y-4 lg:col-span-2">
           <h2 className="text-lg font-semibold text-brand-800">Notices for you</h2>
           {notices.map((notice) => (
-            <NoticeCard key={notice.id} notice={notice} showSms={false} />
+            <NoticeCard key={notice.id} notice={notice} showSms={false} seenKeys={seen} onSeen={(key) => setSeen([...seen, key])} />
           ))}
         </div>
 
@@ -86,6 +89,9 @@ export default function ParentDashboard() {
                 <li key={item.id} className="text-sm">
                   <p className="font-semibold">{item.title}</p>
                   <p className="text-xs text-brand-500">{item.classroom_name} · {item.subject} · due {format(new Date(item.due_date), "EEE d MMM")}</p>
+                  <div className="mt-1.5">
+                    <SeenButton itemType="homework" itemId={item.id} seen={seen.includes(`homework:${item.id}`)} onSeen={(key) => setSeen([...seen, key])} />
+                  </div>
                 </li>
               ))}
             </ul>

@@ -5,8 +5,10 @@ import { login } from "../store/slices/authSlice";
 
 const DEMO_ACCOUNTS = [
   { label: "Admin", email: "admin@successacademy.ac.ke" },
-  { label: "Teacher", email: "ann.njeri@successacademy.ac.ke" },
+  { label: "Grade 4 teacher", email: "ann.njeri@successacademy.ac.ke" },
+  { label: "PP2 teacher", email: "faith.mwende@successacademy.ac.ke" },
   { label: "Parent", email: "parent@successacademy.ac.ke" },
+  { label: "Bus driver", email: "driver@successacademy.ac.ke" },
 ];
 
 export default function Login() {
@@ -69,7 +71,7 @@ export default function Login() {
 
           <div className="mt-10 rounded-2xl bg-brand-50 p-4">
             <p className="text-sm font-semibold text-brand-700">Try a demo account</p>
-            <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="mt-3 grid grid-cols-2 gap-2">
               {DEMO_ACCOUNTS.map((account) => (
                 <button
                   key={account.label}

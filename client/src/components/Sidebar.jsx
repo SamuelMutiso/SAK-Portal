@@ -1,11 +1,18 @@
 import {
+  Baby,
+  BedDouble,
   BookOpen,
   Bus,
   CalendarDays,
   ClipboardCheck,
+  FileCheck2,
+  FileText,
   GraduationCap,
+  Images,
   LayoutDashboard,
+  Library,
   Megaphone,
+  ShieldCheck,
   Trophy,
   Users,
   Wallet,
@@ -19,23 +26,33 @@ const LINKS = {
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { to: "/admin/notices", label: "Notices & SMS", icon: Megaphone },
     { to: "/admin/students", label: "Students", icon: Users },
+    { to: "/admin/reports", label: "Report cards", icon: FileText },
+    { to: "/admin/sba", label: "KNEC SBA", icon: FileCheck2 },
     { to: "/admin/fees", label: "Fees", icon: Wallet },
+    { to: "/admin/leave", label: "Leave-out", icon: BedDouble },
+    { to: "/admin/pickup", label: "Pick-up check", icon: ShieldCheck },
     { to: "/admin/clubs", label: "Clubs", icon: Trophy },
+    { to: "/admin/library", label: "Library", icon: Library },
     { to: "/admin/transport", label: "Transport", icon: Bus },
     { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   ],
   teacher: [
     { to: "/teacher", label: "My Class", icon: LayoutDashboard },
     { to: "/teacher/attendance", label: "Attendance", icon: ClipboardCheck },
-    { to: "/teacher/homework", label: "Homework", icon: BookOpen },
     { to: "/teacher/assessments", label: "Grades", icon: GraduationCap },
-    { to: "/teacher/notices", label: "Class Notices", icon: Megaphone },
+    { to: "/teacher/reports", label: "Report cards", icon: FileText },
+    { to: "/teacher/homework", label: "Homework", icon: BookOpen },
+    { to: "/teacher/diary", label: "Daily diary", icon: Baby },
+    { to: "/teacher/portfolio", label: "Portfolio", icon: Images },
+    { to: "/teacher/pickup", label: "Pick-up check", icon: ShieldCheck },
+    { to: "/teacher/notices", label: "Class notices", icon: Megaphone },
     { to: "/teacher/calendar", label: "Calendar", icon: CalendarDays },
   ],
   parent: [
     { to: "/parent", label: "Home", icon: LayoutDashboard },
     { to: "/parent/calendar", label: "Calendar", icon: CalendarDays },
   ],
+  driver: [{ to: "/driver", label: "My bus", icon: Bus }],
 };
 
 export default function Sidebar({ open, onClose }) {
@@ -61,7 +78,7 @@ export default function Sidebar({ open, onClose }) {
           </button>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {links.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
