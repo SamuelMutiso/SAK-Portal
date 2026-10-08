@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { BookOpen, ClipboardCheck, GraduationCap, Megaphone, Users } from "lucide-react";
+import { BookOpen, ClipboardCheck, GraduationCap, Lightbulb, Megaphone, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../../api/client";
@@ -12,6 +12,7 @@ const ACTIONS = [
   { to: "/teacher/attendance", label: "Mark today's register", icon: ClipboardCheck },
   { to: "/teacher/homework", label: "Set homework", icon: BookOpen },
   { to: "/teacher/assessments", label: "Enter exam marks", icon: GraduationCap },
+  { to: "/teacher/insights", label: "See class insights", icon: Lightbulb },
   { to: "/teacher/notices", label: "Message class parents", icon: Megaphone },
 ];
 
@@ -56,7 +57,7 @@ export default function TeacherDashboard() {
         <StatCard icon={BookOpen} label="Homework set" value={data.homework.length} />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         {ACTIONS.map(({ to, label, icon: Icon }) => (
           <Link key={to} to={to} className="card flex items-center gap-3 font-semibold text-brand-700 transition hover:bg-brand-50">
             <Icon size={20} className="text-gold-500" />
