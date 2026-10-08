@@ -1,6 +1,10 @@
+import { History, Lightbulb } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import api, { errorMessage } from "../../api/client";
+import ClassInsights from "../../components/ClassInsights";
 import Loader from "../../components/Loader";
+import ReasonDialog from "../../components/ReasonDialog";
 import { EXAMS, LEVELS, RUBRIC_CODES, TERM, levelForScore } from "../../constants";
 
 export default function Assessments() {
@@ -9,6 +13,10 @@ export default function Assessments() {
   const [subject, setSubject] = useState("");
   const [exam, setExam] = useState("End-Term");
   const [entries, setEntries] = useState({});
+  const [saved, setSaved] = useState({});
+  const [history, setHistory] = useState({});
+  const [pending, setPending] = useState(null);
+  const [insights, setInsights] = useState(null);
   const [message, setMessage] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -23,12 +31,17 @@ export default function Assessments() {
   useEffect(() => {
     if (!subject) return;
     api.get("/assessments", { params: { subject, exam, term: TERM } }).then(({ data }) => {
-      const saved = {};
+      const values = {};
+      const counts = {};
       data.forEach((record) => {
-        saved[record.student_id] = classroom?.uses_marks ? record.score ?? "" : record.level;
+        values[record.student_id] = String(classroom?.uses_marks ? record.score ?? "" : record.level);
+        counts[record.student_id] = record.times_changed;
       });
-      setEntries(saved);
+      setEntries(values);
+      setSaved(values);
+      setHistory(counts);
       setMessage(null);
+      setInsights(null);
     });
   }, [subject, exam, classroom]);
 
@@ -38,17 +51,50 @@ export default function Assessments() {
     }
   }
 
-  async function handleSave() {
+  function isChanged(studentId) {
+    const before = saved[studentId];
+    const now = entries[studentId];
+    return before !== undefined && before !== "" && now !== "" && now !== undefined && String(now) !== before;
+  }
+
+  function changedRows() {
+    return students
+      .filter((student) => isChanged(student.id))
+      .map((student) => ({ id: student.id, name: student.full_name, before: saved[student.id], after: String(entries[student.id]) }));
+  }
+
+  function handleSave() {
+    const changes = changedRows();
+    if (changes.length) setPending(changes);
+    else submit({});
+  }
+
+  async function submit(reasons) {
     const rows = Object.entries(entries)
       .filter(([, value]) => value !== "" && value !== undefined)
-      .map(([studentId, value]) =>
-        classroom.uses_marks ? { student_id: Number(studentId), score: Number(value) } : { student_id: Number(studentId), level: value }
-      );
+      .map(([studentId, value]) => {
+        const row = classroom.uses_marks ? { student_id: Number(studentId), score: Number(value) } : { student_id: Number(studentId), level: value };
+        return reasons[studentId] ? { ...row, reason: reasons[studentId] } : row;
+      });
     setSaving(true);
     try {
-      await api.post("/assessments/sheet", { subject, exam, term: TERM, scores: rows });
-      setMessage({ type: "success", text: `${subject} ${exam} saved for ${rows.length} learners. Parents can see it now.` });
+      const { data } = await api.post("/assessments/sheet", { subject, exam, term: TERM, scores: rows });
+      const counts = { ...history };
+      data.forEach((record) => {
+        counts[record.student_id] = record.times_changed;
+      });
+      const changedCount = Object.keys(reasons).length;
+      setSaved({ ...entries });
+      setHistory(counts);
+      setPending(null);
+      setMessage({
+        type: "success",
+        text: `${subject} ${exam} saved for ${rows.length} learners${changedCount ? `, ${changedCount} changed mark${changedCount > 1 ? "s" : ""} recorded with the reason` : ""}. Parents can see it now.`,
+      });
+      api.get("/insights/class", { params: { term: TERM, exam } }).then(({ data: result }) => setInsights(result));
     } catch (error) {
+      const missing = error.response?.data?.needs_reason;
+      if (missing) setPending(changedRows().filter((row) => missing.includes(row.id)));
       setMessage({ type: "error", text: errorMessage(error) });
     }
     setSaving(false);
@@ -108,7 +154,15 @@ export default function Assessments() {
             <div key={student.id} className="flex flex-wrap items-center gap-3 px-5 py-3">
               <div className="min-w-40 flex-1">
                 <p className="font-semibold">{student.full_name}</p>
-                <p className="font-mono text-xs text-brand-400">{student.admission_number}</p>
+                <p className="flex flex-wrap items-center gap-2 font-mono text-xs text-brand-400">
+                  {student.admission_number}
+                  {history[student.id] > 0 && (
+                    <span className="inline-flex items-center gap-1 font-body text-brand-500" title="This mark has been changed before. The reasons are kept.">
+                      <History size={12} /> changed {history[student.id]}x
+                    </span>
+                  )}
+                  {isChanged(student.id) && <span className="font-body font-semibold text-amber-600">was {saved[student.id]}, needs a reason</span>}
+                </p>
               </div>
               {classroom.uses_marks ? (
                 <>
@@ -154,6 +208,26 @@ export default function Assessments() {
       <button className="btn-primary w-full sm:w-auto" onClick={handleSave} disabled={saving || !marks.length}>
         {saving ? "Saving..." : "Save grades"}
       </button>
+
+      {insights && (
+        <section className="space-y-3 border-t border-brand-100 pt-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="flex flex-1 items-center gap-2 text-xl font-semibold text-brand-800"><Lightbulb size={20} className="text-gold-500" /> Insights for {exam}</h2>
+            <Link to="/teacher/insights" className="text-sm font-semibold text-brand-600 hover:underline">Open full insights</Link>
+          </div>
+          <ClassInsights data={insights} />
+        </section>
+      )}
+
+      {pending && (
+        <ReasonDialog
+          rows={pending}
+          subject={`${subject} · ${exam}`}
+          saving={saving}
+          onCancel={() => setPending(null)}
+          onConfirm={submit}
+        />
+      )}
     </div>
   );
 }
