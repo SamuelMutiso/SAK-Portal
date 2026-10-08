@@ -12,3 +12,7 @@ class Classroom(db.Model):
     teacher = db.relationship("User", back_populates="classroom")
     students = db.relationship("Student", back_populates="classroom")
     homework = db.relationship("Homework", back_populates="classroom", cascade="all, delete-orphan")
+
+    @property
+    def audit_label(self):
+        return self.name

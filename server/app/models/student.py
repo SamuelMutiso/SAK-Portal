@@ -30,5 +30,9 @@ class Student(db.Model):
     payments = db.relationship("Payment", back_populates="student", cascade="all, delete-orphan")
 
     @property
+    def audit_label(self):
+        return f"{self.first_name} {self.last_name} ({self.admission_number})"
+
+    @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"

@@ -11,7 +11,7 @@ users_bp = Blueprint("users", __name__, url_prefix="/api/users")
 @users_bp.get("")
 @roles_required("admin")
 def list_users():
-    query = User.query.order_by(User.full_name)
+    query = User.query.filter(User.role != "superadmin").order_by(User.full_name)
     role = request.args.get("role")
     if role:
         query = query.filter_by(role=role)
@@ -22,6 +22,8 @@ def list_users():
 @roles_required("admin")
 def create_user():
     data = UserCreateSchema().load(request.get_json() or {})
+    if data["role"] == "superadmin":
+        return jsonify(error="Only the school director can create director accounts"), 403
     email = data["email"].lower()
     if User.query.filter_by(email=email).first():
         return jsonify(error="Email already in use"), 409
@@ -36,6 +38,8 @@ def create_user():
 @roles_required("admin")
 def update_user(user_id):
     user = db.get_or_404(User, user_id)
+    if user.role == "superadmin":
+        return jsonify(error="Director accounts can only be changed by the director"), 403
     data = request.get_json() or {}
     for field in ("full_name", "phone", "is_active"):
         if field in data:

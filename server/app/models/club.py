@@ -22,3 +22,7 @@ class Club(db.Model):
     leader = db.relationship("Student", foreign_keys=[leader_id])
     students = db.relationship("Student", secondary=club_members, back_populates="clubs")
     activities = db.relationship("ClubActivity", back_populates="club", cascade="all, delete-orphan", order_by="ClubActivity.date.desc()")
+
+    @property
+    def audit_label(self):
+        return self.name

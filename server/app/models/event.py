@@ -13,3 +13,7 @@ class Event(db.Model):
     location = db.Column(db.String(120))
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date)
+
+    @property
+    def audit_label(self):
+        return f"Event: {self.title}"

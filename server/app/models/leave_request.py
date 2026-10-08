@@ -20,3 +20,11 @@ class LeaveRequest(db.Model):
 
     student = db.relationship("Student")
     parent = db.relationship("User")
+
+    @property
+    def audit_label(self):
+        from app.models.student import Student
+
+        student = self.student or db.session.get(Student, self.student_id)
+        name = student.full_name if student else f"learner #{self.student_id}"
+        return f"Leave-out for {name}"

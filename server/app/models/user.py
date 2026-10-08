@@ -2,7 +2,8 @@ from datetime import datetime
 
 from app.extensions import bcrypt, db
 
-ROLES = ("admin", "teacher", "parent", "driver")
+ROLES = ("superadmin", "admin", "teacher", "parent", "driver")
+STAFF_ROLES = ("admin", "teacher", "driver")
 
 
 class User(db.Model):
@@ -19,6 +20,10 @@ class User(db.Model):
 
     children = db.relationship("Student", back_populates="parent")
     classroom = db.relationship("Classroom", back_populates="teacher", uselist=False)
+
+    @property
+    def audit_label(self):
+        return f"{self.full_name} ({self.role})"
 
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")

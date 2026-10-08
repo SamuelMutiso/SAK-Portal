@@ -56,7 +56,7 @@ def set_slot(classroom_id):
             db.session.commit()
         return jsonify(slot=None)
     if not slot:
-        slot = TimetableSlot(classroom_id=classroom.id, day=day, period=period)
+        slot = TimetableSlot(classroom=classroom, day=day, period=period)
         db.session.add(slot)
     slot.subject = subject
     db.session.commit()

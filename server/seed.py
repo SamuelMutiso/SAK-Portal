@@ -197,6 +197,7 @@ def seed():
     db.drop_all()
     db.create_all()
 
+    make_user("School Director", "superadmin", f"director@{DOMAIN}", "0723435629")
     admin = make_user("School Admin", "admin", f"admin@{DOMAIN}", "0704558765")
     teachers = [make_user(name, "teacher", email_for(name), f"07{20 + i}{i:06d}") for i, name in enumerate(TEACHERS)]
     drivers = [
@@ -417,6 +418,8 @@ def seed():
 
     db.session.commit()
 
+    simulate_activity(ethan.id, amani.id)
+
     print(f"Seeded {len(students)} students, {len(teachers)} teachers, {len(clubs)} clubs, {len(books)} books")
     print(f"Logins (password {PASSWORD}):")
     print(f"  admin@{DOMAIN}")
@@ -424,6 +427,83 @@ def seed():
     print(f"  {teachers[2].email}  (PP2 teacher)")
     print(f"  parent@{DOMAIN}  (Ethan G4, Neema PP2, Amani G7 boarder)")
     print(f"  driver@{DOMAIN}  (Kitengela Town bus)")
+    print(f"  director@{DOMAIN}  (School Director: audit trail)")
+
+
+DEVICES = {
+    "office": ("41.90.64.12", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Safari/537.36"),
+    "teacher": ("105.160.22.41", "Mozilla/5.0 (Linux; Android 13; SM-A135F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0 Mobile Safari/537.36"),
+    "late": ("105.161.90.7", "Mozilla/5.0 (Linux; Android 11; TECNO KG5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0 Mobile Safari/537.36"),
+    "stranger": ("102.68.77.9", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1"),
+    "parent": ("197.237.10.5", "Mozilla/5.0 (Linux; Android 12; Infinix X6816) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36"),
+    "driver": ("105.160.5.90", "Mozilla/5.0 (Linux; Android 10; itel A571W) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0 Mobile Safari/537.36"),
+}
+
+
+def simulate_activity(ethan_id, amani_id):
+    from flask import current_app
+
+    from app.extensions import limiter
+    from app.models import AuditLog
+    from app.services.audit import compute_hash
+
+    limiter.enabled = False
+    client = current_app.test_client()
+
+    def act(device, method, path, token=None, payload=None):
+        ip, agent = DEVICES[device]
+        headers = {"X-Forwarded-For": ip, "User-Agent": agent}
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
+        return client.open(path, method=method, json=payload, headers=headers)
+
+    def sign_in(device, email, password=PASSWORD):
+        response = act(device, "POST", "/api/auth/login", payload={"email": email, "password": password})
+        return response.get_json().get("access_token")
+
+    office = sign_in("office", f"admin@{DOMAIN}")
+    grade4 = Classroom.query.filter_by(name="Grade 4").first()
+    act("office", "PUT", f"/api/timetable/class/{grade4.id}", office, {"day": 1, "period": 3, "subject": "Creative Arts"})
+    act("office", "POST", "/api/notices", office, {"title": "Half-term break", "body": "School closes on Friday at 12 noon.", "audience": "all", "send_sms": True})
+    leave = LeaveRequest.query.filter(LeaveRequest.student_id != amani_id).first()
+    act("office", "PATCH", f"/api/leave/{leave.id}", office, {"status": "approved"})
+
+    for _ in range(4):
+        sign_in("stranger", f"admin@{DOMAIN}", "admin1234")
+
+    teacher = sign_in("teacher", f"ann.njeri@{DOMAIN}")
+    act("teacher", "POST", "/api/attendance", teacher, {"date": date.today().isoformat(), "records": [{"student_id": ethan_id, "status": "present"}]})
+
+    driver = sign_in("driver", f"driver@{DOMAIN}")
+    act("driver", "POST", "/api/trips/log", driver, {"student_id": ethan_id, "event": "boarded"})
+
+    parent = sign_in("parent", f"parent@{DOMAIN}")
+    act("parent", "POST", "/api/notices", parent, {"title": "Free day", "body": "No school tomorrow"})
+    act("parent", "PUT", f"/api/timetable/class/{grade4.id}", parent, {"day": 0, "period": 1, "subject": "Games"})
+
+    late = sign_in("late", f"ann.njeri@{DOMAIN}")
+    sheet = {"subject": "Mathematics", "term": CURRENT_TERM, "exam": "Mid-Term", "scores": [{"student_id": ethan_id, "score": 99}]}
+    act("late", "POST", "/api/assessments/sheet", late, sheet)
+
+    times = [
+        (3, "08:05"), (3, "08:09"), (3, "08:20"), (3, "08:22"),
+        (2, "02:13"), (2, "02:13"), (2, "02:14"), (2, "02:14"),
+        (2, "07:40"), (2, "07:46"),
+        (2, "15:58"), (2, "16:05"),
+        (1, "18:02"), (1, "18:03"), (1, "18:03"),
+        (1, "23:41"), (1, "23:43"),
+    ]
+    entries = AuditLog.query.order_by(AuditLog.id).all()
+    previous_hash = "start"
+    for entry, (days_ago, clock) in zip(entries, times):
+        hour, minute = map(int, clock.split(":"))
+        local = datetime.combine(date.today() - timedelta(days=days_ago), datetime.min.time()).replace(hour=hour, minute=minute)
+        entry.created_at = local - timedelta(hours=3)
+        entry.previous_hash = previous_hash
+        entry.entry_hash = compute_hash(entry, previous_hash)
+        previous_hash = entry.entry_hash
+    db.session.commit()
+    limiter.enabled = True
 
 
 if __name__ == "__main__":

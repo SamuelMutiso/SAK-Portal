@@ -16,3 +16,11 @@ class TransportLog(db.Model):
     driver_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
     student = db.relationship("Student")
+
+    @property
+    def audit_label(self):
+        from app.models.student import Student
+
+        student = self.student or db.session.get(Student, self.student_id)
+        name = student.full_name if student else f"learner #{self.student_id}"
+        return f"{name} {self.event}"

@@ -4,6 +4,7 @@ from flask_jwt_extended import create_access_token, create_refresh_token, get_jw
 from app.extensions import db, limiter
 from app.models import User
 from app.schemas import LoginSchema, UserSchema
+from app.services.audit import write_log
 from app.utils.roles import current_user
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
@@ -22,9 +23,15 @@ def tokens_for(user):
 @limiter.limit("5 per minute")
 def login():
     data = LoginSchema().load(request.get_json() or {})
-    user = User.query.filter_by(email=data["email"].lower()).first()
-    if not user or not user.is_active or not user.check_password(data["password"]):
+    email = data["email"].lower()
+    user = User.query.filter_by(email=email).first()
+    if not user or not user.check_password(data["password"]):
+        write_log("login_failed", f"Failed sign-in for {email}", user=user, status=401, user_name=email)
         return jsonify(error="Invalid email or password"), 401
+    if not user.is_active:
+        write_log("login_failed", "Sign-in blocked: account switched off", user=user, status=401)
+        return jsonify(error="This account has been switched off. Contact the school office."), 401
+    write_log("login", "Signed in", user=user, status=200)
     return jsonify(tokens_for(user))
 
 
