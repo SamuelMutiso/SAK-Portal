@@ -11,27 +11,49 @@ import Fees from "./child/Fees";
 import Leave from "./child/Leave";
 import Library from "./child/Library";
 import Portfolio from "./child/Portfolio";
+import Progress from "./child/Progress";
 import Safety from "./child/Safety";
+import Timetable from "./child/Timetable";
 
 function ReportTab({ student }) {
   const [data, setData] = useState(null);
+  const [term, setTerm] = useState(null);
 
   useEffect(() => {
-    Promise.all([api.get(`/reports/student/${student.id}`), api.get("/meta"), api.get("/acknowledgements/mine")]).then(
-      ([report, meta, seen]) => setData({ report: report.data, meta: meta.data, seen: seen.data })
-    );
-  }, [student.id]);
+    Promise.all([api.get("/meta"), api.get("/acknowledgements/mine")]).then(([meta, seen]) => {
+      setTerm(meta.data.term);
+      setData((current) => ({ ...current, meta: meta.data, seen: seen.data }));
+    });
+  }, []);
 
-  if (!data) return <Loader />;
+  useEffect(() => {
+    if (!term) return;
+    api.get(`/reports/student/${student.id}`, { params: { term } }).then(({ data: report }) => setData((current) => ({ ...current, report })));
+  }, [student.id, term]);
+
+  if (!data?.report || !data?.meta) return <Loader />;
 
   return (
-    <ReportCardView
-      data={data.report}
-      competencies={data.meta.competencies}
-      values={data.meta.values}
-      seenKeys={data.seen}
-      onSeen={(key) => setData({ ...data, seen: [...data.seen, key] })}
-    />
+    <div className="space-y-4">
+      <div className="flex gap-1 rounded-xl bg-brand-50 p-1 print:hidden">
+        {data.meta.terms.map((item) => (
+          <button
+            key={item}
+            onClick={() => setTerm(item)}
+            className={`flex-1 rounded-lg py-2 text-sm font-semibold ${term === item ? "bg-brand-700 text-white" : "text-brand-600 hover:bg-white"}`}
+          >
+            {item.replace(" 2026", "")}
+          </button>
+        ))}
+      </div>
+      <ReportCardView
+        data={data.report}
+        competencies={data.meta.competencies}
+        values={data.meta.values}
+        seenKeys={data.seen}
+        onSeen={(key) => setData({ ...data, seen: [...data.seen, key] })}
+      />
+    </div>
   );
 }
 
@@ -48,6 +70,8 @@ export default function Child() {
 
   const tabs = [
     { key: "report", label: "Report card" },
+    { key: "progress", label: "Progress" },
+    { key: "timetable", label: "Timetable" },
     { key: "fees", label: "Fees" },
     { key: "attendance", label: student.route_name ? "Attendance & bus" : "Attendance" },
     student.level === "Pre-Primary" && { key: "diary", label: "Daily diary" },
@@ -98,6 +122,8 @@ export default function Child() {
       </nav>
 
       {tab === "report" && <ReportTab student={student} />}
+      {tab === "progress" && <Progress student={student} />}
+      {tab === "timetable" && <Timetable student={student} />}
       {tab === "fees" && <Fees student={student} onBalanceChange={(balance) => setStudent({ ...student, fee_balance: balance })} />}
       {tab === "attendance" && <Attendance student={student} />}
       {tab === "diary" && <Diary student={student} />}

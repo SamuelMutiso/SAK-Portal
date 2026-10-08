@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import api, { errorMessage } from "../../api/client";
 import Loader from "../../components/Loader";
+import ProgressView from "../../components/ProgressView";
 import ReportCardView from "../../components/ReportCardView";
 import { RUBRIC_CODES } from "../../constants";
 
@@ -36,7 +37,8 @@ export default function Reports() {
   const [data, setData] = useState(null);
   const [form, setForm] = useState(null);
   const [message, setMessage] = useState(null);
-  const [preview, setPreview] = useState(false);
+  const [view, setView] = useState("edit");
+  const [trend, setTrend] = useState(null);
 
   useEffect(() => {
     api.get("/meta").then(({ data: result }) => setMeta(result));
@@ -58,8 +60,9 @@ export default function Reports() {
         opening_date: report.opening_date || "",
       });
       setMessage(null);
-      setPreview(false);
     });
+    setTrend(null);
+    api.get(`/reports/student/${selectedId}/trend`).then(({ data: result }) => setTrend(result));
   }, [selectedId]);
 
   async function handleSave() {
@@ -126,13 +129,16 @@ export default function Reports() {
           {data && form && (
             <>
               <div className="flex gap-1 rounded-xl bg-brand-50 p-1 print:hidden">
-                <button onClick={() => setPreview(false)} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${!preview ? "bg-white shadow-sm" : "text-brand-500"}`}>Edit</button>
-                <button onClick={() => setPreview(true)} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${preview ? "bg-white shadow-sm" : "text-brand-500"}`}>Preview</button>
+                {[["edit", "Edit"], ["preview", "Preview"], ["progress", "Progress"]].map(([key, label]) => (
+                  <button key={key} onClick={() => setView(key)} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${view === key ? "bg-white shadow-sm" : "text-brand-500"}`}>
+                    {label}
+                  </button>
+                ))}
               </div>
 
-              {preview ? (
-                <ReportCardView data={data} competencies={meta.competencies} values={meta.values} />
-              ) : (
+              {view === "progress" && (trend ? <ProgressView trend={trend} name={data.student.first_name} /> : <Loader />)}
+              {view === "preview" && <ReportCardView data={data} competencies={meta.competencies} values={meta.values} />}
+              {view === "edit" && (
                 <div className="card space-y-5">
                   <h2 className="text-lg font-semibold text-brand-800">{data.student.full_name} · {data.student.classroom_name}</h2>
 
