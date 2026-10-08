@@ -29,6 +29,7 @@ class Assessment(db.Model):
 
     student = db.relationship("Student", back_populates="assessments")
     teacher = db.relationship("User")
+    changes = db.relationship("MarkChange", back_populates="assessment", cascade="all, delete-orphan", order_by="MarkChange.changed_at.desc()")
 
     @property
     def audit_label(self):
