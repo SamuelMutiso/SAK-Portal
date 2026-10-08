@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import jsonify
+from flask import abort, jsonify
 from flask_jwt_extended import get_jwt, get_jwt_identity, verify_jwt_in_request
 
 from app.extensions import db
@@ -42,3 +42,23 @@ def can_view_student(user, student):
     if user.role == "teacher":
         return student.classroom is not None and student.classroom.teacher_id == user.id
     return student.parent_id == user.id
+
+
+def viewable_student(student_id):
+    from app.models import Student
+
+    student = db.get_or_404(Student, student_id)
+    if not can_view_student(current_user(), student):
+        abort(403)
+    return student
+
+
+def search_students(query, text):
+    from app.models import Student
+
+    for word in text.split():
+        pattern = f"%{word}%"
+        query = query.filter(
+            Student.first_name.ilike(pattern) | Student.last_name.ilike(pattern) | Student.admission_number.ilike(pattern)
+        )
+    return query
