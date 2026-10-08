@@ -16,9 +16,14 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Child from "./pages/parent/Child";
 import ParentDashboard from "./pages/parent/Dashboard";
-import AuditTrail from "./pages/director/AuditTrail";
-import DirectorOverview from "./pages/director/Overview";
-import Staff from "./pages/director/Staff";
+import DirectorHome from "./pages/director/Home";
+import People from "./pages/director/People";
+import Performance from "./pages/director/Performance";
+import Privacy from "./pages/legal/Privacy";
+import Terms from "./pages/legal/Terms";
+import Accounts from "./pages/owner/Accounts";
+import AuditTrail from "./pages/owner/AuditTrail";
+import Security from "./pages/owner/Security";
 import Trip from "./pages/driver/Trip";
 import Calendar from "./pages/shared/Calendar";
 import PickupCheck from "./pages/shared/PickupCheck";
@@ -37,6 +42,8 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
 
       <Route element={<ProtectedRoute roles={["admin"]} />}>
         <Route path="/admin" element={<DashboardLayout />}>
@@ -89,11 +96,29 @@ export default function App() {
         </Route>
       </Route>
 
-      <Route element={<ProtectedRoute roles={["superadmin"]} />}>
+      <Route element={<ProtectedRoute roles={["director"]} />}>
         <Route path="/director" element={<DashboardLayout />}>
-          <Route index element={<DirectorOverview />} />
+          <Route index element={<DirectorHome />} />
+          <Route path="performance" element={<Performance />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="sba" element={<Sba />} />
+          <Route path="notices" element={<Notices />} />
+          <Route path="students" element={<Students />} />
+          <Route path="people" element={<People />} />
+          <Route path="clubs" element={<Clubs />} />
+          <Route path="clubs/:id" element={<ClubDetail />} />
+          <Route path="timetable" element={<Timetable />} />
+          <Route path="transport" element={<Transport />} />
+          <Route path="fees" element={<Fees />} />
+          <Route path="calendar" element={<Calendar />} />
+        </Route>
+      </Route>
+
+      <Route element={<ProtectedRoute roles={["superadmin"]} />}>
+        <Route path="/owner" element={<DashboardLayout />}>
+          <Route index element={<Security />} />
           <Route path="audit" element={<AuditTrail />} />
-          <Route path="staff" element={<Staff />} />
+          <Route path="accounts" element={<Accounts />} />
         </Route>
       </Route>
 
