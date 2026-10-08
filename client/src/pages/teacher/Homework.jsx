@@ -1,18 +1,19 @@
 import { format } from "date-fns";
-import { Trash2 } from "lucide-react";
+import { CheckCheck, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import api, { errorMessage } from "../../api/client";
-
-const SUBJECTS = ["Mathematics", "English", "Kiswahili", "Science", "Social Studies", "Creative Arts", "Religious Education"];
 
 export default function Homework() {
   const [classroom, setClassroom] = useState(null);
   const [items, setItems] = useState([]);
-  const [form, setForm] = useState({ subject: SUBJECTS[0], title: "", details: "", due_date: "" });
+  const [form, setForm] = useState({ subject: "", title: "", details: "", due_date: "" });
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    api.get("/classes").then(({ data }) => setClassroom(data[0]));
+    api.get("/classes").then(({ data }) => {
+      setClassroom(data[0]);
+      setForm((current) => ({ ...current, subject: data[0]?.learning_areas[0] || "" }));
+    });
     api.get("/homework").then(({ data }) => setItems(data));
   }, []);
 
@@ -49,7 +50,7 @@ export default function Homework() {
           <div>
             <label className="label" htmlFor="subject">Subject</label>
             <select id="subject" name="subject" className="input" value={form.subject} onChange={handleChange}>
-              {SUBJECTS.map((subject) => (
+              {(classroom?.learning_areas || []).map((subject) => (
                 <option key={subject}>{subject}</option>
               ))}
             </select>
@@ -81,6 +82,11 @@ export default function Homework() {
                 <p className="text-xs font-semibold uppercase tracking-wide text-brand-400">{item.subject}</p>
                 <h3 className="font-semibold text-brand-800">{item.title}</h3>
                 {item.details && <p className="text-sm text-brand-600">{item.details}</p>}
+                {item.parent_count !== undefined && (
+                  <p className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-600">
+                    <CheckCheck size={14} /> Seen by {item.seen_count} of {item.parent_count} parents
+                  </p>
+                )}
               </div>
               <button onClick={() => handleDelete(item.id)} className="self-start rounded-lg p-1.5 text-brand-400 hover:bg-red-50 hover:text-red-600" aria-label="Delete homework">
                 <Trash2 size={16} />
