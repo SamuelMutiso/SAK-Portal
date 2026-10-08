@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required
 
 from app.extensions import db
 from app.models import Homework
+from app.routes.acknowledgements import seen_counts
 from app.schemas import HomeworkSchema
 from app.utils.roles import current_user, roles_required
 
@@ -21,7 +22,13 @@ def list_homework():
         class_ids = {child.classroom_id for child in user.children}
         query = query.filter(Homework.classroom_id.in_(class_ids))
     homework = query.order_by(Homework.due_date.desc()).all()
-    return jsonify(schema.dump(homework, many=True))
+    data = schema.dump(homework, many=True)
+    if user.role != "parent":
+        counts = seen_counts("homework", [item.id for item in homework])
+        for item, record in zip(data, homework):
+            item["seen_count"] = counts.get(record.id, 0)
+            item["parent_count"] = len({student.parent_id for student in record.classroom.students if student.parent_id})
+    return jsonify(data)
 
 
 @homework_bp.post("")
