@@ -23,6 +23,7 @@ class Config:
     SMS_USERNAME = os.getenv("AT_USERNAME", "sandbox")
     SMS_API_KEY = os.getenv("AT_API_KEY", "")
     SMS_SENDER_ID = os.getenv("AT_SENDER_ID", "")
+    SCHOOL_PAYBILL = os.getenv("SCHOOL_PAYBILL", "")
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
     MAIL_PORT = int(os.getenv("MAIL_PORT", "587"))
     MAIL_USE_TLS = True
