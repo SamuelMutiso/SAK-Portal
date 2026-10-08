@@ -1,19 +1,21 @@
+import secrets
 from datetime import datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 from sqlalchemy import func, or_
 
 from app.extensions import db
-from app.models import AuditLog, User
+from app.models import AuditLog, Consent, User
 from app.models.user import STAFF_ROLES
-from app.schemas import UserSchema
+from app.schemas import UserCreateSchema, UserSchema
 from app.services.audit import compute_hash
 from app.services.geo import locate
-from app.utils.roles import current_user, roles_required
+from app.utils.roles import roles_required
 
-director_bp = Blueprint("director", __name__, url_prefix="/api/director")
+owner_bp = Blueprint("owner", __name__, url_prefix="/api/owner")
 
 KINDS = ("change", "login", "login_failed", "blocked")
+ASSIGNABLE_ROLES = STAFF_ROLES
 
 
 def log_dump(entry):
@@ -48,7 +50,7 @@ def verify_chain():
     return {"ok": True, "checked": checked}
 
 
-@director_bp.get("/audit")
+@owner_bp.get("/audit")
 @roles_required("superadmin")
 def audit_trail():
     query = AuditLog.query
@@ -83,7 +85,7 @@ def audit_trail():
     return jsonify(total=total, page=page, pages=max((total + 49) // 50, 1), entries=[log_dump(entry) for entry in entries])
 
 
-@director_bp.get("/overview")
+@owner_bp.get("/overview")
 @roles_required("superadmin")
 def overview():
     since = datetime.utcnow() - timedelta(days=7)
@@ -111,48 +113,101 @@ def overview():
         most_active=[{"name": name, "role": role, "count": count} for name, role, count in active],
         failed_logins=[{"name": name, "ip": ip, "location": locate(ip), "count": count} for name, ip, count in failed],
         latest=[log_dump(entry) for entry in latest],
-        staff=User.query.filter(User.role.in_(STAFF_ROLES)).count(),
+        staff=User.query.filter(User.role.in_(STAFF_ROLES), User.removed_at.is_(None)).count(),
+        parents=User.query.filter(User.role == "parent", User.removed_at.is_(None)).count(),
+        consented=Consent.query.with_entities(Consent.user_id).distinct().count(),
     )
 
 
-@director_bp.get("/verify")
+@owner_bp.get("/verify")
 @roles_required("superadmin")
 def verify():
     return jsonify(verify_chain())
 
 
-@director_bp.get("/staff")
+def account_dump(user, last_seen, consents):
+    row = UserSchema().dump(user)
+    row["last_login"] = last_seen.get(user.id).isoformat() if last_seen.get(user.id) else None
+    consent = consents.get(user.id)
+    row["consent"] = {"version": consent.version, "accepted_at": consent.accepted_at.isoformat(), "signature": consent.signature,
+                      "photo_consent": consent.photo_consent} if consent else None
+    row["removed_at"] = user.removed_at.isoformat() if user.removed_at else None
+    return row
+
+
+@owner_bp.get("/accounts")
 @roles_required("superadmin")
-def staff():
-    users = User.query.filter(User.role.in_(STAFF_ROLES + ("superadmin",))).order_by(User.role, User.full_name).all()
+def accounts():
+    query = User.query
+    role = request.args.get("role")
+    if role:
+        query = query.filter(User.role == role)
+    search = request.args.get("search", "").strip()
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(or_(User.full_name.ilike(pattern), User.email.ilike(pattern), User.phone.ilike(pattern)))
+    if request.args.get("status") == "off":
+        query = query.filter(User.is_active.is_(False))
+    users = query.order_by(User.role, User.full_name).limit(200).all()
+    ids = [user.id for user in users]
     last_seen = dict(
         db.session.query(AuditLog.user_id, func.max(AuditLog.created_at))
-        .filter(AuditLog.kind == "login")
+        .filter(AuditLog.kind == "login", AuditLog.user_id.in_(ids))
         .group_by(AuditLog.user_id)
         .all()
     )
-    rows = []
-    for user in users:
-        row = UserSchema().dump(user)
-        row["last_login"] = last_seen.get(user.id).isoformat() if last_seen.get(user.id) else None
-        rows.append(row)
-    return jsonify(rows)
+    consents = {}
+    for consent in Consent.query.filter(Consent.user_id.in_(ids)).order_by(Consent.id).all():
+        consents[consent.user_id] = consent
+    return jsonify([account_dump(user, last_seen, consents) for user in users])
 
 
-@director_bp.patch("/staff/<int:user_id>")
+@owner_bp.post("/accounts")
 @roles_required("superadmin")
-def update_staff(user_id):
+def create_account():
+    data = UserCreateSchema().load(request.get_json() or {})
+    if data["role"] == "superadmin":
+        return jsonify(error="System owner accounts cannot be created here"), 400
+    email = data["email"].lower()
+    if User.query.filter_by(email=email).first():
+        return jsonify(error="Email already in use"), 409
+    user = User(full_name=data["full_name"], email=email, phone=data["phone"], role=data["role"])
+    user.set_password(data["password"])
+    db.session.add(user)
+    db.session.commit()
+    return jsonify(account_dump(user, {}, {})), 201
+
+
+@owner_bp.patch("/accounts/<int:user_id>")
+@roles_required("superadmin")
+def update_account(user_id):
     user = db.get_or_404(User, user_id)
-    if user.id == current_user().id:
-        return jsonify(error="You cannot change your own director account here"), 400
+    if user.role == "superadmin":
+        return jsonify(error="System owner accounts cannot be changed here"), 400
+    if user.removed_at:
+        return jsonify(error="This account has been removed"), 400
     data = request.get_json() or {}
     if "is_active" in data:
         user.is_active = bool(data["is_active"])
-    if data.get("role") in STAFF_ROLES:
+    if data.get("role") in ASSIGNABLE_ROLES and user.role != "parent":
         user.role = data["role"]
     if data.get("password"):
         if len(data["password"]) < 8:
             return jsonify(error="Passwords need at least 8 characters"), 400
         user.set_password(data["password"])
     db.session.commit()
-    return jsonify(UserSchema().dump(user))
+    return jsonify(account_dump(user, {}, {}))
+
+
+@owner_bp.delete("/accounts/<int:user_id>")
+@roles_required("superadmin")
+def remove_account(user_id):
+    user = db.get_or_404(User, user_id)
+    if user.role == "superadmin":
+        return jsonify(error="System owner accounts cannot be removed here"), 400
+    user.is_active = False
+    user.removed_at = datetime.utcnow()
+    user.email = f"removed-{user.id}-{user.email}"
+    user.set_password(secrets.token_urlsafe(24))
+    db.session.commit()
+    return jsonify(account_dump(user, {}, {}))
