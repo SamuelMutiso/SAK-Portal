@@ -24,3 +24,7 @@ class Notice(db.Model):
     classroom = db.relationship("Classroom")
     club = db.relationship("Club")
     transport_route = db.relationship("TransportRoute")
+
+    @property
+    def audit_label(self):
+        return f"Notice: {self.title}"
