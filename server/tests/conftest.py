@@ -3,7 +3,7 @@ import pytest
 from app import create_app
 from app.config import TestConfig
 from app.extensions import db
-from app.models import Classroom, Club, Student, User
+from app.models import Book, Classroom, Club, Student, TransportRoute, User
 
 
 @pytest.fixture
@@ -36,11 +36,13 @@ def seed_basics():
     other_parent = make_user("Other Parent", "other@test.com", "parent", "0700000004")
     grade4 = Classroom(name="Grade 4", level="Upper Primary", teacher=teacher)
     grade5 = Classroom(name="Grade 5", level="Upper Primary")
+    driver = make_user("Driver", "driver@test.com", "driver", "0700000005")
+    route = TransportRoute(name="Town Route", driver=driver, stops=[])
     swimming = Club(name="Swimming")
-    child = Student(admission_number="A1", first_name="Ethan", last_name="M", classroom=grade4, parent=parent, fee_balance=5000)
+    child = Student(admission_number="A1", first_name="Ethan", last_name="M", classroom=grade4, parent=parent, fee_balance=5000, transport_route=route, is_boarder=True)
     other = Student(admission_number="A2", first_name="Zawadi", last_name="K", classroom=grade5, parent=other_parent)
     swimming.students = [child]
-    db.session.add_all([grade4, grade5, swimming, child, other])
+    db.session.add_all([grade4, grade5, swimming, child, other, route, Book(title="Matilda", copies=1)])
     db.session.commit()
 
 
@@ -62,3 +64,13 @@ def teacher_headers(client):
 @pytest.fixture
 def parent_headers(client):
     return login(client, "parent@test.com")
+
+
+@pytest.fixture
+def driver_headers(client):
+    return login(client, "driver@test.com")
+
+
+@pytest.fixture
+def other_parent_headers(client):
+    return login(client, "other@test.com")
