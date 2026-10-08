@@ -13,6 +13,9 @@ import {
   LayoutDashboard,
   Library,
   Megaphone,
+  ScrollText,
+  ShieldHalf,
+  UserCog,
   ShieldCheck,
   Trophy,
   Users,
@@ -57,6 +60,11 @@ const LINKS = {
     { to: "/parent/calendar", label: "Calendar", icon: CalendarDays },
   ],
   driver: [{ to: "/driver", label: "My bus", icon: Bus }],
+  superadmin: [
+    { to: "/director", label: "Security overview", icon: ShieldHalf },
+    { to: "/director/audit", label: "Audit trail", icon: ScrollText },
+    { to: "/director/staff", label: "Staff accounts", icon: UserCog },
+  ],
 };
 
 export default function Sidebar({ open, onClose }) {

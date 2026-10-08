@@ -9,7 +9,7 @@ export default function ProtectedRoute({ roles }) {
   }
 
   if (!roles.includes(user.role)) {
-    return <Navigate to={`/${user.role}`} replace />;
+    return <Navigate to={user.role === "superadmin" ? "/director" : `/${user.role}`} replace />;
   }
 
   return <Outlet />;
