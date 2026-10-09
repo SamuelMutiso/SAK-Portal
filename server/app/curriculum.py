@@ -54,9 +54,35 @@ COMPETENCIES = [
 
 VALUES = ["Love", "Responsibility", "Respect", "Unity", "Peace", "Patriotism", "Social Justice", "Integrity"]
 
-CURRENT_TERM = "Term 3 2026"
+YEARS = [2025, 2026, 2027]
 
-TERMS = ["Term 1 2026", "Term 2 2026", "Term 3 2026"]
+TERMS = [f"Term {number} {year}" for year in YEARS for number in (1, 2, 3)]
+
+
+def current_term(today=None):
+    from datetime import date
+
+    today = today or date.today()
+    number = 1 if today.month <= 4 else 2 if today.month <= 8 else 3
+    year = min(max(today.year, YEARS[0]), YEARS[-1])
+    return f"Term {number} {year}"
+
+
+def term_year(term):
+    return int(term.rsplit(" ", 1)[1])
+
+
+def terms_of_year(year):
+    return [term for term in TERMS if term_year(term) == year]
+
+
+def term_label(term, exam=None):
+    number, year = term.split(" ")[1], term_year(term)
+    label = f"T{number}" if year == term_year(current_term()) else f"T{number} {year}"
+    return f"{label} {exam}" if exam else label
+
+
+CURRENT_TERM = current_term()
 
 LEVEL_POINTS = {"EE": 4, "ME": 3, "AE": 2, "BE": 1}
 
