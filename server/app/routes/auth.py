@@ -14,6 +14,7 @@ ROLE_NAMES = {
     "superadmin": "System owner",
     "director": "Director",
     "admin": "School office",
+    "exams": "Exams officer",
     "teacher": "Teacher",
     "parent": "Parent",
     "driver": "Bus driver",
