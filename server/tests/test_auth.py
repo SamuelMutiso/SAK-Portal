@@ -34,3 +34,17 @@ def test_login_with_wrong_role_is_refused(client):
 def test_login_with_right_role(client):
     response = client.post("/api/auth/login", json={"email": "parent@test.com", "password": "password123", "role": "parent"})
     assert response.status_code == 200
+
+
+def test_demo_mode_asks_parent_for_consent_every_sign_in(app, client):
+    app.config["DEMO_MODE"] = True
+    first = client.post("/api/auth/login", json={"email": "parent@test.com", "password": "password123"}).get_json()
+    assert first["user"]["consent_required"] is True
+    teacher = client.post("/api/auth/login", json={"email": "teacher@test.com", "password": "password123"}).get_json()
+    assert teacher["user"]["consent_required"] is False
+
+
+def test_consent_is_kept_without_demo_mode(app, client):
+    app.config["DEMO_MODE"] = False
+    data = client.post("/api/auth/login", json={"email": "parent@test.com", "password": "password123"}).get_json()
+    assert data["user"]["consent_required"] is False
