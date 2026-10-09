@@ -39,7 +39,7 @@ export default function ParentDashboard() {
   return (
     <div className="space-y-6">
       <WelcomeBanner
-        photo="/photos/swings.jpg"
+        photo="/photos/smiling-girls.jpg"
         title={`Hello, ${user.full_name.split(" ")[0]}`}
         subtitle="Tap your child to see their report card, attendance and fees."
       />
