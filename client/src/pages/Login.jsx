@@ -49,10 +49,10 @@ export default function Login() {
 
           <div className="relative mx-auto my-10 hidden h-[340px] w-full max-w-md lg:block">
             <div className="absolute left-0 top-0 h-56 w-[64%] -rotate-3 overflow-hidden rounded-[1.75rem] border-[5px] border-white shadow-2xl">
-              <img src="/photos/choir.jpg" alt="Success Academy learners" className="h-full w-full object-cover" />
+              <img src="/photos/smiling-boys.jpg" alt="Smiling Success Academy learners" className="h-full w-full object-cover object-[40%_center]" />
             </div>
             <div className="absolute bottom-0 right-0 h-48 w-[56%] rotate-3 overflow-hidden rounded-[1.75rem] border-[5px] border-white shadow-2xl">
-              <img src="/photos/swings.jpg" alt="Pre-primary learners at play" className="h-full w-full object-cover" />
+              <img src="/photos/smiling-girls.jpg" alt="Learners in the school hall" className="h-full w-full object-cover object-[35%_center]" />
             </div>
             <div className="absolute bottom-10 left-4 w-56 rounded-2xl bg-white p-3.5 shadow-xl">
               <p className="text-[11px] font-semibold text-brand-400">SMS · SUCCESSACAD</p>
