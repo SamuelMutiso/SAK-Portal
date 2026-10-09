@@ -1,8 +1,8 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import create_access_token, create_refresh_token, get_jwt_identity, jwt_required
 
 from app.extensions import db, limiter
-from app.models import User
+from app.models import Consent, User
 from app.schemas import LoginSchema, UserSchema
 from app.services.audit import write_log
 from app.services.consent import needs_consent
@@ -53,8 +53,16 @@ def login():
         label = ROLE_NAMES.get(user.role, user.role)
         write_log("login_failed", f"Signed in through the wrong door (chose {ROLE_NAMES.get(expected, expected)})", user=user, status=401)
         return jsonify(error=f"This is a {label} account. Go back and choose {label}.", role=user.role), 401
+    if current_app.config["DEMO_MODE"] and user.role == "parent":
+        reset_consent(user)
     write_log("login", "Signed in", user=user, status=200)
     return jsonify(tokens_for(user))
+
+
+def reset_consent(user):
+    Consent.query.filter_by(user_id=user.id).delete()
+    user.photo_consent = None
+    db.session.commit()
 
 
 @auth_bp.post("/refresh")
