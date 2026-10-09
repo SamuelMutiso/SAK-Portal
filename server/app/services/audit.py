@@ -41,6 +41,7 @@ ACTIONS = {
     "homework.delete_homework": "Deleted homework",
     "assessments.create_assessment": "Entered a grade",
     "assessments.save_grade_sheet": "Saved a grade sheet",
+    "assessments.save_learner_marks": "Saved a learner's marks",
     "reports.save_report": "Edited a report card",
     "transport.create_route": "Created a bus route",
     "transport.update_route": "Edited a bus route",
