@@ -1,4 +1,5 @@
 import { Lightbulb } from "lucide-react";
+import { termShort } from "../constants";
 import { showValue } from "../insights";
 import Change from "./Change";
 import GradeBadge from "./GradeBadge";
@@ -9,7 +10,7 @@ export default function StudentInsights({ data }) {
 
   const stats = [
     { label: `${data.label} average`, value: data.mean, grade: data.grade },
-    { label: `${data.term.replace(" 2026", "")} average`, value: data.term_mean, grade: data.term_grade },
+    { label: `${termShort(data.term)} average`, value: data.term_mean, grade: data.term_grade },
     { label: "Year average", value: data.year_mean, grade: data.year_grade },
   ];
 
