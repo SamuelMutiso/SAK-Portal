@@ -1,4 +1,5 @@
 import { AlertTriangle, ArrowDownRight, Lightbulb, TrendingUp, Trophy } from "lucide-react";
+import { termShort } from "../constants";
 import { showValue } from "../insights";
 import Change from "./Change";
 import GradeBadge from "./GradeBadge";
@@ -48,7 +49,7 @@ export default function ClassInsights({ data }) {
 
       <div className="grid gap-3 sm:grid-cols-3">
         <Mean label={`${data.label} mean`} value={data.exam_mean} grade={data.exam_grade} scale={scale} />
-        <Mean label={`${data.term.replace(" 2026", "")} mean so far`} value={data.term_mean} grade={data.term_grade} scale={scale} />
+        <Mean label={`${termShort(data.term)} mean so far`} value={data.term_mean} grade={data.term_grade} scale={scale} />
         <Mean label="Year mean so far" value={data.year_mean} grade={data.year_grade} scale={scale} />
       </div>
 
