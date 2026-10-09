@@ -13,6 +13,12 @@ export const login = createAsyncThunk("auth/login", async (credentials, { reject
   }
 });
 
+if (import.meta.env.VITE_DEMO_MODE === "true") {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("user");
+}
+
 function savedUser() {
   try {
     return JSON.parse(localStorage.getItem("user"));
