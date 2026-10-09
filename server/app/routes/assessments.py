@@ -4,7 +4,7 @@ from flask_jwt_extended import jwt_required
 from app.extensions import db
 from app.models import Assessment, MarkChange, Student
 from app.models.assessment import level_for
-from app.schemas import AssessmentSchema, GradeSheetSchema, MarkChangeSchema
+from app.schemas import AssessmentSchema, GradeSheetSchema, LearnerSheetSchema, MarkChangeSchema
 from app.utils.roles import can_view_student, current_user, roles_required, students_for
 
 assessments_bp = Blueprint("assessments", __name__, url_prefix="/api/assessments")
@@ -51,9 +51,13 @@ def save_assessment(user, student_id, subject, term, exam, score=None, level=Non
 
 
 @assessments_bp.get("")
-@roles_required("admin", "teacher")
+@roles_required("admin", "teacher", "exams")
 def list_assessments():
-    student_ids = [student.id for student in students_for(current_user()).all()]
+    students = students_for(current_user())
+    classroom_id = request.args.get("classroom_id", type=int)
+    if classroom_id:
+        students = students.filter(Student.classroom_id == classroom_id)
+    student_ids = [student.id for student in students.all()]
     query = Assessment.query.filter(Assessment.student_id.in_(student_ids))
     for field in ("subject", "term", "exam"):
         value = request.args.get(field)
@@ -68,12 +72,45 @@ def student_assessments(student_id):
     student = db.get_or_404(Student, student_id)
     if not can_view_student(current_user(), student):
         return jsonify(error="You do not have access to this student"), 403
-    records = Assessment.query.filter_by(student_id=student_id).order_by(Assessment.term, Assessment.subject).all()
+    query = Assessment.query.filter_by(student_id=student_id)
+    for field in ("term", "exam"):
+        value = request.args.get(field)
+        if value:
+            query = query.filter(getattr(Assessment, field) == value)
+    records = query.order_by(Assessment.term, Assessment.subject).all()
     return jsonify(schema.dump(records, many=True))
 
 
+@assessments_bp.post("/student/<int:student_id>")
+@roles_required("admin", "teacher", "exams")
+def save_learner_marks(student_id):
+    user = current_user()
+    student = db.get_or_404(Student, student_id)
+    if not can_view_student(user, student):
+        return jsonify(error="You can only enter marks for learners in your class"), 403
+    data = LearnerSheetSchema().load(request.get_json() or {})
+
+    missing = []
+    for entry in data["scores"]:
+        existing = find_record(student.id, entry["subject"], data["term"], data["exam"])
+        if is_change(existing, entry.get("score"), entry.get("level")) and not reason_ok(entry.get("reason")):
+            missing.append(entry["subject"])
+    if missing:
+        return jsonify(error=f"Give a reason for changing {', '.join(missing)}. Nothing was saved.", needs_reason=missing), 400
+
+    saved = [
+        save_assessment(
+            user, student.id, entry["subject"], data["term"], data["exam"],
+            score=entry.get("score"), level=entry.get("level"), reason=entry.get("reason"),
+        )
+        for entry in data["scores"]
+    ]
+    db.session.commit()
+    return jsonify(schema.dump(saved, many=True)), 201
+
+
 @assessments_bp.post("")
-@roles_required("admin", "teacher")
+@roles_required("admin", "teacher", "exams")
 def create_assessment():
     user = current_user()
     data = schema.load(request.get_json() or {})
@@ -95,7 +132,7 @@ def create_assessment():
 
 
 @assessments_bp.post("/sheet")
-@roles_required("admin", "teacher")
+@roles_required("admin", "teacher", "exams")
 def save_grade_sheet():
     user = current_user()
     data = GradeSheetSchema().load(request.get_json() or {})
@@ -123,7 +160,7 @@ def save_grade_sheet():
 
 
 @assessments_bp.get("/changes")
-@roles_required("admin", "teacher", "superadmin")
+@roles_required("admin", "teacher", "exams", "superadmin")
 def mark_changes():
     user = current_user()
     query = MarkChange.query.join(Assessment)
