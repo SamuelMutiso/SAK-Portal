@@ -2,6 +2,7 @@ import { ArrowLeft, BedDouble, Bus, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import api from "../../api/client";
+import ExamPicker from "../../components/ExamPicker";
 import Loader from "../../components/Loader";
 import ReportCardView from "../../components/ReportCardView";
 import { formatKes } from "../../constants";
@@ -35,16 +36,8 @@ function ReportTab({ student }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-1 rounded-xl bg-brand-50 p-1 print:hidden">
-        {data.meta.terms.map((item) => (
-          <button
-            key={item}
-            onClick={() => setTerm(item)}
-            className={`flex-1 rounded-lg py-2 text-sm font-semibold ${term === item ? "bg-brand-700 text-white" : "text-brand-600 hover:bg-white"}`}
-          >
-            {item.replace(" 2026", "")}
-          </button>
-        ))}
+      <div className="print:hidden">
+        <ExamPicker term={term} showExam={false} onChange={(next) => setTerm(next.term)} />
       </div>
       <ReportCardView
         data={data.report}
