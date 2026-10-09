@@ -1,32 +1,28 @@
-import { ArrowLeft, Bus, ChevronRight, Crown, GraduationCap, KeyRound, School, ShieldHalf, Users } from "lucide-react";
+import { ArrowLeft, Bus, Crown, GraduationCap, School, ShieldHalf, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { homePath } from "../roles";
 import { clearAuthError, login } from "../store/slices/authSlice";
 
-const DOORS = [
-  { key: "parent", title: "Parent or guardian", text: "Report cards, fees, the bus and notices for your children", icon: Users, demo: [["Mary Mutiso", "parent@successacademy.ac.ke"]] },
-  { key: "teacher", title: "Teacher", text: "Register, grades, report cards, homework and your class", icon: GraduationCap, demo: [["Grade 4 teacher", "ann.njeri@successacademy.ac.ke"], ["PP2 teacher", "faith.mwende@successacademy.ac.ke"]] },
-  { key: "admin", title: "School office", text: "Head teacher and secretary: notices, fees, timetables and records", icon: School, demo: [["School admin", "admin@successacademy.ac.ke"]] },
-  { key: "director", title: "Director", text: "The whole school at a glance: performance, clubs and people", icon: Crown, demo: [["School director", "director@successacademy.ac.ke"]] },
-  { key: "driver", title: "Bus driver", text: "Mark learners on and off the bus", icon: Bus, demo: [["Kitengela Town bus", "driver@successacademy.ac.ke"]] },
+const DEMO = [
+  { label: "Parent", email: "parent@successacademy.ac.ke", icon: Users },
+  { label: "Grade 4 teacher", email: "ann.njeri@successacademy.ac.ke", icon: GraduationCap },
+  { label: "PP2 teacher", email: "faith.mwende@successacademy.ac.ke", icon: GraduationCap },
+  { label: "School office", email: "admin@successacademy.ac.ke", icon: School },
+  { label: "Director", email: "director@successacademy.ac.ke", icon: Crown },
+  { label: "Bus driver", email: "driver@successacademy.ac.ke", icon: Bus },
+  { label: "System owner", email: "owner@successacademy.ac.ke", icon: ShieldHalf },
 ];
-
-const OWNER = { key: "superadmin", title: "System owner", text: "Security, audit trail and accounts", icon: ShieldHalf, demo: [["System owner", "owner@successacademy.ac.ke"]] };
 
 export default function Login() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const { role } = useParams();
   const { user, status, error } = useSelector((state) => state.auth);
   const [form, setForm] = useState({ email: "", password: "" });
-  const door = role === "owner" ? OWNER : DOORS.find((item) => item.key === role);
 
   useEffect(() => {
     dispatch(clearAuthError());
-    setForm({ email: "", password: "" });
-  }, [dispatch, role]);
+  }, [dispatch]);
 
   if (user) {
     return <Navigate to={homePath(user.role)} replace />;
@@ -38,7 +34,7 @@ export default function Login() {
 
   function handleSubmit(event) {
     event.preventDefault();
-    dispatch(login({ ...form, role: door.key }));
+    dispatch(login(form));
   }
 
   return (
@@ -74,77 +70,45 @@ export default function Login() {
       </div>
 
       <div className="flex flex-1 items-center justify-center px-6 py-10">
-        {!door ? (
-          <div className="w-full max-w-md">
-            <h1 className="font-headline text-4xl font-extrabold uppercase text-brand-800">Sign in</h1>
-            <p className="mt-1 text-sm text-brand-500">Who are you signing in as?</p>
-            <ul className="mt-6 space-y-2.5">
-              {DOORS.map(({ key, title, text, icon: Icon }) => (
-                <li key={key}>
-                  <button
-                    onClick={() => navigate(`/login/${key}`)}
-                    className="group flex w-full items-center gap-4 rounded-2xl border border-brand-100 bg-white p-4 text-left transition hover:border-brand-300 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-                  >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition group-hover:bg-gold-400 group-hover:text-brand-900"><Icon size={20} /></span>
-                    <span className="flex-1">
-                      <span className="block font-semibold text-brand-800">{title}</span>
-                      <span className="block text-sm text-brand-500">{text}</span>
-                    </span>
-                    <ChevronRight size={18} className="text-brand-300 transition group-hover:translate-x-0.5 group-hover:text-brand-600" />
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-brand-400">
-              <Link to="/" className="inline-flex items-center gap-1 font-semibold text-brand-600 hover:underline"><ArrowLeft size={14} /> Back to home</Link>
-              <Link to="/login/owner" className="inline-flex items-center gap-1 hover:text-brand-600"><KeyRound size={12} /> System owner</Link>
+        <div className="w-full max-w-sm">
+          <Link to="/" className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline"><ArrowLeft size={15} /> Back to home</Link>
+          <h1 className="mt-6 font-headline text-5xl font-extrabold uppercase leading-none text-brand-800">Sign in to portal</h1>
+          <p className="mt-2 text-sm text-brand-500">Parents, teachers, the office and drivers all sign in here. Your account already knows who you are, so the portal opens the right page for you.</p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+            <div>
+              <label className="label" htmlFor="email">Email</label>
+              <input id="email" name="email" type="email" autoComplete="username" className="input" value={form.email} onChange={handleChange} required />
             </div>
-          </div>
-        ) : (
-          <div className="w-full max-w-sm">
-            <button onClick={() => navigate("/login")} className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline">
-              <ArrowLeft size={15} /> Choose a different role
+            <div>
+              <label className="label" htmlFor="password">Password</label>
+              <input id="password" name="password" type="password" autoComplete="current-password" className="input" value={form.password} onChange={handleChange} required />
+            </div>
+            {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+            <button type="submit" className="btn-primary w-full py-3" disabled={status === "loading"}>
+              {status === "loading" ? "Signing in..." : "Sign in"}
             </button>
-            <div className="mt-5 flex items-center gap-3">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gold-400 text-brand-900"><door.icon size={22} /></span>
-              <div>
-                <p className="text-sm text-brand-500">Signing in as</p>
-                <h1 className="font-headline text-3xl font-extrabold uppercase leading-none text-brand-800">{door.title}</h1>
-              </div>
+          </form>
+
+          <p className="mt-3 text-sm text-brand-500">Forgot your password? Call the school office on 0748 065 956.</p>
+
+          <div className="mt-8 rounded-2xl bg-brand-50 p-4">
+            <p className="text-sm font-semibold text-brand-700">Demo accounts</p>
+            <p className="text-xs text-brand-400">Tap one to fill in its email and password.</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {DEMO.map(({ label, email, icon: Icon }) => (
+                <button key={email} type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => setForm({ email, password: "Success@2026" })}>
+                  <Icon size={14} /> {label}
+                </button>
+              ))}
             </div>
-
-            <form onSubmit={handleSubmit} className="mt-8 space-y-4">
-              <div>
-                <label className="label" htmlFor="email">Email</label>
-                <input id="email" name="email" type="email" autoComplete="username" className="input" value={form.email} onChange={handleChange} required />
-              </div>
-              <div>
-                <label className="label" htmlFor="password">Password</label>
-                <input id="password" name="password" type="password" autoComplete="current-password" className="input" value={form.password} onChange={handleChange} required />
-              </div>
-              {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-              <button type="submit" className="btn-primary w-full py-3" disabled={status === "loading"}>
-                {status === "loading" ? "Signing in..." : "Sign in"}
-              </button>
-            </form>
-
-            <p className="mt-3 text-sm text-brand-500">Forgot your password? Call the school office on 0748 065 956.</p>
-
-            <div className="mt-8 rounded-2xl bg-brand-50 p-4">
-              <p className="text-sm font-semibold text-brand-700">Demo account</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {door.demo.map(([label, email]) => (
-                  <button key={email} type="button" className="btn-ghost px-3" onClick={() => setForm({ email, password: "Success@2026" })}>{label}</button>
-                ))}
-              </div>
-            </div>
-
-            <p className="mt-4 text-xs text-brand-400">
-              For security, sign-ins and changes on this portal are recorded with the device and network used. By signing in you agree to the{" "}
-              <Link to="/terms" className="underline">Terms of use</Link> and <Link to="/privacy" className="underline">Privacy policy</Link>.
-            </p>
           </div>
-        )}
+
+          <p className="mt-4 text-xs text-brand-400">
+            For security, sign-ins and changes on this portal are recorded with the device and network used. By signing in you agree to the{" "}
+            <Link to="/terms" className="underline">Terms of use</Link> and <Link to="/privacy" className="underline">Privacy policy</Link>.
+          </p>
+        </div>
       </div>
     </div>
   );
