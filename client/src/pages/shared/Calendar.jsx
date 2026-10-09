@@ -10,7 +10,7 @@ import {
   startOfWeek,
   subMonths,
 } from "date-fns";
-import { BellRing, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { BellRing, CalendarCheck, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SmsPreview from "../../components/SmsPreview";
@@ -57,31 +57,54 @@ export default function Calendar() {
   }
 
   const monthEvents = items.filter((event) => event.start_date.startsWith(format(month, "yyyy-MM")));
+  const today = new Date();
+  const todayEvents = eventsOn(today);
+  const weekdayIndex = (today.getDay() + 6) % 7;
+  const viewingThisMonth = isSameMonth(month, today);
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <h1 className="page-title flex-1">School Calendar</h1>
+        {!viewingThisMonth && <button className="btn-ghost px-3" onClick={() => setMonth(new Date())}>Today</button>}
         <button className="btn-ghost px-2.5" onClick={() => setMonth(subMonths(month, 1))} aria-label="Previous month"><ChevronLeft size={18} /></button>
         <span className="w-36 text-center font-display font-semibold">{format(month, "MMMM yyyy")}</span>
         <button className="btn-ghost px-2.5" onClick={() => setMonth(addMonths(month, 1))} aria-label="Next month"><ChevronRight size={18} /></button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl bg-brand-800 px-5 py-4 text-white">
+        <div className="flex h-14 w-14 flex-col items-center justify-center rounded-xl bg-gold-500 text-brand-900">
+          <span className="text-[10px] font-bold uppercase">{format(today, "MMM")}</span>
+          <span className="font-mono text-xl font-bold leading-none">{format(today, "d")}</span>
+        </div>
+        <div className="flex-1">
+          <p className="text-sm text-brand-200">Today</p>
+          <p className="font-headline text-2xl font-bold uppercase">{format(today, "EEEE d MMMM yyyy")}</p>
+        </div>
+        <p className="flex items-center gap-2 text-sm text-brand-100">
+          <CalendarCheck size={16} className="text-gold-400" />
+          {todayEvents.length ? todayEvents.map((event) => event.title).join(", ") : "Nothing on the calendar today"}
+        </p>
       </div>
 
       {lastSms && <SmsPreview sms={lastSms} onClose={() => dispatch(clearEventSms())} />}
 
       <div className="card p-3">
         <div className="grid grid-cols-7 text-center text-xs font-semibold uppercase text-brand-400">
-          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day) => (
-            <div key={day} className="py-2">{day}</div>
+          {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((day, index) => (
+            <div key={day} className={`py-2 ${viewingThisMonth && index === weekdayIndex ? "rounded-t-lg bg-gold-100 text-gold-600" : ""}`}>{day}</div>
           ))}
         </div>
         <div className="grid grid-cols-7 gap-1">
           {days.map((day) => (
             <div
               key={day.toISOString()}
-              className={`min-h-16 rounded-lg p-1 md:min-h-24 md:p-1.5 ${isSameMonth(day, month) ? "bg-brand-50/60" : "opacity-40"} ${isToday(day) ? "ring-2 ring-gold-500" : ""}`}
+              className={`min-h-16 rounded-lg p-1 md:min-h-24 md:p-1.5 ${isToday(day) ? "bg-gold-100 ring-2 ring-gold-500" : isSameMonth(day, month) ? "bg-brand-50/60" : "opacity-40"}`}
             >
-              <p className="font-mono text-xs text-brand-500">{format(day, "d")}</p>
+              <p className={`flex items-center gap-1 font-mono text-xs ${isToday(day) ? "font-bold text-brand-900" : "text-brand-500"}`}>
+                {isToday(day) ? <span className="flex h-5 w-5 items-center justify-center rounded-full bg-brand-800 text-white">{format(day, "d")}</span> : format(day, "d")}
+                {isToday(day) && <span className="hidden font-body text-[10px] font-semibold uppercase text-gold-600 md:inline">Today</span>}
+              </p>
               {eventsOn(day).map((event) => (
                 <p key={event.id} className={`mt-1 truncate rounded px-1 text-[10px] font-semibold md:text-xs ${CATEGORY_STYLES[event.category]}`} title={event.title}>
                   {event.title}
