@@ -21,6 +21,7 @@ class Config:
     CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
     RATELIMIT_STORAGE_URI = os.getenv("REDIS_URL", "memory://")
     RATELIMIT_DEFAULT = "200 per minute"
+    DEMO_MODE = os.getenv("DEMO_MODE") == "1"
     SMS_USERNAME = os.getenv("AT_USERNAME", "sandbox")
     SMS_API_KEY = os.getenv("AT_API_KEY", "")
     SMS_SENDER_ID = os.getenv("AT_SENDER_ID", "")
@@ -47,5 +48,6 @@ class TestConfig(Config):
     SQLALCHEMY_ENGINE_OPTIONS = {}
     JWT_SECRET_KEY = "test-jwt-secret-key-that-is-long-enough"
     RATELIMIT_ENABLED = False
+    DEMO_MODE = False
     RATELIMIT_STORAGE_URI = "memory://"
     UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), "sak-test-uploads")
