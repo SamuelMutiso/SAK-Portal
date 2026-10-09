@@ -10,7 +10,7 @@ insights_bp = Blueprint("insights", __name__, url_prefix="/api/insights")
 
 
 @insights_bp.get("/class")
-@roles_required("admin", "teacher")
+@roles_required("admin", "teacher", "exams")
 def for_class():
     user = current_user()
     classroom_id = request.args.get("classroom_id", type=int)
@@ -31,7 +31,7 @@ def for_student(student_id):
 
 
 @insights_bp.get("/compare")
-@roles_required("admin")
+@roles_required("admin", "exams")
 def compare():
     ids = [int(item) for item in request.args.get("classroom_ids", "").split(",") if item.strip().isdigit()]
     if len(ids) < 2:
