@@ -1,5 +1,6 @@
 import { format } from "date-fns";
 import { History } from "lucide-react";
+import { termShort } from "../constants";
 
 function mark(score, level) {
   return score !== null && score !== undefined ? `${score}%` : level;
@@ -19,7 +20,7 @@ export default function MarkChanges({ changes, showClass = false }) {
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="font-semibold">{item.student_name}</span>
                 {showClass && <span className="text-xs text-brand-400">{item.classroom_name}</span>}
-                <span className="text-brand-500">{item.subject} · {item.term.replace(" 2026", "")} {item.exam}</span>
+                <span className="text-brand-500">{item.subject} · {termShort(item.term)} {item.exam}</span>
                 <span className="ml-auto font-mono">
                   <span className="text-brand-400 line-through">{mark(item.old_score, item.old_level)}</span>
                   <span className="mx-1.5 text-brand-300">→</span>

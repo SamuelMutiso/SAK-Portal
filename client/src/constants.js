@@ -7,7 +7,22 @@ export const LEVELS = {
 
 export const EXAMS = ["Opener", "Mid-Term", "End-Term"];
 
-export const TERM = "Term 3 2026";
+export const YEARS = [2025, 2026, 2027];
+
+export function currentTerm(today = new Date()) {
+  const month = today.getMonth() + 1;
+  const number = month <= 4 ? 1 : month <= 8 ? 2 : 3;
+  const year = Math.min(Math.max(today.getFullYear(), YEARS[0]), YEARS[YEARS.length - 1]);
+  return `Term ${number} ${year}`;
+}
+
+export const TERM = currentTerm();
+
+export function termShort(term) {
+  if (!term) return "";
+  const [, number, year] = term.split(" ");
+  return Number(year) === new Date().getFullYear() ? `Term ${number}` : `Term ${number} ${year}`;
+}
 
 export function levelForScore(score) {
   if (score >= 75) return "EE";

@@ -124,6 +124,16 @@ export default function App() {
         </Route>
       </Route>
 
+      <Route element={<ProtectedRoute roles={["exams"]} />}>
+        <Route path="/exams" element={<DashboardLayout />}>
+          <Route index element={<Assessments />} />
+          <Route path="insights" element={<Insights />} />
+          <Route path="compare" element={<Compare />} />
+          <Route path="performance" element={<Performance />} />
+          <Route path="calendar" element={<Calendar />} />
+        </Route>
+      </Route>
+
       <Route element={<ProtectedRoute roles={["superadmin"]} />}>
         <Route path="/owner" element={<DashboardLayout />}>
           <Route index element={<Security />} />

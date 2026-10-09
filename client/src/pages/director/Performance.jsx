@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import api from "../../api/client";
 import LearnerList from "../../components/LearnerList";
 import Loader from "../../components/Loader";
 
 export default function Performance() {
+  const role = useSelector((state) => state.auth.user.role);
   const [data, setData] = useState(null);
   const [selected, setSelected] = useState("all");
 
@@ -40,7 +42,7 @@ export default function Performance() {
               <p className="text-sm text-brand-500">
                 Class average <span className="font-mono text-lg font-semibold text-brand-800">{item.scale === "marks" ? `${item.mean}%` : item.mean.toFixed(1)}</span>
               </p>
-              <Link to={`/director/insights?class=${item.classroom_id}`} className="text-sm font-semibold text-brand-600 hover:underline">Full insights</Link>
+              <Link to={`/${role}/insights?class=${item.classroom_id}`} className="text-sm font-semibold text-brand-600 hover:underline">Full insights</Link>
             </div>
             <div className="mt-4 grid gap-5 md:grid-cols-3">
               <div>
