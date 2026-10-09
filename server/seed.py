@@ -219,6 +219,7 @@ def seed():
 
     make_user("System Owner", "superadmin", f"owner@{DOMAIN}", "0700111222")
     make_user("School Director", "director", f"director@{DOMAIN}", "0723435629")
+    make_user("Peter Otieno", "exams", f"exams@{DOMAIN}", "0722418905")
     admin = make_user("School Admin", "admin", f"admin@{DOMAIN}", "0704558765")
     teachers = [make_user(name, "teacher", email_for(name), f"07{20 + i}{i:06d}") for i, name in enumerate(TEACHERS)]
     drivers = [
@@ -469,6 +470,7 @@ def seed():
     print(f"  parent@{DOMAIN}  (Ethan G4, Neema PP2, Amani G7 boarder)")
     print(f"  driver@{DOMAIN}  (Kitengela Town bus)")
     print(f"  director@{DOMAIN}  (School Director: sees everything, read-only)")
+    print(f"  exams@{DOMAIN}  (Exams officer: enters marks for any class)")
     print(f"  owner@{DOMAIN}  (System Owner: audit trail and accounts)")
 
 

@@ -1,4 +1,4 @@
-from app.curriculum import LEVEL_POINTS, TERMS, uses_marks
+from app.curriculum import LEVEL_POINTS, TERMS, term_label, term_year, uses_marks
 from app.models import Assessment
 from app.models.assessment import EXAMS, level_for
 
@@ -6,8 +6,11 @@ STEPS = [(term, exam) for term in TERMS for exam in EXAMS]
 
 
 def step_label(step):
-    term, exam = step
-    return f"{term.replace('Term ', 'T').replace(' 2026', '')} {exam}"
+    return term_label(*step)
+
+
+def same_year(steps, step):
+    return [item for item in steps if term_year(item[0]) == term_year(step[0]) and STEPS.index(item) <= STEPS.index(step)]
 
 
 def points_level(points):
@@ -84,8 +87,7 @@ def pick_step(available, term=None, exam=None):
         return (term, exam)
     if term:
         in_term = [step for step in available if step[0] == term]
-        if in_term:
-            return in_term[-1]
+        return in_term[-1] if in_term else None
     return available[-1] if available else None
 
 
@@ -120,7 +122,7 @@ def class_insights(classroom, term=None, exam=None):
         return {**base, "empty": True, "headlines": ["No marks have been entered for this class yet."]}
     before = previous_step(available, step)
     term_steps = [item for item in available if item[0] == step[0] and STEPS.index(item) <= STEPS.index(step)]
-    year_steps = [item for item in available if STEPS.index(item) <= STEPS.index(step)]
+    year_steps = same_year(available, step)
 
     learners = []
     for student_id, student in students.items():
@@ -233,7 +235,7 @@ def student_insights(student, term=None, exam=None):
     scores = table[student.id][step]
     earlier = table[student.id].get(before, {}) if before else {}
     term_steps = [item for item in available if item[0] == step[0] and STEPS.index(item) <= STEPS.index(step)]
-    year_steps = [item for item in available if STEPS.index(item) <= STEPS.index(step)]
+    year_steps = same_year(available, step)
 
     subjects = []
     for subject, result in scores.items():
@@ -315,7 +317,8 @@ def compare_classes(classrooms, term=None, exam=None):
         marked = uses_marks(classroom.level)
         table = tables[classroom.id]
         ids = [student.id for student in classroom.students]
-        trend = [{"label": step_label(item), "mean": average(learner_mean(table, sid, item) for sid in ids)} for item in STEPS if any(table.get(sid, {}).get(item) for sid in ids)]
+        trend_steps = [item for item in STEPS if not step or term_year(item[0]) == term_year(step[0])]
+        trend = [{"label": step_label(item), "mean": average(learner_mean(table, sid, item) for sid in ids)} for item in trend_steps if any(table.get(sid, {}).get(item) for sid in ids)]
         entry = {"classroom_id": classroom.id, "name": classroom.name, "level": classroom.level,
                  "teacher_name": classroom.teacher.full_name if classroom.teacher else None,
                  "scale": "marks" if marked else "levels", "learners": len(ids), "trend": trend}
@@ -325,7 +328,7 @@ def compare_classes(classrooms, term=None, exam=None):
             subject_names = sorted({subject for sid in ids for subject in table.get(sid, {}).get(step, {})})
             subjects = {subject: average(table.get(sid, {}).get(step, {}).get(subject) for sid in ids) for subject in subject_names}
             term_steps = [item for item in common if item[0] == step[0] and STEPS.index(item) <= STEPS.index(step)]
-            year_steps = [item for item in common if STEPS.index(item) <= STEPS.index(step)]
+            year_steps = same_year(common, step)
             entry.update({
                 "mean": mean,
                 "grade": grade_for(mean, marked),

@@ -10,7 +10,7 @@ schema = ClassroomSchema()
 
 
 @classes_bp.get("")
-@roles_required("admin", "teacher")
+@roles_required("admin", "teacher", "exams")
 def list_classes():
     user = current_user()
     query = Classroom.query.order_by(Classroom.id)

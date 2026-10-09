@@ -1,6 +1,7 @@
 from marshmallow import Schema, ValidationError, fields, validate, validates_schema
 from marshmallow_sqlalchemy import SQLAlchemyAutoSchema
 
+from app.curriculum import TERMS
 from app.models import Assessment
 from app.models.assessment import EXAMS, LEVELS
 
@@ -13,7 +14,7 @@ class AssessmentSchema(SQLAlchemyAutoSchema):
 
     student_id = fields.Integer(required=True)
     subject = fields.String(required=True, validate=validate.Length(min=2, max=60))
-    term = fields.String(required=True)
+    term = fields.String(required=True, validate=validate.OneOf(TERMS))
     exam = fields.String(load_default="End-Term", validate=validate.OneOf(EXAMS))
     score = fields.Integer(allow_none=True, validate=validate.Range(min=0, max=100))
     level = fields.String(validate=validate.OneOf(LEVELS))
@@ -34,9 +35,20 @@ class SheetEntrySchema(Schema):
             raise ValidationError("Enter a score or a level")
 
 
+class LearnerMarkSchema(SheetEntrySchema):
+    student_id = fields.Integer(load_default=None)
+    subject = fields.String(required=True, validate=validate.Length(min=2, max=60))
+
+
+class LearnerSheetSchema(Schema):
+    term = fields.String(required=True, validate=validate.OneOf(TERMS))
+    exam = fields.String(required=True, validate=validate.OneOf(EXAMS))
+    scores = fields.List(fields.Nested(LearnerMarkSchema), required=True)
+
+
 class GradeSheetSchema(Schema):
     subject = fields.String(required=True, validate=validate.Length(min=2, max=60))
-    term = fields.String(required=True)
+    term = fields.String(required=True, validate=validate.OneOf(TERMS))
     exam = fields.String(required=True, validate=validate.OneOf(EXAMS))
     scores = fields.List(fields.Nested(SheetEntrySchema), required=True)
 

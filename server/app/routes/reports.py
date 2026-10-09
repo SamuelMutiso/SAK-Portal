@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 
-from app.curriculum import CURRENT_TERM, LEVEL_POINTS, TERMS, learning_areas_for, uses_marks
+from app.curriculum import LEVEL_POINTS, current_term, learning_areas_for, term_label, term_year, terms_of_year, uses_marks
 from app.extensions import db
 from app.models import Assessment, Attendance, Classroom, TermReport
 from app.models.assessment import EXAMS
@@ -23,7 +23,7 @@ def report_for(student, term):
 @jwt_required()
 def full_report(student_id):
     student = viewable_student(student_id)
-    term = request.args.get("term", CURRENT_TERM)
+    term = request.args.get("term") or current_term()
     assessments = Assessment.query.filter_by(student_id=student.id, term=term).all()
     attendance = Attendance.query.filter_by(student_id=student.id).all()
     present = sum(1 for record in attendance if record.status != "absent")
@@ -45,7 +45,7 @@ def full_report(student_id):
 def save_report(student_id):
     user = current_user()
     student = viewable_student(student_id)
-    term = request.args.get("term", CURRENT_TERM)
+    term = request.args.get("term") or current_term()
     data = schema.load(request.get_json() or {}, partial=True)
     allowed = ADMIN_FIELDS if user.role == "admin" else TEACHER_FIELDS
 
@@ -63,7 +63,7 @@ def save_report(student_id):
 @reports_bp.get("/class")
 @roles_required("admin", "teacher")
 def class_progress():
-    term = request.args.get("term", CURRENT_TERM)
+    term = request.args.get("term") or current_term()
     students = students_for(current_user()).all()
     reports = {report.student_id: report for report in TermReport.query.filter_by(term=term).all()}
     rows = []
@@ -86,14 +86,18 @@ def record_value(record):
     return LEVEL_POINTS.get(record.level)
 
 
-def series(records):
+def selected_year():
+    return request.args.get("year", type=int) or term_year(current_term())
+
+
+def series(records, year):
     points = []
-    for term_index, term in enumerate(TERMS, start=1):
+    for term in terms_of_year(year):
         for exam in EXAMS:
             values = [record_value(record) for record in records if record.term == term and record.exam == exam]
             values = [value for value in values if value is not None]
             if values:
-                points.append({"term": term, "exam": exam, "label": f"T{term_index} {exam}", "value": round(sum(values) / len(values), 1)})
+                points.append({"term": term, "exam": exam, "label": term_label(term, exam), "value": round(sum(values) / len(values), 1)})
     return points
 
 
@@ -101,17 +105,19 @@ def series(records):
 @jwt_required()
 def student_trend(student_id):
     student = viewable_student(student_id)
-    records = Assessment.query.filter(Assessment.student_id == student.id, Assessment.term.in_(TERMS)).all()
+    year = selected_year()
+    records = Assessment.query.filter(Assessment.student_id == student.id, Assessment.term.in_(terms_of_year(year))).all()
     areas = learning_areas_for(student.classroom.level) if student.classroom else []
     subjects = []
     for area in areas:
-        points = series([record for record in records if record.subject == area])
+        points = series([record for record in records if record.subject == area], year)
         change = round(points[-1]["value"] - points[-2]["value"], 1) if len(points) > 1 else None
         subjects.append({"name": area, "points": points, "change": change, "latest": points[-1]["value"] if points else None})
     return jsonify(
         scale="marks" if uses_marks(student.classroom.level) else "levels",
-        overall=series(records),
+        overall=series(records, year),
         subjects=subjects,
+        year=year,
     )
 
 
@@ -125,5 +131,6 @@ def class_trend():
     if user.role == "teacher" and classroom.teacher_id != user.id:
         return jsonify(error="You can only view your own class"), 403
     student_ids = [student.id for student in classroom.students]
-    records = Assessment.query.filter(Assessment.student_id.in_(student_ids), Assessment.term.in_(TERMS)).all()
-    return jsonify(classroom=classroom.name, scale="marks" if uses_marks(classroom.level) else "levels", overall=series(records))
+    year = selected_year()
+    records = Assessment.query.filter(Assessment.student_id.in_(student_ids), Assessment.term.in_(terms_of_year(year))).all()
+    return jsonify(classroom=classroom.name, scale="marks" if uses_marks(classroom.level) else "levels", overall=series(records, year), year=year)
