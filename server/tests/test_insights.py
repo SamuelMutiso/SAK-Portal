@@ -98,3 +98,55 @@ def test_class_teacher_cannot_move_other_class_learner(client, teacher_headers):
 def test_class_teacher_removes_own_learner_from_club(client, teacher_headers):
     assert client.delete("/api/clubs/1/members/1", headers=teacher_headers).status_code == 204
     assert client.post("/api/clubs/1/members", json={"admission_number": "a1"}, headers=teacher_headers).status_code == 201
+
+
+def exams_headers(client):
+    from app.extensions import db
+    from app.models import User
+    from tests.conftest import accept_policies
+
+    officer = User(full_name="Exams Officer", email="exams@test.com", phone="0700000010", role="exams")
+    officer.set_password("password123")
+    db.session.add(officer)
+    db.session.commit()
+    accept_policies(officer)
+    db.session.commit()
+    response = client.post("/api/auth/login", json={"email": "exams@test.com", "password": "password123"})
+    return {"Authorization": f"Bearer {response.get_json()['access_token']}"}
+
+
+def test_exams_officer_enters_marks_for_any_class(client, app):
+    with app.app_context():
+        headers = exams_headers(client)
+    payload = {"subject": "Mathematics", "term": "Term 1 2025", "exam": "Opener", "scores": [{"student_id": 2, "score": 64}]}
+    assert client.post("/api/assessments/sheet", json=payload, headers=headers).status_code == 201
+    listed = client.get("/api/assessments", query_string={"classroom_id": 2, "term": "Term 1 2025", "exam": "Opener"}, headers=headers).get_json()
+    assert listed[0]["score"] == 64
+    assert len(client.get("/api/classes", headers=headers).get_json()) == 2
+
+
+def test_unknown_term_is_refused(client, teacher_headers):
+    payload = {"subject": "Mathematics", "term": "Term 5 2026", "exam": "Opener", "scores": [{"student_id": 1, "score": 50}]}
+    assert client.post("/api/assessments/sheet", json=payload, headers=teacher_headers).status_code == 400
+
+
+def test_teacher_enters_all_subjects_for_one_learner(client, teacher_headers):
+    payload = {"term": "Term 2 2026", "exam": "End-Term", "scores": [{"subject": "English", "score": 70}, {"subject": "Kiswahili", "score": 55}]}
+    assert client.post("/api/assessments/student/1", json=payload, headers=teacher_headers).status_code == 201
+    saved = client.get("/api/assessments/student/1", query_string={"term": "Term 2 2026", "exam": "End-Term"}, headers=teacher_headers).get_json()
+    assert sorted(record["subject"] for record in saved) == ["English", "Kiswahili"]
+    payload["scores"] = [{"subject": "English", "score": 72}]
+    refused = client.post("/api/assessments/student/1", json=payload, headers=teacher_headers)
+    assert refused.get_json()["needs_reason"] == ["English"]
+
+
+def test_teacher_cannot_enter_marks_for_other_class_learner(client, teacher_headers):
+    payload = {"term": "Term 2 2026", "exam": "End-Term", "scores": [{"subject": "English", "score": 70}]}
+    assert client.post("/api/assessments/student/2", json=payload, headers=teacher_headers).status_code == 403
+
+
+def test_trend_is_per_year(client, teacher_headers, parent_headers):
+    for term in ("Term 3 2025", "Term 1 2026"):
+        client.post("/api/assessments/sheet", json={"subject": "English", "term": term, "exam": "End-Term", "scores": [{"student_id": 1, "score": 60}]}, headers=teacher_headers)
+    trend = client.get("/api/reports/student/1/trend", query_string={"year": 2025}, headers=parent_headers).get_json()
+    assert [point["term"] for point in trend["overall"]] == ["Term 3 2025"]
