@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify
 
-from app.curriculum import CURRENT_TERM, LEVEL_POINTS, TERMS, uses_marks
+from app.curriculum import LEVEL_POINTS, TERMS, current_term, term_label, term_year, terms_of_year, uses_marks
 from app.models import Assessment, Attendance, Classroom, Club, Notice, Student
 from app.models.assessment import EXAMS
 from app.utils.roles import roles_required
@@ -32,16 +32,16 @@ def student_summary(student, records):
         "latest": round(latest, 1),
         "first": round(first, 1),
         "change": round(latest - first, 1),
-        "latest_label": f"{steps[-1][0].replace(' 2026', '')} {steps[-1][1]}",
-        "first_label": f"{steps[0][0].replace(' 2026', '')} {steps[0][1]}",
+        "latest_label": term_label(*steps[-1]),
+        "first_label": term_label(*steps[0]),
     }
 
 
 @analytics_bp.get("/performance")
-@roles_required("admin")
+@roles_required("admin", "exams")
 def performance():
     records_by_student = {}
-    for record in Assessment.query.filter(Assessment.term.in_(TERMS)).all():
+    for record in Assessment.query.filter(Assessment.term.in_(terms_of_year(term_year(current_term())))).all():
         records_by_student.setdefault(record.student_id, []).append(record)
 
     classes = []
@@ -72,7 +72,7 @@ def performance():
 
     marked_classes = [item for item in classes if item["scale"] == "marks"]
     return jsonify(
-        term=CURRENT_TERM,
+        term=current_term(),
         classes=classes,
         school_top=sorted(everyone, key=lambda item: item["latest"], reverse=True)[:5],
         school_improved=sorted(everyone, key=lambda item: item["change"], reverse=True)[:5],
