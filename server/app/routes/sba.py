@@ -3,7 +3,7 @@ import io
 
 from flask import Blueprint, Response, jsonify, request
 
-from app.curriculum import CURRENT_TERM, SBA_CLASSES, learning_areas_for
+from app.curriculum import current_term, SBA_CLASSES, learning_areas_for
 from app.extensions import db
 from app.models import Assessment, Classroom
 from app.utils.roles import roles_required
@@ -27,7 +27,7 @@ def scores_by_student(classroom, term):
 @sba_bp.get("")
 @roles_required("admin")
 def tracker():
-    term = request.args.get("term", CURRENT_TERM)
+    term = request.args.get("term") or current_term()
     classes = Classroom.query.filter(Classroom.name.in_(SBA_CLASSES)).order_by(Classroom.id).all()
     result = []
     for classroom in classes:
@@ -50,7 +50,7 @@ def tracker():
 @sba_bp.get("/export/<int:classroom_id>")
 @roles_required("admin")
 def export(classroom_id):
-    term = request.args.get("term", CURRENT_TERM)
+    term = request.args.get("term") or current_term()
     classroom = db.get_or_404(Classroom, classroom_id)
     areas = learning_areas_for(classroom.level)
     table = scores_by_student(classroom, term)
