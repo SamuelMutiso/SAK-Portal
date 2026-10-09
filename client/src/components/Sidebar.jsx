@@ -84,6 +84,13 @@ const LINKS = {
     { to: "/director/fees", label: "Fees", icon: Wallet },
     { to: "/director/calendar", label: "Calendar", icon: CalendarDays },
   ],
+  exams: [
+    { to: "/exams", label: "Mark entry", icon: GraduationCap },
+    { to: "/exams/insights", label: "Class insights", icon: Lightbulb },
+    { to: "/exams/compare", label: "Compare classes", icon: ArrowLeftRight },
+    { to: "/exams/performance", label: "Performance", icon: TrendingUp },
+    { to: "/exams/calendar", label: "Calendar", icon: CalendarDays },
+  ],
   superadmin: [
     { to: "/owner", label: "Security overview", icon: ShieldHalf },
     { to: "/owner/audit", label: "Audit trail", icon: ScrollText },
