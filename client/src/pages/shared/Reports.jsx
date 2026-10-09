@@ -4,6 +4,8 @@ import { useSelector } from "react-redux";
 import api, { errorMessage } from "../../api/client";
 import Loader from "../../components/Loader";
 import ProgressView from "../../components/ProgressView";
+import ExamPicker from "../../components/ExamPicker";
+import LearnerMarks from "../../components/LearnerMarks";
 import ReportCardView from "../../components/ReportCardView";
 import { RUBRIC_CODES } from "../../constants";
 
@@ -38,17 +40,26 @@ export default function Reports() {
   const [data, setData] = useState(null);
   const [form, setForm] = useState(null);
   const [message, setMessage] = useState(null);
-  const [view, setView] = useState(readOnly ? "preview" : "edit");
+  const [view, setView] = useState(readOnly ? "preview" : "marks");
   const [trend, setTrend] = useState(null);
+  const [term, setTerm] = useState(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
-    api.get("/meta").then(({ data: result }) => setMeta(result));
-    api.get("/reports/class").then(({ data: result }) => setRows(result));
+    api.get("/meta").then(({ data: result }) => {
+      setMeta(result);
+      setTerm(result.term);
+    });
   }, []);
 
   useEffect(() => {
-    if (!selectedId) return;
-    api.get(`/reports/student/${selectedId}`).then(({ data: result }) => {
+    if (!term) return;
+    api.get("/reports/class", { params: { term } }).then(({ data: result }) => setRows(result));
+  }, [term]);
+
+  useEffect(() => {
+    if (!selectedId || !term) return;
+    api.get(`/reports/student/${selectedId}`, { params: { term } }).then(({ data: result }) => {
       setData(result);
       const report = result.report || {};
       setForm({
@@ -61,16 +72,20 @@ export default function Reports() {
         opening_date: report.opening_date || "",
       });
       setMessage(null);
-      setView(readOnly ? "preview" : "edit");
     });
     setTrend(null);
-    api.get(`/reports/student/${selectedId}/trend`).then(({ data: result }) => setTrend(result));
-  }, [selectedId, readOnly]);
+    api.get(`/reports/student/${selectedId}/trend`, { params: { year: term.split(" ")[2] } }).then(({ data: result }) => setTrend(result));
+  }, [selectedId, term, reload]);
+
+  function pick(studentId) {
+    setSelectedId(studentId);
+    setView(readOnly ? "preview" : "marks");
+  }
 
   async function handleSave() {
     const payload = { ...form, closing_date: form.closing_date || null, opening_date: form.opening_date || null };
     try {
-      const { data: report } = await api.put(`/reports/student/${selectedId}`, payload);
+      const { data: report } = await api.put(`/reports/student/${selectedId}`, payload, { params: { term } });
       setData({ ...data, report });
       setRows(rows.map((row) => (row.student_id === selectedId ? {
         ...row,
@@ -84,7 +99,7 @@ export default function Reports() {
     }
   }
 
-  if (!meta) return <Loader />;
+  if (!meta || !term) return <Loader />;
 
   const classes = [...new Set(rows.map((row) => row.classroom_name))];
   const visible = rows.filter((row) => !filter || row.classroom_name === filter);
@@ -92,11 +107,14 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="page-title">Report cards</h1>
-        <p className="mt-2 text-brand-500">
-          {meta.term} · {readOnly ? "Open any learner's report card and progress." : isAdmin ? "Add the head teacher's comment and term dates." : "Rate competencies and values, then write your comment."}
-        </p>
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="flex-1">
+          <h1 className="page-title">Report cards</h1>
+          <p className="mt-2 text-brand-500">
+            {term} · {readOnly ? "Open any learner's report card and progress." : isAdmin ? "Enter marks, add the head teacher's comment and term dates." : "Pick a learner, enter their marks for each exam, then rate competencies and write your comment."}
+          </p>
+        </div>
+        <ExamPicker term={term} showExam={false} onChange={(next) => setTerm(next.term)} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -113,7 +131,7 @@ export default function Reports() {
             {visible.map((row) => (
               <li key={row.student_id}>
                 <button
-                  onClick={() => setSelectedId(row.student_id)}
+                  onClick={() => pick(row.student_id)}
                   className={`flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm hover:bg-brand-50 ${selectedId === row.student_id ? "bg-gold-100" : ""}`}
                 >
                   {isDone(row) ? <CheckCircle2 size={16} className="text-emerald-600" /> : <Circle size={16} className="text-brand-300" />}
@@ -131,13 +149,21 @@ export default function Reports() {
           {data && form && (
             <>
               <div className="flex gap-1 rounded-xl bg-brand-50 p-1 print:hidden">
-                {(readOnly ? [["preview", "Report card"], ["progress", "Progress"]] : [["edit", "Edit"], ["preview", "Preview"], ["progress", "Progress"]]).map(([key, label]) => (
+                {(readOnly ? [["preview", "Report card"], ["progress", "Progress"]] : [["marks", "Marks"], ["edit", isAdmin ? "Head's comment" : "Competencies & comment"], ["preview", "Preview"], ["progress", "Progress"]]).map(([key, label]) => (
                   <button key={key} onClick={() => setView(key)} className={`flex-1 rounded-lg py-2 text-sm font-semibold ${view === key ? "bg-white shadow-sm" : "text-brand-500"}`}>
                     {label}
                   </button>
                 ))}
               </div>
 
+              {view === "marks" && (
+                <LearnerMarks
+                  student={data.student}
+                  subjects={data.learning_areas}
+                  term={term}
+                  onSaved={() => setReload(reload + 1)}
+                />
+              )}
               {view === "progress" && (trend ? <ProgressView trend={trend} name={data.student.first_name} /> : <Loader />)}
               {view === "preview" && <ReportCardView data={data} competencies={meta.competencies} values={meta.values} />}
               {view === "edit" && (
