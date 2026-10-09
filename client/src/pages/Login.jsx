@@ -1,4 +1,4 @@
-import { ArrowLeft, Bus, Crown, GraduationCap, School, ShieldHalf, Users } from "lucide-react";
+import { ArrowLeft, Bus, ClipboardList, Crown, GraduationCap, School, ShieldHalf, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Navigate } from "react-router-dom";
@@ -11,6 +11,7 @@ const DEMO = [
   { label: "PP2 teacher", email: "faith.mwende@successacademy.ac.ke", icon: GraduationCap },
   { label: "School office", email: "admin@successacademy.ac.ke", icon: School },
   { label: "Director", email: "director@successacademy.ac.ke", icon: Crown },
+  { label: "Exams officer", email: "exams@successacademy.ac.ke", icon: ClipboardList },
   { label: "Bus driver", email: "driver@successacademy.ac.ke", icon: Bus },
   { label: "System owner", email: "owner@successacademy.ac.ke", icon: ShieldHalf },
 ];
@@ -73,7 +74,7 @@ export default function Login() {
         <div className="w-full max-w-sm">
           <Link to="/" className="inline-flex items-center gap-1 text-sm font-semibold text-brand-600 hover:underline"><ArrowLeft size={15} /> Back to home</Link>
           <h1 className="mt-6 font-headline text-5xl font-extrabold uppercase leading-none text-brand-800">Sign in to portal</h1>
-          <p className="mt-2 text-sm text-brand-500">Parents, teachers, the office and drivers all sign in here. Your account already knows who you are, so the portal opens the right page for you.</p>
+          <p className="mt-2 text-sm text-brand-500">Parents, teachers, the office, the exams officer and drivers all sign in here. Your account already knows who you are, so the portal opens the right page for you.</p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div>
