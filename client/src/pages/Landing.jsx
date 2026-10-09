@@ -31,7 +31,7 @@ const DAY = [
 const ROLES = [
   {
     title: "Parents",
-    photo: "/photos/parents-day.jpg",
+    photo: "/photos/smiling-boys.jpg",
     points: ["Report cards for every term, ready to print", "Progress trends across the whole year", "Pay fees with M-Pesa and get a receipt by SMS", "Approve who can pick up your child"],
   },
   {
@@ -47,10 +47,10 @@ const ROLES = [
 ];
 
 const GALLERY = [
-  { photo: "/photos/performing-arts.jpg", title: "Performing arts" },
-  { photo: "/photos/school-trip.jpg", title: "Class trips" },
-  { photo: "/photos/swings.jpg", title: "Pre-primary play" },
-  { photo: "/photos/choir.jpg", title: "Choir and music" },
+  { photo: "/photos/drama.jpg", title: "Drama and performing arts" },
+  { photo: "/photos/success-tv.jpg", title: "Success TV" },
+  { photo: "/photos/devotion.jpg", title: "Morning devotion" },
+  { photo: "/photos/senior-learners.jpg", title: "Junior school" },
 ];
 
 function FloatingCard({ className, delay, children }) {
@@ -71,10 +71,10 @@ function HeroCollage() {
   return (
     <div className="relative mx-auto h-[460px] w-full max-w-[540px] sm:h-[520px]">
       <div className="absolute right-6 top-4 h-[300px] w-[62%] rotate-2 overflow-hidden rounded-[2rem] border-[6px] border-white shadow-2xl sm:h-[340px]">
-        <img src="/photos/choir.jpg" alt="Success Academy learners in uniform" className="h-full w-full object-cover" />
+        <img src="/photos/smiling-girls.jpg" alt="Smiling Success Academy learners in uniform" className="h-full w-full object-cover object-[35%_center]" />
       </div>
       <div className="absolute bottom-6 left-2 h-[220px] w-[52%] -rotate-3 overflow-hidden rounded-[2rem] border-[6px] border-white shadow-2xl sm:h-[250px]">
-        <img src="/photos/swings.jpg" alt="Pre-primary learners at play" className="h-full w-full object-cover" />
+        <img src="/photos/thumbs-up.jpg" alt="Learners giving a thumbs up" className="h-full w-full object-cover object-[60%_30%]" />
       </div>
       <div className="absolute bottom-0 right-0 h-28 w-28 rounded-full bg-gold-400/80 blur-2xl" />
 
