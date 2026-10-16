@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 import ConsentGate from "../components/ConsentGate";
+import PasswordGate from "../components/PasswordGate";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 
@@ -15,7 +16,7 @@ export default function DashboardLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <Navbar onMenuClick={() => setMenuOpen(true)} />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 md:px-8 print:p-0">
-          {user.consent_required ? <ConsentGate /> : <Outlet />}
+          {user.consent_required ? <ConsentGate /> : user.must_change_password ? <PasswordGate /> : <Outlet />}
         </main>
       </div>
     </div>
