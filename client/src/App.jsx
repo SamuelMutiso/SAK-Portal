@@ -5,6 +5,13 @@ import Admission from "./pages/admin/Admission";
 import ClubDetail from "./pages/admin/ClubDetail";
 import Clubs from "./pages/admin/Clubs";
 import Fees from "./pages/admin/Fees";
+import FeeStructure from "./pages/fees/FeeStructure";
+import FeesHome from "./pages/fees/FeesHome";
+import Invoices from "./pages/fees/Invoices";
+import Payments from "./pages/fees/Payments";
+import ReceiptPage from "./pages/fees/ReceiptPage";
+import RecordPayment from "./pages/fees/RecordPayment";
+import Statement from "./pages/fees/Statement";
 import Leave from "./pages/admin/Leave";
 import Library from "./pages/admin/Library";
 import Notices from "./pages/admin/Notices";
@@ -67,7 +74,14 @@ export default function App() {
           <Route path="insights" element={<Insights />} />
           <Route path="compare" element={<Compare />} />
           <Route path="sba" element={<Sba />} />
-          <Route path="fees" element={<Fees />} />
+          <Route path="fees" element={<FeesHome />} />
+          <Route path="fees/record" element={<RecordPayment />} />
+          <Route path="fees/payments" element={<Payments />} />
+          <Route path="fees/invoices" element={<Invoices />} />
+          <Route path="fees/structure" element={<FeeStructure />} />
+          <Route path="fees/balances" element={<Fees />} />
+          <Route path="fees/students/:id" element={<Statement />} />
+          <Route path="fees/receipts/:id" element={<ReceiptPage />} />
           <Route path="leave" element={<Leave />} />
           <Route path="pickup" element={<PickupCheck />} />
           <Route path="library" element={<Library />} />
@@ -100,6 +114,7 @@ export default function App() {
         <Route path="/parent" element={<DashboardLayout />}>
           <Route index element={<ParentDashboard />} />
           <Route path="children/:id" element={<Child />} />
+          <Route path="receipts/:id" element={<ReceiptPage />} />
           <Route path="calendar" element={<Calendar />} />
         </Route>
       </Route>
@@ -127,7 +142,29 @@ export default function App() {
           <Route path="clubs/:id" element={<ClubDetail />} />
           <Route path="timetable" element={<Timetable />} />
           <Route path="transport" element={<Transport />} />
-          <Route path="fees" element={<Fees />} />
+          <Route path="fees" element={<FeesHome />} />
+          <Route path="fees/record" element={<RecordPayment />} />
+          <Route path="fees/payments" element={<Payments />} />
+          <Route path="fees/invoices" element={<Invoices />} />
+          <Route path="fees/structure" element={<FeeStructure />} />
+          <Route path="fees/balances" element={<Fees />} />
+          <Route path="fees/students/:id" element={<Statement />} />
+          <Route path="fees/receipts/:id" element={<ReceiptPage />} />
+          <Route path="calendar" element={<Calendar />} />
+        </Route>
+      </Route>
+
+      <Route element={<ProtectedRoute roles={["bursar"]} />}>
+        <Route path="/bursar" element={<DashboardLayout />}>
+          <Route index element={<FeesHome />} />
+          <Route path="record" element={<RecordPayment />} />
+          <Route path="payments" element={<Payments />} />
+          <Route path="invoices" element={<Invoices />} />
+          <Route path="structure" element={<FeeStructure />} />
+          <Route path="balances" element={<Fees />} />
+          <Route path="students" element={<Students />} />
+          <Route path="students/:id" element={<Statement />} />
+          <Route path="receipts/:id" element={<ReceiptPage />} />
           <Route path="calendar" element={<Calendar />} />
         </Route>
       </Route>
