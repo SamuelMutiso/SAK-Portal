@@ -9,6 +9,7 @@ from app.extensions import db
 from app.models import Attendance, Classroom, Student, User
 from app.schemas import AdmissionSchema, HistorySchema, LeaveSchema, StudentSchema
 from app.schemas.student import HEALTH_FIELDS
+from app.services.documents import documents_for
 from app.services.school_year import leave_school, next_admission_number, readmit, record, this_year
 from app.services.sms import send_sms
 from app.utils.accounts import phone_key
@@ -73,6 +74,23 @@ def get_student(student_id):
     if not can_view_student(current_user(), student):
         return jsonify(error="You do not have access to this student"), 403
     return jsonify(schema.dump(student))
+
+
+@students_bp.get("/<int:student_id>/documents")
+@jwt_required()
+def documents(student_id):
+    student = db.get_or_404(Student, student_id)
+    if not can_view_student(current_user(), student):
+        return jsonify(error="You do not have access to this student"), 403
+    return jsonify(documents_for(student))
+
+
+@students_bp.get("/documents")
+@roles_required("admin", "teacher")
+def class_documents():
+    classroom = db.get_or_404(Classroom, request.args.get("classroom_id", type=int) or 0)
+    learners = students_for(current_user()).filter(Student.classroom_id == classroom.id).order_by(Student.first_name, Student.last_name).all()
+    return jsonify(classroom=classroom.name, documents=[documents_for(student) for student in learners])
 
 
 @students_bp.get("/<int:student_id>/profile")
