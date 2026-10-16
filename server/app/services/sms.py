@@ -23,7 +23,7 @@ def send_sms(phones, message):
 
     api_key = current_app.config["SMS_API_KEY"]
     if not api_key:
-        logging.info("SMS preview to %s recipients: %s", len(recipients), message)
+        logging.info("SMS preview to %s recipients (%s characters)", len(recipients), len(message))
         return {"sent": len(recipients), "mode": "preview", "recipients": recipients}
 
     username = current_app.config["SMS_USERNAME"]
