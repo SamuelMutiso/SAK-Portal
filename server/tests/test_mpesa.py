@@ -134,3 +134,17 @@ def test_late_success_recovers_a_failed_payment(client, owing):
     client.post(f"/api/payments/callback?token={callback_token()}", json=body)
     assert Payment.query.filter_by(checkout_id="ws_CO_6").first().status == "completed"
     assert db.session.get(Student, 1).fee_balance == 4000
+
+
+def test_inactive_number_gets_plain_message(client, owing):
+    db.session.add(Payment(student_id=1, amount=1000, phone="254700000003", checkout_id="ws_CO_7"))
+    db.session.commit()
+    body = {"Body": {"stkCallback": {"CheckoutRequestID": "ws_CO_7", "ResultCode": 2028, "ResultDesc": "The DebitParty is in an invalid state."}}}
+    client.post(f"/api/payments/callback?token={callback_token()}", json=body)
+    assert Payment.query.filter_by(checkout_id="ws_CO_7").first().note.startswith("That number is not an active M-Pesa line")
+
+
+def test_office_prompt_records_who_sent_it(client, admin_headers, live, owing):
+    live["replies"]["processrequest"] = stk_ok("ws_CO_8")
+    client.post("/api/payments/stk", json={"student_id": 1, "amount": 500, "phone": "0712345678"}, headers=admin_headers)
+    assert Payment.query.filter_by(checkout_id="ws_CO_8").first().recorded_by.role == "admin"
