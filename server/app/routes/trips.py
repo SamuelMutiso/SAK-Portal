@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timezone
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
@@ -14,7 +14,7 @@ trips_bp = Blueprint("trips", __name__, url_prefix="/api/trips")
 
 
 def today_logs(student_ids):
-    start = datetime.combine(date.today(), time.min)
+    start = datetime.combine(date.today(), time.min).astimezone(timezone.utc).replace(tzinfo=None)
     return TransportLog.query.filter(TransportLog.student_id.in_(student_ids), TransportLog.recorded_at >= start).all()
 
 

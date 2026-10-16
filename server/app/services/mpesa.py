@@ -60,6 +60,8 @@ def callback_url():
 
 
 def result_message(code, description=""):
+    if "debitparty" in str(description).lower().replace(" ", ""):
+        return "That number is not an active M-Pesa line. Check the number and try again."
     try:
         code = int(code)
     except (TypeError, ValueError):
