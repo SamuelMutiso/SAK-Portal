@@ -10,6 +10,7 @@ from app.models.user import STAFF_ROLES
 from app.schemas import UserCreateSchema, UserSchema
 from app.services.audit import compute_hash
 from app.services.geo import locate
+from app.utils.accounts import password_problem
 from app.utils.roles import roles_required
 
 owner_bp = Blueprint("owner", __name__, url_prefix="/api/owner")
@@ -190,11 +191,20 @@ def update_account(user_id):
     data = request.get_json() or {}
     if "is_active" in data:
         user.is_active = bool(data["is_active"])
-    if data.get("role") in ASSIGNABLE_ROLES and user.role != "parent":
+        if not user.is_active:
+            user.end_sessions()
+    if data.get("role") in ASSIGNABLE_ROLES and user.role != "parent" and data["role"] != user.role:
         user.role = data["role"]
+        user.end_sessions()
+    if data.get("reset_two_factor"):
+        user.totp_secret = None
+        user.totp_pending = None
+        user.totp_last_step = None
+        user.end_sessions()
     if data.get("password"):
-        if len(data["password"]) < 8:
-            return jsonify(error="Passwords need at least 8 characters"), 400
+        problem = password_problem(str(data["password"]))
+        if problem:
+            return jsonify(error=problem), 400
         user.set_password(data["password"])
         user.must_change_password = True
     db.session.commit()
@@ -211,5 +221,6 @@ def remove_account(user_id):
     user.removed_at = datetime.utcnow()
     user.email = f"removed-{user.id}-{user.email}"
     user.set_password(secrets.token_urlsafe(24))
+    user.totp_secret = None
     db.session.commit()
     return jsonify(account_dump(user, {}, {}))
