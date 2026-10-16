@@ -19,6 +19,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     removed_at = db.Column(db.DateTime)
     photo_consent = db.Column(db.Boolean)
+    must_change_password = db.Column(db.Boolean, nullable=False, default=False, server_default="0")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     children = db.relationship("Student", back_populates="parent")
