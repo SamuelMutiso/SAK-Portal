@@ -1,5 +1,8 @@
 import {
   ArrowLeftRight,
+  Banknote,
+  Receipt,
+  Settings2,
   Baby,
   BedDouble,
   BookOpen,
@@ -86,6 +89,16 @@ const LINKS = {
     { to: "/director/transport", label: "Transport", icon: Bus },
     { to: "/director/fees", label: "Fees", icon: Wallet },
     { to: "/director/calendar", label: "Calendar", icon: CalendarDays },
+  ],
+  bursar: [
+    { to: "/bursar", label: "Fees overview", icon: LayoutDashboard },
+    { to: "/bursar/record", label: "Record payment", icon: Banknote },
+    { to: "/bursar/payments", label: "Payments", icon: Receipt },
+    { to: "/bursar/invoices", label: "Invoices", icon: FileText },
+    { to: "/bursar/balances", label: "Balances & reminders", icon: Wallet },
+    { to: "/bursar/structure", label: "Fee structure", icon: Settings2 },
+    { to: "/bursar/students", label: "Learners", icon: Users },
+    { to: "/bursar/calendar", label: "Calendar", icon: CalendarDays },
   ],
   exams: [
     { to: "/exams", label: "Mark entry", icon: GraduationCap },

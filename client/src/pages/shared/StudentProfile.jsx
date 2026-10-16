@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import api, { errorMessage } from "../../api/client";
 import Loader from "../../components/Loader";
+import { feesBase } from "../../roles";
 
 const TABS = [["overview", "Overview"], ["guardians", "Guardians"], ["health", "Health"], ["attendance", "Attendance"], ["history", "History"]];
 
@@ -134,7 +135,13 @@ export default function StudentProfile() {
           <Detail label="Previous school" value={student.previous_school} />
           <Detail label="Home area" value={student.home_address} />
           <Detail label="Clubs" value={student.clubs.join(", ")} />
-          <Detail label="Fee balance" value={`KES ${Number(student.fee_balance || 0).toLocaleString("en-KE")}`} mono />
+          <div>
+            <dt className="text-xs text-brand-400">Fee balance</dt>
+            <dd className="mt-0.5 font-mono font-semibold text-brand-800">
+              KES {Number(student.fee_balance || 0).toLocaleString("en-KE")}{" "}
+              <Link to={`${feesBase(user.role)}/students/${student.id}`} className="ml-1 font-body text-xs text-brand-600 hover:underline">Fee statement</Link>
+            </dd>
+          </div>
           {!active && <Detail label="Left school" value={student.left_on && format(new Date(student.left_on), "d MMM yyyy")} />}
           {!active && student.leaving_reason && <Detail label="Reason" value={student.leaving_reason} />}
         </dl>

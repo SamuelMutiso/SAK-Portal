@@ -7,7 +7,12 @@ export const ROLE_LABELS = {
   director: "School Director",
   admin: "Administrator",
   exams: "Exams officer",
+  bursar: "Bursar",
   teacher: "Teacher",
   parent: "Parent",
   driver: "Bus driver",
 };
+
+export function feesBase(role) {
+  return role === "bursar" ? "/bursar" : `/${role}/fees`;
+}
