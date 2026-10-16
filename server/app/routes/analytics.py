@@ -86,8 +86,8 @@ def summary():
     attendance = Attendance.query.all()
     present = sum(1 for record in attendance if record.status != "absent")
     return jsonify(
-        learners=Student.query.count(),
-        boarders=Student.query.filter_by(is_boarder=True).count(),
+        learners=Student.query.filter_by(status="active").count(),
+        boarders=Student.query.filter_by(status="active", is_boarder=True).count(),
         clubs=Club.query.count(),
         club_members=sum(len(club.students) for club in Club.query.all()),
         notices=Notice.query.count(),
