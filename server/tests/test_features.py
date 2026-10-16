@@ -99,7 +99,7 @@ def test_mpesa_callback_completes_pending_payment(app, client):
 
 
 def test_teacher_uploads_portfolio_photo(client, teacher_headers, parent_headers):
-    data = {"student_id": "1", "title": "Clay pot", "learning_area": "Creative Arts", "image": (io.BytesIO(b"fake"), "pot.jpg")}
+    data = {"student_id": "1", "title": "Clay pot", "learning_area": "Creative Arts", "image": (io.BytesIO(b"\xff\xd8\xff\xe0 jpeg"), "pot.jpg")}
     response = client.post("/api/portfolio", data=data, headers=teacher_headers, content_type="multipart/form-data")
     assert response.status_code == 201
     items = client.get("/api/portfolio/student/1", headers=parent_headers).get_json()
@@ -133,3 +133,17 @@ def test_library_lend_and_return(client, admin_headers, parent_headers):
     assert client.post("/api/library/loans", json={"book_id": 1, "admission_number": "A2"}, headers=admin_headers).status_code == 400
     client.post(f"/api/library/loans/{loan['id']}/return", headers=admin_headers)
     assert client.get("/api/library/student/1", headers=parent_headers).get_json()[0]["returned_on"] is not None
+
+
+def test_uploaded_photos_need_a_signed_link(client, teacher_headers, parent_headers):
+    data = {"student_id": "1", "title": "Mask", "learning_area": "Creative Arts", "image": (io.BytesIO(b"\xff\xd8\xff\xe0 jpeg"), "mask.jpg")}
+    url = client.post("/api/portfolio", data=data, headers=teacher_headers, content_type="multipart/form-data").get_json()["image_url"]
+    assert "?sig=" in url
+    assert client.get(url).status_code == 200
+    assert client.get(url.split("?")[0]).status_code == 404
+    assert client.get(url.split("?")[0] + "?sig=forged").status_code == 404
+
+
+def test_html_disguised_as_photo_is_rejected(client, teacher_headers):
+    data = {"student_id": "1", "title": "Bad", "learning_area": "Creative Arts", "image": (io.BytesIO(b"<html><script>"), "bad.png")}
+    assert client.post("/api/portfolio", data=data, headers=teacher_headers, content_type="multipart/form-data").status_code == 400

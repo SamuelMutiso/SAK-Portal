@@ -9,7 +9,9 @@ class UserSchema(SQLAlchemyAutoSchema):
     class Meta:
         model = User
         load_instance = False
-        exclude = ("password_hash",)
+        exclude = ("password_hash", "totp_secret", "totp_pending", "totp_last_step", "sessions_valid_after")
+
+    two_factor_enabled = fields.Boolean(dump_only=True)
 
 
 class UserCreateSchema(Schema):
@@ -22,5 +24,5 @@ class UserCreateSchema(Schema):
 
 class LoginSchema(Schema):
     email = fields.String(required=True, validate=validate.Length(min=3, max=120))
-    password = fields.String(required=True)
+    password = fields.String(required=True, validate=validate.Length(max=200))
     role = fields.String(load_default=None, validate=validate.OneOf(ROLES))

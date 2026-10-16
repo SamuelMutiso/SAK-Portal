@@ -1,0 +1,55 @@
+name: Tests and security checks
+
+on:
+  push:
+    branches: [backend, frontend, testing, main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  server:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pipenv pip-audit
+      - run: pipenv install --dev --deploy
+      - run: pipenv run pytest -q
+      - run: pipenv requirements > requirements.txt && pip-audit -r requirements.txt --no-deps
+
+  client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - run: npx eslint src --max-warnings 0
+      - run: npm run build
+      - run: test -z "$(find dist -name '*.map')"
+      - run: npm audit --omit=dev --audit-level=high
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Look for leaked secrets in the whole history
+        run: |
+          if git log --all -p | grep -nE 'npg_[A-Za-z0-9]{8,}|postgres(ql)?://[^:@ ]+:[^@ ]+@[a-z0-9.-]+\.neon\.tech|MPESA_CONSUMER_(KEY|SECRET)=[A-Za-z0-9]{12,}|AT_API_KEY=[A-Za-z0-9]{12,}|-----BEGIN [A-Z ]*PRIVATE KEY'; then
+            echo "Possible secret found in git history"; exit 1
+          fi

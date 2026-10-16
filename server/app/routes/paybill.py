@@ -3,7 +3,7 @@ from datetime import datetime
 
 from flask import Blueprint, current_app, jsonify, request
 
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import PaybillReceipt, Student
 from app.routes.fees import receipt_message
 from app.services.mpesa import callback_token
@@ -83,6 +83,7 @@ def assign_receipt(receipt_id):
 
 
 @paybill_bp.post("/simulate")
+@limiter.limit("30 per hour")
 @roles_required(*FEE_ROLES)
 def simulate():
     if not current_app.config["PAYBILL_SIMULATION"]:
@@ -92,7 +93,7 @@ def simulate():
         amount = int(data.get("amount") or 0)
     except (TypeError, ValueError):
         amount = 0
-    if amount < 1 or not str(data.get("account", "")).strip():
+    if amount < 1 or amount > 1000000 or not str(data.get("account", "")).strip():
         return jsonify(error="Enter the account number and amount"), 400
     name = str(data.get("name") or "Demo Parent").split()
     receipt, payment = receive({

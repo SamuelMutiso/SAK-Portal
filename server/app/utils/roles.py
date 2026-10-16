@@ -37,6 +37,12 @@ def students_for(user, include_former=False):
         query = query.join(Classroom).filter(Classroom.teacher_id == user.id)
     elif user.role == "parent":
         query = query.filter(Student.parent_id == user.id)
+    elif user.role == "driver":
+        from app.models import TransportRoute
+
+        query = query.join(TransportRoute, Student.transport_route_id == TransportRoute.id).filter(TransportRoute.driver_id == user.id)
+    elif user.role not in ("admin", "director", "exams", "bursar", "teacher"):
+        query = query.filter(db.false())
     return query
 
 

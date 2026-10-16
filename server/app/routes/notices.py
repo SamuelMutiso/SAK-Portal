@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import or_
 
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import Club, Notice, Student, User
 from app.schemas import NoticeSchema
 from app.routes.acknowledgements import seen_counts
@@ -60,6 +60,7 @@ def list_notices():
 
 
 @notices_bp.post("")
+@limiter.limit("30 per hour")
 @roles_required("admin", "teacher")
 def create_notice():
     user = current_user()

@@ -41,15 +41,19 @@ def assign(receipt, student, user=None):
 
 
 def receive(data):
-    trans_id = str(data.get("TransID", "")).strip()
+    trans_id = str(data.get("TransID", "")).strip()[:30]
     if not trans_id:
         return None, None
     existing = PaybillReceipt.query.filter_by(trans_id=trans_id).first()
     if existing:
         return existing, None
-    name = " ".join(part for part in (data.get("FirstName"), data.get("MiddleName"), data.get("LastName")) if part)
+    try:
+        amount = int(float(data.get("TransAmount") or 0))
+    except (TypeError, ValueError):
+        return None, None
+    name = " ".join(str(part) for part in (data.get("FirstName"), data.get("MiddleName"), data.get("LastName")) if part)
     receipt = PaybillReceipt(
-        trans_id=trans_id, amount=int(float(data.get("TransAmount") or 0)), phone=str(data.get("MSISDN") or "")[:20],
+        trans_id=trans_id, amount=amount, phone=str(data.get("MSISDN") or "")[:20],
         payer_name=name[:120] or None, account=str(data.get("BillRefNumber") or "")[:40], received_at=parse_time(data.get("TransTime")),
     )
     db.session.add(receipt)

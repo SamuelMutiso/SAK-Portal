@@ -3,7 +3,7 @@ from datetime import date
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import Event, User
 from app.schemas import EventSchema
 from app.services.sms import send_sms
@@ -35,6 +35,7 @@ def list_events():
 
 
 @events_bp.post("")
+@limiter.limit("30 per hour")
 @roles_required("admin")
 def create_event():
     payload = request.get_json() or {}
@@ -48,6 +49,7 @@ def create_event():
 
 
 @events_bp.post("/<int:event_id>/remind")
+@limiter.limit("20 per hour")
 @roles_required("admin")
 def send_reminder(event_id):
     event = db.get_or_404(Event, event_id)

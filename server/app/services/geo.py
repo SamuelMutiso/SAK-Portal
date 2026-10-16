@@ -17,6 +17,8 @@ def locate(ip):
     if address.is_private or address.is_loopback:
         return "Local network"
 
+    if len(CACHE) > 5000:
+        CACHE.clear()
     cached = CACHE.get(ip)
     if cached and (cached["found"] or time.time() - cached["at"] < RETRY_AFTER):
         return cached["place"]

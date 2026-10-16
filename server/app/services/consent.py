@@ -1,4 +1,4 @@
-from flask import g, jsonify, request
+from flask import current_app, g, jsonify, request
 from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 
 from app.extensions import db
@@ -31,6 +31,9 @@ def consent_gate():
     if user and needs_consent(user):
         g.consent_block = True
         return jsonify(error="Please accept the Terms and Privacy Policy to continue", consent_required=True), 403
+    if user and user.role in current_app.config["REQUIRE_2FA_ROLES"] and not user.totp_secret:
+        g.consent_block = True
+        return jsonify(error="Set up two-step sign-in to continue", two_factor_setup_required=True), 403
     if user and user.must_change_password:
         g.consent_block = True
         return jsonify(error="Please choose a new password to continue", password_change_required=True), 403

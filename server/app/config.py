@@ -22,6 +22,9 @@ class Config:
     RATELIMIT_STORAGE_URI = os.getenv("REDIS_URL", "memory://")
     RATELIMIT_DEFAULT = "200 per minute"
     DEMO_MODE = os.getenv("DEMO_MODE") == "1"
+    PROXY_HOPS = int(os.getenv("PROXY_HOPS", "1"))
+    REQUIRE_2FA_ROLES = tuple(role.strip() for role in os.getenv("REQUIRE_2FA_ROLES", "").split(",") if role.strip())
+    MPESA_ALLOWED_PHONES = tuple(phone.strip() for phone in os.getenv("MPESA_ALLOWED_PHONES", "").split(",") if phone.strip())
     SMS_USERNAME = os.getenv("AT_USERNAME", "sandbox")
     SMS_API_KEY = os.getenv("AT_API_KEY", "")
     SMS_SENDER_ID = os.getenv("AT_SENDER_ID", "")
