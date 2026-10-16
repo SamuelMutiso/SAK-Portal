@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 
 from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import jwt_required
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 
 from app.curriculum import current_term
 from app.extensions import db
@@ -303,10 +303,11 @@ def list_payments():
     query = Payment.query.join(Student)
     start = request.args.get("from")
     end = request.args.get("to")
+    day = func.coalesce(Payment.paid_on, func.date(Payment.created_at))
     if start:
-        query = query.filter(Payment.paid_on >= date.fromisoformat(start))
+        query = query.filter(day >= date.fromisoformat(start))
     if end:
-        query = query.filter(Payment.paid_on <= date.fromisoformat(end))
+        query = query.filter(day <= date.fromisoformat(end))
     method = request.args.get("method")
     if method:
         query = query.filter(Payment.method == method)
@@ -318,7 +319,7 @@ def list_payments():
         pattern = f"%{search}%"
         query = query.filter(or_(Payment.reference.ilike(pattern), Payment.receipt_number.ilike(pattern), Student.first_name.ilike(pattern),
                                  Student.last_name.ilike(pattern), Student.admission_number.ilike(pattern)))
-    payments = query.order_by(Payment.paid_on.desc(), Payment.id.desc()).limit(300).all()
+    payments = query.order_by(day.desc(), Payment.id.desc()).limit(300).all()
     return jsonify(payments=LedgerPaymentSchema(many=True).dump(payments), total=sum(payment.amount for payment in payments if payment.status == "completed"))
 
 
@@ -352,7 +353,8 @@ def reverse_payment(payment_id):
 @jwt_required()
 def student_statement(student_id):
     student = viewable_student(student_id)
-    payments = sorted(student.payments, key=lambda payment: (payment.paid_on or payment.created_at.date(), payment.id), reverse=True)
+    shown = [payment for payment in student.payments if payment.status != "failed"]
+    payments = sorted(shown, key=lambda payment: (payment.paid_on or payment.created_at.date(), payment.id), reverse=True)
     return jsonify(
         student={"id": student.id, "full_name": student.full_name, "admission_number": student.admission_number,
                  "classroom_name": student.classroom.name if student.classroom else student.last_classroom_name,

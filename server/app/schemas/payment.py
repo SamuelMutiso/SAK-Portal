@@ -13,4 +13,4 @@ class PaymentSchema(SQLAlchemyAutoSchema):
 class PayRequestSchema(Schema):
     student_id = fields.Integer(required=True)
     amount = fields.Integer(required=True, validate=validate.Range(min=10, max=500000))
-    phone = fields.String(required=True, validate=validate.Regexp(r"^\+?\d{9,13}$"))
+    phone = fields.String(required=True, validate=validate.Regexp(r"^[+\d\s-]{9,18}$"))
