@@ -12,14 +12,14 @@ from app.services.devices import describe_device
 
 WRITE_METHODS = ("POST", "PUT", "PATCH", "DELETE")
 SKIP_PATHS = ("/api/auth/login", "/api/auth/refresh", "/api/payments/callback")
-HIDDEN_FIELDS = ("password_hash",)
+HIDDEN_FIELDS = ("password_hash", "allergies", "medical_conditions")
 
 ACTIONS = {
     "users.create_user": "Created a user account",
     "users.update_user": "Changed a user account",
     "students.create_student": "Added a learner",
     "students.update_student": "Edited a learner",
-    "students.delete_student": "Deleted a learner",
+    "students.delete_student": "Marked a learner as withdrawn",
     "classes.create_class": "Created a class",
     "classes.update_class": "Edited a class",
     "clubs.create_club": "Created a club",
@@ -29,6 +29,12 @@ ACTIONS = {
     "clubs.set_members": "Replaced club members",
     "clubs.add_activity": "Added a club activity",
     "clubs.set_learner_clubs": "Changed a learner's clubs",
+    "students.admit": "Admitted a learner",
+    "students.leave": "Recorded a learner leaving",
+    "students.readmit": "Readmitted a learner",
+    "school_year.update_term": "Changed term dates",
+    "school_year.set_current": "Changed the current term",
+    "school_year.promote": "Promoted learners to the next year",
     "clubs.delete_activity": "Deleted a club activity",
     "notices.create_notice": "Posted a notice",
     "notices.delete_notice": "Deleted a notice",
@@ -93,6 +99,9 @@ TABLE_NAMES = {
     "club_members": "Club member",
     "consents": "Consent",
     "mark_changes": "Mark change",
+    "school_terms": "Term",
+    "student_history": "Learner history",
+    "promotion_runs": "Promotion",
 }
 
 

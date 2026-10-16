@@ -62,6 +62,14 @@ TERMS = [f"Term {number} {year}" for year in YEARS for number in (1, 2, 3)]
 def current_term(today=None):
     from datetime import date
 
+    from flask import has_app_context
+
+    if today is None and has_app_context():
+        from app.models.school_term import SchoolTerm
+
+        term = SchoolTerm.query.filter_by(is_current=True).first()
+        if term:
+            return term.name
     today = today or date.today()
     number = 1 if today.month <= 4 else 2 if today.month <= 8 else 3
     year = min(max(today.year, YEARS[0]), YEARS[-1])

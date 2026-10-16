@@ -1,6 +1,7 @@
 from app.curriculum import LEVEL_POINTS, TERMS, term_label, term_year, uses_marks
 from app.models import Assessment
 from app.models.assessment import EXAMS, level_for
+from app.services.school_year import members, this_year
 
 STEPS = [(term, exam) for term in TERMS for exam in EXAMS]
 
@@ -107,7 +108,8 @@ def period_mean(table, student_id, steps):
 
 def class_insights(classroom, term=None, exam=None):
     marked = uses_marks(classroom.level)
-    students = {student.id: student for student in classroom.students}
+    year = term_year(term) if term else this_year()
+    students = {student.id: student for student in members(classroom, year)}
     table = index_records(list(students))
     available = steps_in(table)
     base = {
@@ -220,9 +222,18 @@ def class_insights(classroom, term=None, exam=None):
 
 
 def student_insights(student, term=None, exam=None):
+    from app.models import Classroom
+
     classroom = student.classroom
+    wanted = term_year(term) if term else this_year()
+    if wanted != this_year() or classroom is None:
+        row = next((item for item in student.history if item.year == wanted), None) or next(iter(student.history), None)
+        if row and row.classroom_name:
+            classroom = Classroom.query.filter_by(name=row.classroom_name).first() or classroom
     marked = uses_marks(classroom.level) if classroom else True
-    classmates = [item.id for item in classroom.students] if classroom else [student.id]
+    classmates = [item.id for item in members(classroom, wanted)] if classroom else [student.id]
+    if student.id not in classmates:
+        classmates.append(student.id)
     table = index_records(classmates)
     mine = {student.id: table.get(student.id, {})}
     available = steps_in(mine)
@@ -304,7 +315,9 @@ def student_insights(student, term=None, exam=None):
 
 
 def compare_classes(classrooms, term=None, exam=None):
-    tables = {classroom.id: index_records([student.id for student in classroom.students]) for classroom in classrooms}
+    year = term_year(term) if term else this_year()
+    groups = {classroom.id: members(classroom, year) for classroom in classrooms}
+    tables = {classroom.id: index_records([student.id for student in groups[classroom.id]]) for classroom in classrooms}
     shared = None
     for table in tables.values():
         steps = set(steps_in(table))
@@ -316,7 +329,7 @@ def compare_classes(classrooms, term=None, exam=None):
     for classroom in classrooms:
         marked = uses_marks(classroom.level)
         table = tables[classroom.id]
-        ids = [student.id for student in classroom.students]
+        ids = [student.id for student in groups[classroom.id]]
         trend_steps = [item for item in STEPS if not step or term_year(item[0]) == term_year(step[0])]
         trend = [{"label": step_label(item), "mean": average(learner_mean(table, sid, item) for sid in ids)} for item in trend_steps if any(table.get(sid, {}).get(item) for sid in ids)]
         entry = {"classroom_id": classroom.id, "name": classroom.name, "level": classroom.level,

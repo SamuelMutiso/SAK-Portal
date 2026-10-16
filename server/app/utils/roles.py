@@ -27,10 +27,12 @@ def current_user():
     return db.session.get(User, int(get_jwt_identity()))
 
 
-def students_for(user):
+def students_for(user, include_former=False):
     from app.models import Classroom, Student
 
     query = Student.query
+    if user.role != "parent" and not include_former:
+        query = query.filter(Student.status == "active")
     if user.role == "teacher":
         query = query.join(Classroom).filter(Classroom.teacher_id == user.id)
     elif user.role == "parent":

@@ -24,7 +24,9 @@ from app.models import (
     Notice,
     Payment,
     PortfolioItem,
+    SchoolTerm,
     Student,
+    StudentHistory,
     TermReport,
     TimetableSlot,
     TransportLog,
@@ -212,14 +214,52 @@ def seed_mark_changes():
         ))
 
 
+ESTATES = ["Milimani, Kitengela", "Noonkopir", "Kitengela Town", "Acacia", "EPZ Road", "Muigai Estate", "New Valley", "Yukos"]
+
+ADMISSION_COUNTS = {}
+
+TERM_DATES = {
+    2025: [(date(2025, 1, 6), date(2025, 4, 4)), (date(2025, 4, 28), date(2025, 8, 1)), (date(2025, 8, 25), date(2025, 10, 24))],
+    2026: [(date(2026, 1, 5), date(2026, 4, 2)), (date(2026, 4, 27), date(2026, 7, 31)), (date(2026, 8, 24), date(2026, 10, 30))],
+    2027: [(date(2027, 1, 4), date(2027, 4, 1)), (date(2027, 4, 26), date(2027, 7, 30)), (date(2027, 8, 23), date(2027, 10, 29))],
+}
+
+
+def admission_number(year):
+    ADMISSION_COUNTS[year] = ADMISSION_COUNTS.get(year, 0) + 1
+    return f"SAK-{year}-{ADMISSION_COUNTS[year]:04d}"
+
+
+def seed_terms():
+    for year, dates in TERM_DATES.items():
+        for number, (start, end) in enumerate(dates, start=1):
+            db.session.add(SchoolTerm(
+                name=f"Term {number} {year}", year=year, number=number, start_date=start, end_date=end,
+                fee_due_date=start + timedelta(days=14), is_current=(year, number) == (2026, 3),
+            ))
+
+
+def seed_history(student, classrooms):
+    index = classrooms.index(student.classroom)
+    joined = student.admission_date.year
+    for year in range(joined, 2027):
+        name = classrooms[max(0, index - (2026 - year))].name
+        if year == joined:
+            student.history.append(StudentHistory(year=year, classroom_name=name, outcome="admitted", note=f"Admitted into {name}"))
+        if year < 2026:
+            following = classrooms[max(0, index - (2026 - year) + 1)].name
+            student.history.append(StudentHistory(year=year, classroom_name=name, outcome="promoted", note=f"Promoted to {following}"))
+
+
 def seed():
     random.seed(7)
+    ADMISSION_COUNTS.clear()
     db.drop_all()
     db.create_all()
 
     make_user("System Owner", "superadmin", f"owner@{DOMAIN}", "0700111222")
     make_user("School Director", "director", f"director@{DOMAIN}", "0723435629")
-    make_user("Peter Otieno", "exams", f"exams@{DOMAIN}", "0722418905")
+    make_user("Lucy Wairimu", "exams", f"exams@{DOMAIN}", "0722418905")
     admin = make_user("School Admin", "admin", f"admin@{DOMAIN}", "0704558765")
     teachers = [make_user(name, "teacher", email_for(name), f"07{20 + i}{i:06d}") for i, name in enumerate(TEACHERS)]
     drivers = [
@@ -228,8 +268,8 @@ def seed():
     ]
 
     classrooms = []
-    for (name, level), teacher in zip(CLASSES, teachers):
-        classroom = Classroom(name=name, level=level, teacher=teacher)
+    for index, ((name, level), teacher) in enumerate(zip(CLASSES, teachers)):
+        classroom = Classroom(name=name, level=level, teacher=teacher, sort_order=index)
         db.session.add(classroom)
         classrooms.append(classroom)
 
@@ -259,8 +299,13 @@ def seed():
             while f"{first_name} {last_name}" in used_names:
                 first_name = random.choice(FIRST_NAMES)
             used_names.add(f"{first_name} {last_name}")
+            joined = 2026 - random.randint(0, classrooms.index(classroom))
             student = Student(
-                admission_number=f"SAK{number}",
+                admission_number=admission_number(joined),
+                admission_date=date(joined, 1, random.randint(5, 20)),
+                guardian_relationship=random.choice(["Mother", "Father", "Mother", "Guardian"]),
+                home_address=random.choice(ESTATES),
+                allergies=random.choice([None] * 12 + ["Peanuts", "Penicillin", "Dust (asthma)"]),
                 upi=random_code(7),
                 assessment_number=f"4174{number:05d}" if classroom.name in ("Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9") and random.random() > 0.08 else None,
                 first_name=first_name,
@@ -283,24 +328,31 @@ def seed():
     demo_parent = make_user("Mary Mutiso", "parent", f"parent@{DOMAIN}", "0722000000")
     grade4, pp2, grade7 = classrooms[6], classrooms[2], classrooms[9]
     ethan = Student(
-        admission_number="SAK0001", upi="A7K2M9Q", assessment_number="417400001", first_name="Ethan", last_name="Mutiso",
+        admission_number=admission_number(2021), admission_date=date(2021, 1, 11), guardian_relationship="Mother",
+        guardian2_name="Daniel Mutiso", guardian2_phone="0733000000", guardian2_relationship="Father", home_address="Milimani, Kitengela",
+        allergies="Peanuts", upi="A7K2M9Q", assessment_number="417400001", first_name="Ethan", last_name="Mutiso",
         gender="Male", date_of_birth=date(2016, 5, 14), classroom=grade4, parent=demo_parent,
         transport_route=routes[0], clubs=[clubs[9], clubs[11]], fee_balance=18500,
         emergency_contact_name="Daniel Mutiso", emergency_contact_phone="0733000000",
     )
     neema = Student(
-        admission_number="SAK0002", upi="B3N8P1L", first_name="Neema", last_name="Mutiso", gender="Female",
+        admission_number=admission_number(2024), admission_date=date(2024, 1, 8), guardian_relationship="Mother",
+        guardian2_name="Daniel Mutiso", guardian2_phone="0733000000", guardian2_relationship="Father", home_address="Milimani, Kitengela", upi="B3N8P1L", first_name="Neema", last_name="Mutiso", gender="Female",
         date_of_birth=date(2021, 2, 3), classroom=pp2, parent=demo_parent, transport_route=routes[0], fee_balance=5000,
         emergency_contact_name="Daniel Mutiso", emergency_contact_phone="0733000000",
     )
     amani = Student(
-        admission_number="SAK0003", upi="C9R4T6W", assessment_number="417400003", first_name="Amani", last_name="Mutiso",
+        admission_number=admission_number(2019), admission_date=date(2019, 1, 7), guardian_relationship="Mother",
+        guardian2_name="Daniel Mutiso", guardian2_phone="0733000000", guardian2_relationship="Father", home_address="Milimani, Kitengela", upi="C9R4T6W", assessment_number="417400003", first_name="Amani", last_name="Mutiso",
         gender="Female", date_of_birth=date(2013, 8, 21), classroom=grade7, parent=demo_parent, is_boarder=True,
         clubs=[clubs[4], clubs[6]], fee_balance=0,
         emergency_contact_name="Daniel Mutiso", emergency_contact_phone="0733000000",
     )
     db.session.add_all([ethan, neema, amani])
     students += [ethan, neema, amani]
+    seed_terms()
+    for student in students:
+        seed_history(student, classrooms)
     db.session.flush()
 
     for child in (ethan, neema, amani):
