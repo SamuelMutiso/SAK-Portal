@@ -147,7 +147,8 @@ def query_stk(checkout_id):
         "CheckoutRequestID": checkout_id,
     })
     data = response.json() if response.headers.get("Content-Type", "").startswith("application/json") else {}
-    if "ResultCode" not in data:
+    try:
+        code = int(data["ResultCode"])
+    except (KeyError, TypeError, ValueError):
         return {"done": False}
-    code = int(data["ResultCode"])
     return {"done": True, "paid": code == 0, "message": result_message(code, data.get("ResultDesc", ""))}
