@@ -1,5 +1,7 @@
 from app.extensions import db
 
+STATUSES = ("active", "completed", "transferred", "withdrawn")
+
 
 class Student(db.Model):
     __tablename__ = "students"
@@ -19,6 +21,19 @@ class Student(db.Model):
     classroom_id = db.Column(db.Integer, db.ForeignKey("classrooms.id"))
     parent_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     transport_route_id = db.Column(db.Integer, db.ForeignKey("transport_routes.id"))
+    status = db.Column(db.String(20), nullable=False, default="active", server_default="active")
+    admission_date = db.Column(db.Date)
+    left_on = db.Column(db.Date)
+    leaving_reason = db.Column(db.String(300))
+    last_classroom_name = db.Column(db.String(40))
+    home_address = db.Column(db.String(200))
+    previous_school = db.Column(db.String(120))
+    guardian_relationship = db.Column(db.String(30))
+    guardian2_name = db.Column(db.String(120))
+    guardian2_phone = db.Column(db.String(20))
+    guardian2_relationship = db.Column(db.String(30))
+    allergies = db.Column(db.String(300))
+    medical_conditions = db.Column(db.String(300))
 
     classroom = db.relationship("Classroom", back_populates="students")
     parent = db.relationship("User", back_populates="children")
@@ -28,6 +43,7 @@ class Student(db.Model):
     assessments = db.relationship("Assessment", back_populates="student", cascade="all, delete-orphan")
     pickups = db.relationship("AuthorizedPickup", back_populates="student", cascade="all, delete-orphan")
     payments = db.relationship("Payment", back_populates="student", cascade="all, delete-orphan")
+    history = db.relationship("StudentHistory", back_populates="student", cascade="all, delete-orphan", order_by="StudentHistory.year.desc(), StudentHistory.id.desc()")
 
     @property
     def audit_label(self):
