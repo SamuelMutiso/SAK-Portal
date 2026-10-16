@@ -90,7 +90,9 @@ def test_mpesa_callback_completes_pending_payment(app, client):
     db.session.commit()
     body = {"Body": {"stkCallback": {"CheckoutRequestID": "ws_CO_1", "ResultCode": 0,
                                      "CallbackMetadata": {"Item": [{"Name": "MpesaReceiptNumber", "Value": "QWE123"}]}}}}
-    client.post("/api/payments/callback", json=body)
+    from app.services.mpesa import callback_token
+
+    client.post(f"/api/payments/callback?token={callback_token()}", json=body)
     payment = Payment.query.filter_by(checkout_id="ws_CO_1").first()
     assert payment.status == "completed"
     assert payment.receipt == "QWE123"
