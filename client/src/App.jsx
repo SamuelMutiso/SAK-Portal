@@ -9,6 +9,7 @@ import FeeStructure from "./pages/fees/FeeStructure";
 import FeesHome from "./pages/fees/FeesHome";
 import Invoices from "./pages/fees/Invoices";
 import Payments from "./pages/fees/Payments";
+import Slips from "./pages/fees/Slips";
 import ReceiptPage from "./pages/fees/ReceiptPage";
 import RecordPayment from "./pages/fees/RecordPayment";
 import Statement from "./pages/fees/Statement";
@@ -21,6 +22,7 @@ import Students from "./pages/admin/Students";
 import Timetable from "./pages/admin/Timetable";
 import Transport from "./pages/admin/Transport";
 import Landing from "./pages/Landing";
+import ForgotPassword from "./pages/ForgotPassword";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Child from "./pages/parent/Child";
@@ -56,6 +58,7 @@ export default function App() {
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/login/:role" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
 
@@ -77,6 +80,7 @@ export default function App() {
           <Route path="fees" element={<FeesHome />} />
           <Route path="fees/record" element={<RecordPayment />} />
           <Route path="fees/payments" element={<Payments />} />
+          <Route path="fees/slips" element={<Slips />} />
           <Route path="fees/invoices" element={<Invoices />} />
           <Route path="fees/structure" element={<FeeStructure />} />
           <Route path="fees/balances" element={<Fees />} />
@@ -145,6 +149,7 @@ export default function App() {
           <Route path="fees" element={<FeesHome />} />
           <Route path="fees/record" element={<RecordPayment />} />
           <Route path="fees/payments" element={<Payments />} />
+          <Route path="fees/slips" element={<Slips />} />
           <Route path="fees/invoices" element={<Invoices />} />
           <Route path="fees/structure" element={<FeeStructure />} />
           <Route path="fees/balances" element={<Fees />} />
@@ -159,6 +164,7 @@ export default function App() {
           <Route index element={<FeesHome />} />
           <Route path="record" element={<RecordPayment />} />
           <Route path="payments" element={<Payments />} />
+          <Route path="slips" element={<Slips />} />
           <Route path="invoices" element={<Invoices />} />
           <Route path="structure" element={<FeeStructure />} />
           <Route path="balances" element={<Fees />} />
