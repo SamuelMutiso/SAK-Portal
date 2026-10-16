@@ -79,7 +79,7 @@ def test_no_photo_consent_blocks_portfolio_upload(client, teacher_headers):
     parent = User.query.filter_by(email="parent@test.com").first()
     parent.photo_consent = False
     db.session.commit()
-    data = {"student_id": "1", "title": "Pot", "learning_area": "Creative Arts", "image": (io.BytesIO(b"x"), "pot.jpg")}
+    data = {"student_id": "1", "title": "Pot", "learning_area": "Creative Arts", "image": (io.BytesIO(b"\xff\xd8\xff\xe0 jpeg"), "pot.jpg")}
     response = client.post("/api/portfolio", data=data, headers=teacher_headers, content_type="multipart/form-data")
     assert response.status_code == 403
 
