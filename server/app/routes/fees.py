@@ -1,19 +1,20 @@
 from collections import defaultdict
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 
-from flask import Blueprint, current_app, jsonify, request
+from flask import Blueprint, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import jwt_required
 from sqlalchemy import or_
 
 from app.curriculum import current_term
 from app.extensions import db
-from app.models import Classroom, Discount, FeeItem, FeeRate, Invoice, Payment, SchoolTerm, Student
+from app.models import Discount, FeeItem, FeeRate, Invoice, Payment, PaymentSlip, SchoolTerm, Student
 from app.schemas import StudentSchema
 from app.schemas.fees import (
     DiscountSchema, FeeItemSchema, FeeRateSchema, GenerateSchema, InvoiceSchema, LedgerPaymentSchema, ReasonSchema, RecordPaymentSchema,
 )
 from app.services import ledger
 from app.services.sms import send_sms
+from app.services.uploads import private_folder, save_private
 from app.utils.roles import current_user, roles_required, search_students, viewable_student
 
 fees_bp = Blueprint("fees", __name__, url_prefix="/api/fees")
@@ -403,4 +404,138 @@ def summary():
         week=sum(by_method.values()), by_method=dict(by_method), days=days,
         recent=LedgerPaymentSchema(many=True).dump(recent),
         not_invoiced=sum(row["to_invoice"] for row in ledger.generation_preview(term)),
+        slips_pending=PaymentSlip.query.filter_by(status="pending").count(),
     )
+
+
+def slip_dump(slip):
+    return {
+        "id": slip.id, "student_id": slip.student_id, "student_name": slip.student.full_name,
+        "admission_number": slip.student.admission_number,
+        "classroom_name": slip.student.classroom.name if slip.student.classroom else slip.student.last_classroom_name,
+        "balance": slip.student.fee_balance, "amount": slip.amount, "bank_name": slip.bank_name, "reference": slip.reference,
+        "paid_on": slip.paid_on.isoformat(), "note": slip.note, "status": slip.status,
+        "is_pdf": slip.file_name.endswith(".pdf"),
+        "submitted_by": slip.submitted_by.full_name if slip.submitted_by else None,
+        "reviewed_by": slip.reviewed_by.full_name if slip.reviewed_by else None,
+        "reviewed_at": slip.reviewed_at.isoformat() if slip.reviewed_at else None,
+        "rejection_reason": slip.rejection_reason, "created_at": slip.created_at.isoformat(),
+        "receipt_number": slip.payment.receipt_number if slip.payment else None, "payment_id": slip.payment_id,
+    }
+
+
+def reference_taken(reference, exclude_slip=None):
+    if Payment.query.filter(Payment.reference == reference, Payment.status == "completed").first():
+        return True
+    query = PaymentSlip.query.filter(PaymentSlip.reference == reference, PaymentSlip.status != "rejected")
+    if exclude_slip:
+        query = query.filter(PaymentSlip.id != exclude_slip)
+    return query.first() is not None
+
+
+@fees_bp.post("/slips")
+@roles_required("parent", "admin", "bursar")
+def upload_slip():
+    user = current_user()
+    student = viewable_student(request.form.get("student_id", type=int))
+    amount = request.form.get("amount", type=int)
+    reference = request.form.get("reference", "").strip().upper()
+    bank_name = request.form.get("bank_name", "").strip()
+    paid_on = request.form.get("paid_on", "")
+    upload = request.files.get("slip")
+    if not amount or amount < 1 or amount > 1000000:
+        return jsonify(error="Enter the amount on the slip"), 400
+    if len(reference) < 4:
+        return jsonify(error="Enter the transaction or slip number printed on the slip"), 400
+    if not bank_name:
+        return jsonify(error="Choose the bank"), 400
+    try:
+        paid = date.fromisoformat(paid_on)
+    except ValueError:
+        return jsonify(error="Enter the date on the slip"), 400
+    if paid > date.today():
+        return jsonify(error="The slip date cannot be in the future"), 400
+    if not upload:
+        return jsonify(error="Attach a photo of the slip"), 400
+    if reference_taken(reference):
+        return jsonify(error=f"Slip {reference} has already been sent or recorded"), 400
+    try:
+        name = save_private(upload)
+    except ValueError as error:
+        return jsonify(error=str(error)), 400
+    slip = PaymentSlip(student_id=student.id, submitted_by_id=user.id, amount=amount, bank_name=bank_name, reference=reference,
+                       paid_on=paid, note=request.form.get("note") or None, file_name=name)
+    db.session.add(slip)
+    db.session.commit()
+    return jsonify(slip_dump(slip)), 201
+
+
+@fees_bp.get("/slips")
+@roles_required(*FEE_ROLES)
+def list_slips():
+    status = request.args.get("status", "pending")
+    query = PaymentSlip.query
+    if status != "all":
+        query = query.filter(PaymentSlip.status == status)
+    slips = query.order_by(PaymentSlip.created_at.desc()).limit(200).all()
+    return jsonify(slips=[slip_dump(slip) for slip in slips], pending=PaymentSlip.query.filter_by(status="pending").count())
+
+
+@fees_bp.get("/students/<int:student_id>/slips")
+@jwt_required()
+def student_slips(student_id):
+    viewable_student(student_id)
+    slips = PaymentSlip.query.filter_by(student_id=student_id).order_by(PaymentSlip.created_at.desc()).all()
+    return jsonify([slip_dump(slip) for slip in slips])
+
+
+@fees_bp.get("/slips/<int:slip_id>/file")
+@jwt_required()
+def slip_file(slip_id):
+    slip = db.get_or_404(PaymentSlip, slip_id)
+    viewable_student(slip.student_id)
+    return send_from_directory(private_folder(), slip.file_name)
+
+
+@fees_bp.post("/slips/<int:slip_id>/approve")
+@roles_required(*FEE_ROLES)
+def approve_slip(slip_id):
+    slip = db.get_or_404(PaymentSlip, slip_id)
+    if slip.status != "pending":
+        return jsonify(error="This slip has already been checked"), 400
+    data = request.get_json() or {}
+    amount = int(data.get("amount") or slip.amount)
+    if amount < 1:
+        return jsonify(error="Enter the amount the bank received"), 400
+    if Payment.query.filter(Payment.reference == slip.reference, Payment.status == "completed").first():
+        return jsonify(error=f"A payment with reference {slip.reference} is already recorded"), 400
+    user = current_user()
+    note = "From a slip uploaded by the parent" + (f". Amount corrected from KES {slip.amount:,}" if amount != slip.amount else "")
+    payment = ledger.record_payment(slip.student, amount, "Bank", user, reference=slip.reference, paid_on=slip.paid_on,
+                                    bank_name=slip.bank_name, note=note, phone=slip.student.parent.phone if slip.student.parent else None)
+    slip.status = "approved"
+    slip.reviewed_by_id = user.id
+    slip.reviewed_at = datetime.now(timezone.utc)
+    slip.payment_id = payment.id
+    db.session.commit()
+    message = receipt_message(payment)
+    sms = send_sms([slip.student.parent.phone], message) if slip.student.parent else {"sent": 0, "mode": "none", "recipients": []}
+    return jsonify(slip=slip_dump(slip), sms={"message": message, **sms})
+
+
+@fees_bp.post("/slips/<int:slip_id>/reject")
+@roles_required(*FEE_ROLES)
+def reject_slip(slip_id):
+    slip = db.get_or_404(PaymentSlip, slip_id)
+    if slip.status != "pending":
+        return jsonify(error="This slip has already been checked"), 400
+    data = ReasonSchema().load(request.get_json() or {})
+    slip.status = "rejected"
+    slip.rejection_reason = data["reason"]
+    slip.reviewed_by_id = current_user().id
+    slip.reviewed_at = datetime.now(timezone.utc)
+    db.session.commit()
+    message = (f"Success Academy: We could not confirm the bank slip {slip.reference} of KES {slip.amount:,} for {slip.student.first_name}. "
+               f"Reason: {data['reason']}. Please call the bursar's office.")
+    sms = send_sms([slip.student.parent.phone], message) if slip.student.parent else {"sent": 0, "mode": "none", "recipients": []}
+    return jsonify(slip=slip_dump(slip), sms={"message": message, **sms})
