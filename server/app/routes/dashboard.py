@@ -36,11 +36,11 @@ def summary():
         week.append({"date": day.isoformat(), "rate": round(present / total * 100)})
 
     return jsonify(
-        students=Student.query.count(),
+        students=Student.query.filter_by(status="active").count(),
         teachers=User.query.filter_by(role="teacher").count(),
         parents=User.query.filter_by(role="parent").count(),
         clubs=Club.query.count(),
-        boarders=Student.query.filter_by(is_boarder=True).count(),
+        boarders=Student.query.filter_by(status="active", is_boarder=True).count(),
         sms_sent=db.session.query(func.coalesce(func.sum(Notice.sms_count), 0)).scalar(),
         attendance_today={"present": present_today, "marked": marked_today},
         students_by_class=[{"name": name, "count": count} for name, count in by_class],
