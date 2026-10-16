@@ -27,6 +27,7 @@ from app.models import (
     SchoolTerm,
     Discount,
     PaymentSlip,
+    PaybillReceipt,
     FeeItem,
     FeeRate,
     Student,
@@ -68,6 +69,8 @@ FIRST_NAMES = [
     "Ethan", "Wanjiku", "Baraka", "Amani", "Neema", "Kamau", "Zawadi", "Imani", "Tumaini", "Akinyi",
     "Kevin", "Shiro", "Jabari", "Nia", "Liam", "Makena", "Otieno", "Precious", "Ian", "Mumbua",
 ]
+
+GIRL_NAMES = {"Wanjiku", "Neema", "Zawadi", "Imani", "Akinyi", "Shiro", "Nia", "Makena", "Precious", "Mumbua"}
 
 LAST_NAMES = ["Mwangi", "Ochieng", "Kiptoo", "Mutiso", "Njoroge", "Wambua", "Odhiambo", "Kilonzo", "Kamau", "Nduku"]
 
@@ -255,6 +258,37 @@ def seed_history(student, classrooms):
             student.history.append(StudentHistory(year=year, classroom_name=name, outcome="promoted", note=f"Promoted to {following}"))
 
 
+def seed_former(classrooms, parents):
+    names = [classroom.name for classroom in classrooms]
+    finished = Student(
+        admission_number=admission_number(2014), first_name="Kevin", last_name="Kamau", gender="Male", date_of_birth=date(2011, 3, 9),
+        admission_date=date(2014, 1, 8), status="completed", left_on=date(2025, 11, 21), leaving_reason="Completed Grade 9",
+        last_classroom_name="Grade 9", parent=random.choice(parents), upi=random_code(7), assessment_number="417400777",
+        home_address=random.choice(ESTATES), guardian_relationship="Mother",
+    )
+    for offset, name in enumerate(names):
+        year = 2014 + offset
+        if offset == 0:
+            finished.history.append(StudentHistory(year=year, classroom_name=name, outcome="admitted", note=f"Admitted into {name}"))
+        last = offset == len(names) - 1
+        finished.history.append(StudentHistory(year=year, classroom_name=name, outcome="completed" if last else "promoted",
+                                               note="Completed Grade 9" if last else f"Promoted to {names[offset + 1]}"))
+    moved = Student(
+        admission_number=admission_number(2022), first_name="Makena", last_name="Wambua", gender="Female", date_of_birth=date(2016, 7, 2),
+        admission_date=date(2022, 1, 10), status="transferred", left_on=date(2026, 6, 12), leaving_reason="Family moved to Nakuru",
+        last_classroom_name="Grade 5", parent=random.choice(parents), upi=random_code(7), home_address=random.choice(ESTATES),
+        guardian_relationship="Father", previous_school="Little Stars Kindergarten",
+    )
+    start = names.index("Grade 1")
+    for offset, year in enumerate(range(2022, 2026)):
+        name = names[start + offset]
+        if offset == 0:
+            moved.history.append(StudentHistory(year=year, classroom_name=name, outcome="admitted", note=f"Admitted into {name}"))
+        moved.history.append(StudentHistory(year=year, classroom_name=name, outcome="promoted", note=f"Promoted to {names[start + offset + 1]}"))
+    moved.history.append(StudentHistory(year=2026, classroom_name="Grade 5", outcome="transferred", note="Family moved to Nakuru"))
+    db.session.add_all([finished, moved])
+
+
 TUITION = {"Pre-Primary": 18000, "Lower Primary": 22000, "Upper Primary": 26000, "Junior Secondary": 30000}
 FEE_TERMS = ["Term 1 2026", "Term 2 2026", "Term 3 2026", "Term 1 2027"]
 BANKS = ["Equity Bank", "KCB", "Co-operative Bank", "Family Bank"]
@@ -335,6 +369,7 @@ def seed_fees(students, classrooms, routes, bursar, siblings):
         plans.append((moment, student, random.choice([1000, 1500, 2000, 3000, 5000])))
 
     plans.sort(key=lambda plan: plan[0])
+    used_codes = set()
     for moment, student, amount in plans:
         method = random.choice(["Paybill", "Paybill", "Paybill", "M-Pesa", "Bank", "Cash"])
         reference = mpesa_code(moment) if method in ("Paybill", "M-Pesa") else f"FT{moment:%y%m%d}{random.randint(1000, 9999)}" if method == "Bank" else None
@@ -343,6 +378,11 @@ def seed_fees(students, classrooms, routes, bursar, siblings):
             phone=student.parent.phone if student.parent else None, bank_name=random.choice(BANKS) if method == "Bank" else None,
         )
         payment.created_at = moment
+        if method == "Paybill" and reference not in used_codes:
+            used_codes.add(reference)
+            db.session.add(PaybillReceipt(trans_id=reference, amount=amount, phone=student.parent.phone if student.parent else None,
+                                          payer_name=student.parent.full_name.upper() if student.parent else None,
+                                          account=student.admission_number, received_at=moment, created_at=moment, payment=payment))
 
 
 def slip_image(bank, reference, amount, when, account):
@@ -374,6 +414,16 @@ def slip_image(bank, reference, amount, when, account):
     with open(os.path.join(folder, name), "w") as handle:
         handle.write(svg)
     return name
+
+
+def seed_paybill(students):
+    now = datetime.now()
+    strays = [("ETHAN MUTISO", 5000, 3), ("grade 4 fees", 2500, 7), ("2021-008", 7000, 26)]
+    ethan = next(student for student in students if student.first_name == "Ethan" and student.last_name == "Mutiso")
+    for account, amount, hours in strays:
+        payer = ethan if account.startswith("ETHAN") else random.choice([student for student in students if student.parent])
+        db.session.add(PaybillReceipt(trans_id="T" + random_code(9), amount=amount, phone=payer.parent.phone, payer_name=payer.parent.full_name.upper(),
+                                      account=account, received_at=now - timedelta(hours=hours)))
 
 
 def seed_slips(students, ethan, bursar):
@@ -469,7 +519,7 @@ def seed():
                 assessment_number=f"4174{number:05d}" if classroom.name in ("Grade 4", "Grade 5", "Grade 6", "Grade 7", "Grade 8", "Grade 9") and random.random() > 0.08 else None,
                 first_name=first_name,
                 last_name=last_name,
-                gender=random.choice(["Male", "Female"]),
+                gender="Female" if first_name in GIRL_NAMES else "Male",
                 date_of_birth=date(2026 - 4 - classrooms.index(classroom), random.randint(1, 12), random.randint(1, 28)),
                 is_boarder=is_boarder,
                 classroom=classroom,
@@ -513,6 +563,7 @@ def seed():
     for student in students:
         seed_history(student, classrooms)
     db.session.flush()
+    seed_former(classrooms, [student.parent for student in students if student.parent])
 
     for child in (ethan, neema, amani):
         db.session.add(AuthorizedPickup(student=child, full_name="Daniel Mutiso", relationship="Father", phone="0733000000"))
@@ -648,6 +699,7 @@ def seed():
 
     seed_fees(students, classrooms, routes, bursar, [neema, amani])
     seed_slips(students, ethan, bursar)
+    seed_paybill(students)
 
     db.session.add(TransportLog(student=ethan, route_id=routes[0].id, event="boarded",
                                 recorded_at=datetime.utcnow().replace(hour=4, minute=12), driver_id=drivers[0].id))

@@ -7,7 +7,7 @@ from sqlalchemy import func, or_
 
 from app.curriculum import current_term
 from app.extensions import db
-from app.models import Discount, FeeItem, FeeRate, Invoice, Payment, PaymentSlip, SchoolTerm, Student
+from app.models import Discount, FeeItem, FeeRate, Invoice, PaybillReceipt, Payment, PaymentSlip, SchoolTerm, Student
 from app.schemas import StudentSchema
 from app.schemas.fees import (
     DiscountSchema, FeeItemSchema, FeeRateSchema, GenerateSchema, InvoiceSchema, LedgerPaymentSchema, ReasonSchema, RecordPaymentSchema,
@@ -356,10 +356,11 @@ def student_statement(student_id):
     shown = [payment for payment in student.payments if payment.status != "failed"]
     payments = sorted(shown, key=lambda payment: (payment.paid_on or payment.created_at.date(), payment.id), reverse=True)
     return jsonify(
-        student={"id": student.id, "full_name": student.full_name, "admission_number": student.admission_number,
+        student={"id": student.id, "full_name": student.full_name, "first_name": student.first_name, "gender": student.gender, "admission_number": student.admission_number,
                  "classroom_name": student.classroom.name if student.classroom else student.last_classroom_name,
                  "is_boarder": student.is_boarder, "route_name": student.transport_route.name if student.transport_route else None,
-                 "parent_name": student.parent.full_name if student.parent else None, "status": student.status},
+                 "parent_name": student.parent.full_name if student.parent else None,
+                 "parent_phone": student.parent.phone if student.parent else None, "status": student.status},
         balance=student.fee_balance,
         invoices=InvoiceSchema(many=True).dump(sorted(student.invoices, key=lambda invoice: (invoice.issued_on, invoice.id), reverse=True)),
         payments=LedgerPaymentSchema(many=True).dump(payments),
@@ -407,6 +408,7 @@ def summary():
         recent=LedgerPaymentSchema(many=True).dump(recent),
         not_invoiced=sum(row["to_invoice"] for row in ledger.generation_preview(term)),
         slips_pending=PaymentSlip.query.filter_by(status="pending").count(),
+        paybill_unmatched=PaybillReceipt.query.filter(PaybillReceipt.payment_id.is_(None)).count(),
     )
 
 

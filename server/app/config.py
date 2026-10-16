@@ -26,6 +26,7 @@ class Config:
     SMS_API_KEY = os.getenv("AT_API_KEY", "")
     SMS_SENDER_ID = os.getenv("AT_SENDER_ID", "")
     SCHOOL_PAYBILL = os.getenv("SCHOOL_PAYBILL", "")
+    PAYBILL_SIMULATION = os.getenv("PAYBILL_SIMULATION", "1") == "1"
     MPESA_ENV = os.getenv("MPESA_ENV", "sandbox")
     MPESA_CONSUMER_KEY = os.getenv("MPESA_CONSUMER_KEY", "")
     MPESA_CONSUMER_SECRET = os.getenv("MPESA_CONSUMER_SECRET", "")
