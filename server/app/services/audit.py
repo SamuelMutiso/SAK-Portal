@@ -68,6 +68,9 @@ ACTIONS = {
     "fees.upload_slip": "Uploaded a bank slip",
     "fees.approve_slip": "Approved a bank slip",
     "fees.reject_slip": "Rejected a bank slip",
+    "paybill.assign_receipt": "Matched a Paybill payment to a learner",
+    "paybill.simulate": "Simulated a Paybill payment",
+    "paybill.confirmation": "M-Pesa Paybill payment received",
     "auth.change_password": "Changed their password",
     "auth.forgot_password": "Asked for a password reset code",
     "auth.reset_password": "Reset a password with an SMS code",
@@ -127,6 +130,7 @@ TABLE_NAMES = {
     "invoices": "Invoice",
     "invoice_lines": "Invoice line",
     "payment_slips": "Bank slip",
+    "paybill_receipts": "Paybill payment",
     "password_resets": "Password reset",
     "student_discounts": "Learner discount",
 }
