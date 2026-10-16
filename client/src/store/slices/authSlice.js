@@ -34,6 +34,10 @@ const authSlice = createSlice({
     clearAuthError(state) {
       state.error = null;
     },
+    passwordChanged(state, action) {
+      state.user = { ...state.user, ...action.payload, must_change_password: false };
+      localStorage.setItem("user", JSON.stringify(state.user));
+    },
     consentAccepted(state) {
       state.user = { ...state.user, consent_required: false };
       localStorage.setItem("user", JSON.stringify(state.user));
@@ -61,5 +65,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearAuthError, consentAccepted, logout } = authSlice.actions;
+export const { clearAuthError, consentAccepted, logout, passwordChanged } = authSlice.actions;
 export default authSlice.reducer;

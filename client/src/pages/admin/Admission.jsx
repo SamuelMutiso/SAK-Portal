@@ -110,9 +110,9 @@ export default function Admission() {
           <h2 className="font-semibold text-brand-800">Parent account</h2>
           {parent.is_new ? (
             <>
-              <p className="text-sm text-brand-600">A new parent account was created for <strong>{parent.full_name}</strong> and the login details were sent by SMS.</p>
+              <p className="text-sm text-brand-600">A new parent account was created for <strong>{parent.full_name}</strong> and the login details were sent by SMS. They choose their own password the first time they sign in.</p>
               <div className="grid gap-2 rounded-xl bg-brand-50 p-4 font-mono text-sm sm:grid-cols-2">
-                <p><span className="block font-body text-xs text-brand-400">Sign in with</span>{parent.email}</p>
+                <p><span className="block font-body text-xs text-brand-400">Sign in with phone number</span>{parent.phone}</p>
                 <p><span className="block font-body text-xs text-brand-400">Temporary password</span><span className="inline-flex items-center gap-1.5"><KeyRound size={14} className="text-gold-600" />{result.temporary_password}</span></p>
               </div>
             </>
@@ -217,7 +217,7 @@ export default function Admission() {
                   </select>
                 </Field>
                 <Field label="Phone"><input className="input font-mono" placeholder="0712 345 678" value={form.guardian.phone} onChange={(event) => setGuardian("guardian", "phone", event.target.value)} /></Field>
-                <Field label="Email" hint="Optional. Without one, they sign in with a login made from their phone number."><input type="email" className="input" value={form.guardian.email} onChange={(event) => setGuardian("guardian", "email", event.target.value)} /></Field>
+                <Field label="Email" hint="Optional. Parents can always sign in with their phone number."><input type="email" className="input" value={form.guardian.email} onChange={(event) => setGuardian("guardian", "email", event.target.value)} /></Field>
               </div>
             </div>
             <div>
