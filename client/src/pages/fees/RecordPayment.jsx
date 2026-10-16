@@ -1,13 +1,15 @@
-import { Printer, Search, UserRound } from "lucide-react";
+import { Banknote, Printer, Search, Smartphone, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useSearchParams } from "react-router-dom";
 import api, { errorMessage } from "../../api/client";
+import MpesaPrompt from "../../components/MpesaPrompt";
 import Receipt from "../../components/Receipt";
 import SmsPreview from "../../components/SmsPreview";
 import { formatKes } from "../../constants";
 import { INVOICE_STYLES, METHODS } from "../../fees";
 import { feesBase } from "../../roles";
+import LearnerAvatar from "../../components/LearnerAvatar";
 
 const BANKS = ["Equity Bank", "KCB", "Co-operative Bank", "Family Bank", "NCBA", "Absa", "Stanbic", "I&M Bank"];
 const today = () => new Date().toISOString().slice(0, 10);
@@ -23,6 +25,7 @@ export default function RecordPayment() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
+  const [mode, setMode] = useState("record");
 
   function open(studentId) {
     api.get(`/fees/students/${studentId}/statement`).then(({ data }) => {
@@ -97,7 +100,7 @@ export default function RecordPayment() {
     <div className="mx-auto max-w-3xl space-y-6">
       <div>
         <h1 className="page-title">Record a payment</h1>
-        <p className="mt-2 text-brand-500">For cash, bank slips and cheques brought to the office. M-Pesa and Paybill payments come in by themselves.</p>
+        <p className="mt-2 text-brand-500">For cash, bank slips and cheques brought to the office, or to send an M-Pesa prompt to a parent at the counter. Paybill payments come in by themselves.</p>
       </div>
 
       {!account ? (
@@ -125,7 +128,7 @@ export default function RecordPayment() {
       ) : (
         <>
           <div className="card flex flex-wrap items-center gap-4">
-            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gold-500 font-headline text-2xl font-extrabold text-brand-900">{account.student.full_name[0]}</span>
+            <LearnerAvatar student={account.student} size={48} />
             <div className="flex-1">
               <p className="text-lg font-semibold text-brand-800">{account.student.full_name}</p>
               <p className="text-sm text-brand-500"><span className="font-mono">{account.student.admission_number}</span> · {account.student.classroom_name} · {account.student.parent_name}</p>
@@ -154,7 +157,16 @@ export default function RecordPayment() {
             </div>
           )}
 
-          <form onSubmit={submit} className="card space-y-4">
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => setMode("record")} className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${mode === "record" ? "bg-brand-700 text-white" : "bg-white text-brand-600 ring-1 ring-brand-100 hover:bg-brand-50"}`}><Banknote size={16} /> Record money already received</button>
+            <button type="button" onClick={() => setMode("prompt")} className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold ${mode === "prompt" ? "bg-emerald-600 text-white" : "bg-white text-brand-600 ring-1 ring-brand-100 hover:bg-brand-50"}`}><Smartphone size={16} /> Send M-Pesa prompt to parent</button>
+          </div>
+
+          {mode === "prompt" && (
+            <MpesaPrompt key={account.student.id} student={account.student} balance={account.balance} defaultPhone={account.student.parent_phone} staff onPaid={() => open(account.student.id)} />
+          )}
+
+          {mode === "record" && <form onSubmit={submit} className="card space-y-4">
             <div>
               <p className="label">Paid by</p>
               <div className="flex flex-wrap gap-2">
@@ -196,7 +208,7 @@ export default function RecordPayment() {
               <button className="btn-gold px-6 py-3" disabled={saving || !form.amount}>{saving ? "Saving..." : `Record ${form.amount ? formatKes(form.amount) : "payment"}`}</button>
               <Link to={`${base}/students/${account.student.id}`} className="text-sm font-semibold text-brand-600 hover:underline">Open fee statement</Link>
             </div>
-          </form>
+          </form>}
         </>
       )}
     </div>
