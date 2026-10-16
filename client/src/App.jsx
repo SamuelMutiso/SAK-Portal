@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
+import Admission from "./pages/admin/Admission";
 import ClubDetail from "./pages/admin/ClubDetail";
 import Clubs from "./pages/admin/Clubs";
 import Fees from "./pages/admin/Fees";
@@ -8,6 +9,7 @@ import Leave from "./pages/admin/Leave";
 import Library from "./pages/admin/Library";
 import Notices from "./pages/admin/Notices";
 import Sba from "./pages/admin/Sba";
+import SchoolYear from "./pages/admin/SchoolYear";
 import Students from "./pages/admin/Students";
 import Timetable from "./pages/admin/Timetable";
 import Transport from "./pages/admin/Transport";
@@ -30,6 +32,7 @@ import Compare from "./pages/shared/Compare";
 import Insights from "./pages/shared/Insights";
 import PickupCheck from "./pages/shared/PickupCheck";
 import Reports from "./pages/shared/Reports";
+import StudentProfile from "./pages/shared/StudentProfile";
 import Assessments from "./pages/teacher/Assessments";
 import Attendance from "./pages/teacher/Attendance";
 import ClassClubs from "./pages/teacher/ClassClubs";
@@ -53,6 +56,9 @@ export default function App() {
         <Route path="/admin" element={<DashboardLayout />}>
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<Students />} />
+          <Route path="students/new" element={<Admission />} />
+          <Route path="students/:id" element={<StudentProfile />} />
+          <Route path="school-year" element={<SchoolYear />} />
           <Route path="notices" element={<Notices />} />
           <Route path="clubs" element={<Clubs />} />
           <Route path="clubs/:id" element={<ClubDetail />} />
@@ -114,6 +120,8 @@ export default function App() {
           <Route path="sba" element={<Sba />} />
           <Route path="notices" element={<Notices />} />
           <Route path="students" element={<Students />} />
+          <Route path="students/:id" element={<StudentProfile />} />
+          <Route path="school-year" element={<SchoolYear />} />
           <Route path="people" element={<People />} />
           <Route path="clubs" element={<Clubs />} />
           <Route path="clubs/:id" element={<ClubDetail />} />

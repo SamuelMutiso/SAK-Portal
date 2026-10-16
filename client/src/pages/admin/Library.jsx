@@ -72,7 +72,7 @@ export default function Library() {
               </option>
             ))}
           </select>
-          <input className="input font-mono uppercase" placeholder="Admission number, e.g. SAK0001" value={lend.admission_number} onChange={(event) => setLend({ ...lend, admission_number: event.target.value })} required />
+          <input className="input font-mono uppercase" placeholder="Admission number, e.g. SAK-2026-0001" value={lend.admission_number} onChange={(event) => setLend({ ...lend, admission_number: event.target.value })} required />
           <button className="btn-primary w-full">Lend for 14 days</button>
         </form>
 
