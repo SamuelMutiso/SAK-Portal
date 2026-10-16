@@ -68,6 +68,8 @@ export default function Payments() {
           <select id="status" className="input" value={status} onChange={(event) => setStatus(event.target.value)}>
             <option value="completed">Received</option>
             <option value="reversed">Reversed</option>
+            <option value="failed">Failed M-Pesa prompts</option>
+            <option value="pending">Waiting for M-Pesa</option>
             <option value="all">All</option>
           </select>
         </div>
@@ -95,11 +97,11 @@ export default function Payments() {
               <tbody className="divide-y divide-brand-50">
                 {data.payments.map((payment) => (
                   <tr key={payment.id} className={`hover:bg-brand-50 ${payment.status === "reversed" ? "text-brand-400" : ""}`}>
-                    <td className="whitespace-nowrap px-4 py-2.5">{format(new Date(payment.paid_on), "d MMM yyyy")}</td>
-                    <td className="px-4 py-2.5 font-mono text-xs"><Link to={`${base}/receipts/${payment.id}`} className="hover:underline">{payment.receipt_number}</Link></td>
+                    <td className="whitespace-nowrap px-4 py-2.5">{format(new Date(payment.paid_on || payment.created_at), "d MMM yyyy")}</td>
+                    <td className="px-4 py-2.5 font-mono text-xs">{payment.receipt_number ? <Link to={`${base}/receipts/${payment.id}`} className="hover:underline">{payment.receipt_number}</Link> : <span className="text-brand-400">{payment.status}</span>}</td>
                     <td className="px-4 py-2.5"><Link to={`${base}/students/${payment.student_id}`} className="font-semibold hover:underline">{payment.student_name}</Link> <span className="text-xs text-brand-400">{payment.classroom_name}</span></td>
                     <td className="px-4 py-2.5"><span className={`badge ${METHOD_STYLES[payment.method]}`}>{payment.method}</span>{payment.status === "reversed" && <span className="badge ml-1 bg-red-100 text-red-700">reversed</span>}</td>
-                    <td className="px-4 py-2.5 font-mono text-xs">{payment.reference}</td>
+                    <td className="px-4 py-2.5 font-mono text-xs">{payment.reference || (payment.status === "failed" ? <span className="font-body text-red-600">{payment.note}</span> : payment.phone)}</td>
                     <td className={`px-4 py-2.5 text-right font-mono font-semibold ${payment.status === "reversed" ? "line-through" : ""}`}>{formatKes(payment.amount)}</td>
                   </tr>
                 ))}

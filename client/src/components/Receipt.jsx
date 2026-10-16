@@ -21,7 +21,7 @@ export default function Receipt({ payment, student, balance }) {
 
       <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
         <div><dt className="text-xs text-brand-400">Received from</dt><dd className="font-semibold">{student.parent_name || "Parent"}</dd></div>
-        <div><dt className="text-xs text-brand-400">Date</dt><dd className="font-semibold">{format(new Date(payment.paid_on), "d MMMM yyyy")}</dd></div>
+        <div><dt className="text-xs text-brand-400">Date</dt><dd className="font-semibold">{format(new Date(payment.paid_on || payment.created_at), "d MMMM yyyy")}</dd></div>
         <div><dt className="text-xs text-brand-400">For learner</dt><dd className="font-semibold">{student.full_name}</dd></div>
         <div><dt className="text-xs text-brand-400">Admission no. · Class</dt><dd className="font-mono font-semibold">{student.admission_number} · <span className="font-body">{student.classroom_name}</span></dd></div>
         <div><dt className="text-xs text-brand-400">Paid by</dt><dd className="font-semibold">{payment.method}{payment.bank_name ? `, ${payment.bank_name}` : ""}</dd></div>
