@@ -22,6 +22,7 @@ from app.routes.pickups import pickups_bp
 from app.routes.portfolio import portfolio_bp
 from app.routes.reports import reports_bp
 from app.routes.sba import sba_bp
+from app.routes.school_year import school_year_bp
 from app.routes.students import students_bp
 from app.routes.timetable import timetable_bp
 from app.routes.transport import transport_bp
@@ -58,6 +59,7 @@ BLUEPRINTS = (
     consent_bp,
     analytics_bp,
     insights_bp,
+    school_year_bp,
 )
 
 
