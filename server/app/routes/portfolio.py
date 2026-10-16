@@ -1,9 +1,10 @@
-from flask import Blueprint, current_app, jsonify, request, send_from_directory
+from flask import Blueprint, abort, current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import jwt_required
 
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import PortfolioItem
 from app.schemas import PortfolioSchema
+from app.services.signed_files import signature_ok
 from app.services.uploads import save_image
 from app.utils.roles import current_user, roles_required, viewable_student
 
@@ -20,6 +21,7 @@ def list_items(student_id):
 
 
 @portfolio_bp.post("/portfolio")
+@limiter.limit("60 per hour")
 @roles_required("admin", "teacher")
 def add_item():
     student = viewable_student(request.form.get("student_id", type=int))
@@ -60,4 +62,8 @@ def delete_item(item_id):
 
 @portfolio_bp.get("/uploads/<path:name>")
 def uploaded_file(name):
-    return send_from_directory(current_app.config["UPLOAD_FOLDER"], name)
+    if not signature_ok(name, request.args.get("sig")):
+        abort(404)
+    response = send_from_directory(current_app.config["UPLOAD_FOLDER"], name)
+    response.headers["Cache-Control"] = "private, max-age=3600"
+    return response
