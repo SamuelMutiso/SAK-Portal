@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { AlertTriangle, ArrowRight, Banknote, FileText, Landmark, ListChecks, Receipt, Settings2, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, FileText, Hash, Landmark, ListChecks, Receipt, Settings2, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -39,6 +39,7 @@ export default function FeesHome() {
     { to: `${base}/payments`, label: "All payments", icon: Receipt },
     { to: `${base}/balances`, label: "Balances & reminders", icon: ListChecks },
     { to: `${base}/structure`, label: "Fee structure", icon: Settings2 },
+    { to: `${base}/paybill`, label: "M-Pesa Paybill", icon: Hash },
     { to: `${base}/slips`, label: "Bank slips", icon: Landmark },
   ].filter((action) => !readOnly || !["Record a payment", "Fee structure"].includes(action.label));
 
@@ -52,7 +53,7 @@ export default function FeesHome() {
         <ExamPicker term={term} showExam={false} onChange={(next) => setTerm(next.term)} />
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {actions.map(({ to, label, icon: Icon }) => (
           <Link key={to} to={to} className="card flex items-center gap-3 py-4 font-semibold text-brand-800 transition hover:-translate-y-0.5 hover:shadow-md">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gold-100 text-gold-600"><Icon size={18} /></span>
@@ -63,6 +64,13 @@ export default function FeesHome() {
 
       {!data ? <Loader /> : (
         <>
+          {data.paybill_unmatched > 0 && (
+            <Link to={`${base}/paybill`} className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-emerald-800 hover:bg-emerald-100">
+              <Hash size={20} />
+              <span className="flex-1 font-semibold">{data.paybill_unmatched} Paybill {data.paybill_unmatched === 1 ? "payment needs" : "payments need"} a learner. The parent typed the wrong account number.</span>
+              <span className="flex items-center gap-1 text-sm font-semibold">Match now <ArrowRight size={16} /></span>
+            </Link>
+          )}
           {data.slips_pending > 0 && (
             <Link to={`${base}/slips`} className="flex items-center gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sky-800 hover:bg-sky-100">
               <Landmark size={20} />
