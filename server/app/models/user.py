@@ -20,6 +20,10 @@ class User(db.Model):
     removed_at = db.Column(db.DateTime)
     photo_consent = db.Column(db.Boolean)
     must_change_password = db.Column(db.Boolean, nullable=False, default=False, server_default="0")
+    sessions_valid_after = db.Column(db.DateTime)
+    totp_secret = db.Column(db.String(64))
+    totp_pending = db.Column(db.String(64))
+    totp_last_step = db.Column(db.Integer)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     children = db.relationship("Student", back_populates="parent")
@@ -31,6 +35,14 @@ class User(db.Model):
 
     def set_password(self, password):
         self.password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+        self.end_sessions()
+
+    def end_sessions(self):
+        self.sessions_valid_after = datetime.utcnow().replace(microsecond=0)
+
+    @property
+    def two_factor_enabled(self):
+        return bool(self.totp_secret)
 
     def check_password(self, password):
         return bcrypt.check_password_hash(self.password_hash, password)
