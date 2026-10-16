@@ -166,6 +166,12 @@ def complete(payment, receipt, method="M-Pesa"):
 
 
 def reverse(payment, reason, user):
+    from app.models import PaybillReceipt
+
+    for receipt in PaybillReceipt.query.filter_by(payment_id=payment.id).all():
+        receipt.payment_id = None
+        receipt.assigned_by_id = None
+        receipt.assigned_at = None
     payment.status = "reversed"
     payment.reversed_reason = reason
     payment.reversed_by_id = user.id
