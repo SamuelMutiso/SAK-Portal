@@ -15,6 +15,7 @@ ROLE_NAMES = {
     "director": "Director",
     "admin": "School office",
     "exams": "Exams officer",
+    "bursar": "Bursar",
     "teacher": "Teacher",
     "parent": "Parent",
     "driver": "Bus driver",
