@@ -79,11 +79,14 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div>
-              <label className="label" htmlFor="email">Email</label>
-              <input id="email" name="email" type="email" autoComplete="username" className="input" value={form.email} onChange={handleChange} required />
+              <label className="label" htmlFor="email">Phone number or email</label>
+              <input id="email" name="email" type="text" autoComplete="username" placeholder="0712 345 678" className="input" value={form.email} onChange={handleChange} required />
             </div>
             <div>
-              <label className="label" htmlFor="password">Password</label>
+              <div className="flex items-baseline justify-between">
+                <label className="label" htmlFor="password">Password</label>
+                <Link to="/forgot-password" className="text-xs font-semibold text-brand-600 hover:underline">Forgot password?</Link>
+              </div>
               <input id="password" name="password" type="password" autoComplete="current-password" className="input" value={form.password} onChange={handleChange} required />
             </div>
             {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
@@ -92,7 +95,7 @@ export default function Login() {
             </button>
           </form>
 
-          <p className="mt-3 text-sm text-brand-500">Forgot your password? Call the school office on 0748 065 956.</p>
+          <p className="mt-3 text-sm text-brand-500">Parents sign in with the phone number the school has. No account yet? Call the school office on 0748 065 956.</p>
 
           <div className="mt-8 rounded-2xl bg-brand-50 p-4">
             <p className="text-sm font-semibold text-brand-700">Demo accounts</p>
