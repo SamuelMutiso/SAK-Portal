@@ -13,9 +13,9 @@ def bill(app, amount=30000):
         db.session.commit()
 
 
-def upload(client, headers, reference="EQ88231", student_id=1, filename="slip.jpg"):
+def upload(client, headers, reference="EQ88231", student_id=1, filename="slip.jpg", content=b"\xff\xd8\xff\xe0 real jpeg"):
     data = {"student_id": str(student_id), "amount": "12000", "reference": reference, "bank_name": "Equity Bank", "paid_on": "2026-10-10",
-            "slip": (io.BytesIO(b"fake-image-bytes"), filename)}
+            "slip": (io.BytesIO(content), filename)}
     return client.post("/api/fees/slips", data=data, headers=headers, content_type="multipart/form-data")
 
 
@@ -72,3 +72,7 @@ def test_slip_file_is_private(app, client, parent_headers, other_parent_headers)
     slip = upload(client, parent_headers).get_json()
     assert client.get(f"/api/fees/slips/{slip['id']}/file", headers=parent_headers).status_code == 200
     assert client.get(f"/api/fees/slips/{slip['id']}/file", headers=other_parent_headers).status_code == 403
+
+
+def test_renamed_file_is_rejected(client, parent_headers):
+    assert upload(client, parent_headers, filename="slip.pdf", content=b"<script>alert(1)</script>").status_code == 400
