@@ -41,7 +41,7 @@ def students_for(user, include_former=False):
 
 
 def can_view_student(user, student):
-    if user.role in ("admin", "director", "exams"):
+    if user.role in ("admin", "director", "exams", "bursar"):
         return True
     if user.role == "teacher":
         return student.classroom is not None and student.classroom.teacher_id == user.id
