@@ -5,7 +5,7 @@ from datetime import date
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import Attendance, Classroom, Student, User
 from app.schemas import AdmissionSchema, HistorySchema, LeaveSchema, StudentSchema
 from app.schemas.student import HEALTH_FIELDS
@@ -115,6 +115,7 @@ def profile(student_id):
 
 
 @students_bp.post("/admit")
+@limiter.limit("60 per hour")
 @roles_required("admin")
 def admit():
     user = current_user()
