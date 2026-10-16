@@ -25,6 +25,9 @@ from app.models import (
     Payment,
     PortfolioItem,
     SchoolTerm,
+    Discount,
+    FeeItem,
+    FeeRate,
     Student,
     StudentHistory,
     TermReport,
@@ -251,6 +254,96 @@ def seed_history(student, classrooms):
             student.history.append(StudentHistory(year=year, classroom_name=name, outcome="promoted", note=f"Promoted to {following}"))
 
 
+TUITION = {"Pre-Primary": 18000, "Lower Primary": 22000, "Upper Primary": 26000, "Junior Secondary": 30000}
+FEE_TERMS = ["Term 1 2026", "Term 2 2026", "Term 3 2026", "Term 1 2027"]
+BANKS = ["Equity Bank", "KCB", "Co-operative Bank", "Family Bank"]
+
+
+def mpesa_code(when):
+    letters = "ABCDEFGHJKLMNPQRSTUVWXYZ0123456789"
+    return "T" + "ABCDEFGHIJKL"[when.month - 1] + "".join(random.choice(letters) for _ in range(8))
+
+
+def seed_fees(students, classrooms, routes, bursar, siblings):
+    from app.services import ledger
+
+    items = [
+        FeeItem(name="Tuition", category="tuition", sort_order=1, description="Teaching, books and stationery"),
+        FeeItem(name="Boarding", category="boarding", sort_order=2, description="Accommodation and all meals for boarders"),
+        FeeItem(name="Lunch", category="meals", sort_order=3, description="Ten o'clock porridge and lunch for day scholars"),
+        FeeItem(name="Transport", category="transport", sort_order=4, description="School bus, charged by route"),
+        FeeItem(name="Activity fee", category="activity", sort_order=5, description="Clubs, games and trips"),
+        FeeItem(name="Exam fee", category="exam", sort_order=6, description="Opener, Mid-Term and End-Term papers"),
+    ]
+    db.session.add_all(items)
+    db.session.flush()
+    tuition, boarding, lunch, transport, activity, exam = items
+    route_prices = [7500, 9000]
+    for term in FEE_TERMS:
+        for classroom in classrooms:
+            db.session.add(FeeRate(item_id=tuition.id, term=term, classroom_id=classroom.id, amount=TUITION[classroom.level]))
+            if classroom.level in ("Upper Primary", "Junior Secondary"):
+                db.session.add(FeeRate(item_id=exam.id, term=term, classroom_id=classroom.id, amount=1200))
+        db.session.add(FeeRate(item_id=boarding.id, term=term, learner_type="boarder", amount=24000))
+        db.session.add(FeeRate(item_id=lunch.id, term=term, learner_type="day", amount=6500))
+        db.session.add(FeeRate(item_id=activity.id, term=term, amount=1500))
+        for route, price in zip(routes, route_prices):
+            db.session.add(FeeRate(item_id=transport.id, term=term, transport_route_id=route.id, amount=price))
+
+    sibling = Discount(name="Sibling discount", kind="percent", value=10, applies_to="tuition")
+    staff = Discount(name="Staff child", kind="percent", value=50, applies_to="tuition")
+    bursary = Discount(name="Bursary", kind="fixed", value=10000, applies_to="tuition")
+    db.session.add_all([sibling, staff, bursary])
+    db.session.flush()
+    for child in siblings:
+        child.discounts.append(sibling)
+    for child in random.sample(students, 2):
+        if child not in siblings:
+            child.discounts.append(bursary)
+
+    term_dates = {f"Term {number} 2026": start for number, (start, _) in enumerate(TERM_DATES[2026], start=1)}
+    today = date.today()
+    targets = {student.id: student.fee_balance or 0 for student in students}
+    issued = {student.id: [] for student in students}
+    for term, start in term_dates.items():
+        for student in students:
+            if student.admission_date and student.admission_date.year == 2026 and student.admission_date > start + timedelta(days=60):
+                continue
+            invoice = ledger.create_invoice(student, term, bursar, due_date=start + timedelta(days=14), issued_on=start - timedelta(days=7))
+            if invoice:
+                issued[student.id].append((invoice, start))
+
+    plans = []
+    for student in students:
+        target = targets[student.id]
+        for index, (invoice, start) in enumerate(issued[student.id]):
+            last = index == len(issued[student.id]) - 1
+            amount = invoice.total - (min(target, invoice.total) if last else 0)
+            if amount <= 0:
+                continue
+            parts = [amount] if amount < 20000 or random.random() < 0.5 else [amount // 2, amount - amount // 2]
+            for part_index, part in enumerate(parts):
+                latest = min(today, start + timedelta(days=60))
+                offset = random.randint(0, max(1, (latest - start).days + 5)) if part_index else random.randint(0, 12)
+                when = min(start - timedelta(days=5) + timedelta(days=offset), today)
+                moment = datetime.combine(when, datetime.min.time()).replace(hour=random.randint(7, 19), minute=random.randint(0, 59))
+                plans.append((moment, student, part))
+    owing = [student for student in students if targets[student.id] >= 5000 and student.parent and student.parent.email != f"parent@{DOMAIN}"]
+    for student in random.sample(owing, min(8, len(owing))):
+        moment = datetime.combine(today, datetime.min.time()).replace(hour=random.randint(7, 11), minute=random.randint(0, 59))
+        plans.append((moment, student, random.choice([1000, 1500, 2000, 3000, 5000])))
+
+    plans.sort(key=lambda plan: plan[0])
+    for moment, student, amount in plans:
+        method = random.choice(["Paybill", "Paybill", "Paybill", "M-Pesa", "Bank", "Cash"])
+        reference = mpesa_code(moment) if method in ("Paybill", "M-Pesa") else f"FT{moment:%y%m%d}{random.randint(1000, 9999)}" if method == "Bank" else None
+        payment = ledger.record_payment(
+            student, amount, method, None if method in ("Paybill", "M-Pesa") else bursar, reference=reference, paid_on=moment.date(),
+            phone=student.parent.phone if student.parent else None, bank_name=random.choice(BANKS) if method == "Bank" else None,
+        )
+        payment.created_at = moment
+
+
 def seed():
     random.seed(7)
     ADMISSION_COUNTS.clear()
@@ -260,6 +353,7 @@ def seed():
     make_user("System Owner", "superadmin", f"owner@{DOMAIN}", "0700111222")
     make_user("School Director", "director", f"director@{DOMAIN}", "0723435629")
     make_user("Lucy Wairimu", "exams", f"exams@{DOMAIN}", "0722418905")
+    bursar = make_user("Joseph Mwangi", "bursar", f"bursar@{DOMAIN}", "0722418906")
     admin = make_user("School Admin", "admin", f"admin@{DOMAIN}", "0704558765")
     teachers = [make_user(name, "teacher", email_for(name), f"07{20 + i}{i:06d}") for i, name in enumerate(TEACHERS)]
     drivers = [
@@ -487,10 +581,7 @@ def seed():
             borrowed = today - timedelta(days=random.randint(1, 20))
             db.session.add(Loan(book=book, student=student, borrowed_on=borrowed, due_on=borrowed + timedelta(days=14)))
 
-    db.session.add(Payment(student=ethan, amount=10000, phone="0722000000", status="completed", receipt="SJK4T7Q2PA",
-                           checkout_id="seed-1", created_at=datetime.now() - timedelta(days=12)))
-    db.session.add(Payment(student=amani, amount=24000, phone="0722000000", status="completed", receipt="SJF2N8W1LB",
-                           checkout_id="seed-2", created_at=datetime.now() - timedelta(days=20)))
+    seed_fees(students, classrooms, routes, bursar, [neema, amani])
 
     db.session.add(TransportLog(student=ethan, route_id=routes[0].id, event="boarded",
                                 recorded_at=datetime.utcnow().replace(hour=4, minute=12), driver_id=drivers[0].id))
@@ -523,6 +614,7 @@ def seed():
     print(f"  driver@{DOMAIN}  (Kitengela Town bus)")
     print(f"  director@{DOMAIN}  (School Director: sees everything, read-only)")
     print(f"  exams@{DOMAIN}  (Exams officer: enters marks for any class)")
+    print(f"  bursar@{DOMAIN}  (Bursar: fees, invoices and payments)")
     print(f"  owner@{DOMAIN}  (System Owner: audit trail and accounts)")
 
 

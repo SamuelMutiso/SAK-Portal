@@ -62,7 +62,16 @@ def test_seen_receipts_counted_for_admin(client, admin_headers, parent_headers):
     assert notices[0]["recipient_count"] == 2
 
 
-def test_simulated_mpesa_payment_reduces_balance(client, parent_headers):
+def test_simulated_mpesa_payment_reduces_balance(app, client, parent_headers):
+    from app.extensions import db
+    from app.models import Student
+    from app.services import ledger
+
+    with app.app_context():
+        student = db.session.get(Student, 1)
+        ledger.create_invoice(student, "Term 3 2026", lines=[{"description": "Tuition", "category": "tuition", "amount": 5000}])
+        ledger.refresh(student)
+        db.session.commit()
     response = client.post("/api/payments/stk", json={"student_id": 1, "amount": 2000, "phone": "0700000003"}, headers=parent_headers)
     assert response.get_json()["payment"]["status"] == "completed"
     assert client.get("/api/payments/student/1", headers=parent_headers).get_json()["balance"] == 3000
