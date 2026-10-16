@@ -3,7 +3,7 @@ from datetime import date, datetime, timezone
 
 from app.curriculum import term_year
 from app.extensions import db
-from app.models import Discount, FeeRate, Invoice, InvoiceLine, Payment, Student
+from app.models import FeeRate, Invoice, InvoiceLine, Payment
 from app.services.school_year import ladder
 
 CATEGORY_LABELS = {
