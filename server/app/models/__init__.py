@@ -25,3 +25,4 @@ from app.models.mark_change import MarkChange
 from app.models.school_term import SchoolTerm
 from app.models.student_history import StudentHistory
 from app.models.promotion_run import PromotionRun
+from app.models.fees import Discount, FeeItem, FeeRate, Invoice, InvoiceLine, student_discounts
