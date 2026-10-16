@@ -8,6 +8,7 @@ import Fees from "./pages/admin/Fees";
 import FeeStructure from "./pages/fees/FeeStructure";
 import FeesHome from "./pages/fees/FeesHome";
 import Invoices from "./pages/fees/Invoices";
+import Paybill from "./pages/fees/Paybill";
 import Payments from "./pages/fees/Payments";
 import Slips from "./pages/fees/Slips";
 import ReceiptPage from "./pages/fees/ReceiptPage";
@@ -41,6 +42,7 @@ import Compare from "./pages/shared/Compare";
 import Insights from "./pages/shared/Insights";
 import PickupCheck from "./pages/shared/PickupCheck";
 import Reports from "./pages/shared/Reports";
+import PrintCentre from "./pages/shared/PrintCentre";
 import StudentProfile from "./pages/shared/StudentProfile";
 import Assessments from "./pages/teacher/Assessments";
 import Attendance from "./pages/teacher/Attendance";
@@ -68,6 +70,7 @@ export default function App() {
           <Route path="students" element={<Students />} />
           <Route path="students/new" element={<Admission />} />
           <Route path="students/:id" element={<StudentProfile />} />
+          <Route path="print" element={<PrintCentre />} />
           <Route path="school-year" element={<SchoolYear />} />
           <Route path="notices" element={<Notices />} />
           <Route path="clubs" element={<Clubs />} />
@@ -81,6 +84,7 @@ export default function App() {
           <Route path="fees/record" element={<RecordPayment />} />
           <Route path="fees/payments" element={<Payments />} />
           <Route path="fees/slips" element={<Slips />} />
+          <Route path="fees/paybill" element={<Paybill />} />
           <Route path="fees/invoices" element={<Invoices />} />
           <Route path="fees/structure" element={<FeeStructure />} />
           <Route path="fees/balances" element={<Fees />} />
@@ -110,6 +114,7 @@ export default function App() {
           <Route path="clubs" element={<Clubs />} />
           <Route path="clubs/:id" element={<ClubDetail />} />
           <Route path="notices" element={<Notices />} />
+          <Route path="print" element={<PrintCentre />} />
           <Route path="calendar" element={<Calendar />} />
         </Route>
       </Route>
@@ -150,6 +155,7 @@ export default function App() {
           <Route path="fees/record" element={<RecordPayment />} />
           <Route path="fees/payments" element={<Payments />} />
           <Route path="fees/slips" element={<Slips />} />
+          <Route path="fees/paybill" element={<Paybill />} />
           <Route path="fees/invoices" element={<Invoices />} />
           <Route path="fees/structure" element={<FeeStructure />} />
           <Route path="fees/balances" element={<Fees />} />
@@ -165,6 +171,7 @@ export default function App() {
           <Route path="record" element={<RecordPayment />} />
           <Route path="payments" element={<Payments />} />
           <Route path="slips" element={<Slips />} />
+          <Route path="paybill" element={<Paybill />} />
           <Route path="invoices" element={<Invoices />} />
           <Route path="structure" element={<FeeStructure />} />
           <Route path="balances" element={<Fees />} />
