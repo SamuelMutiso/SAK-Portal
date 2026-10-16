@@ -206,8 +206,7 @@ def collect_changes(session, changes, AuditLog):
 
 
 def client_ip():
-    forwarded = request.headers.get("X-Forwarded-For", "")
-    return forwarded.split(",")[0].strip() if forwarded else request.remote_addr
+    return request.remote_addr
 
 
 def compute_hash(entry, previous_hash):
