@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
-import { FileSignature, History, KeyRound, Power, Search, Trash2, UserPlus } from "lucide-react";
+import { FileSignature, History, KeyRound, Power, Search, ShieldOff, Trash2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api, { errorMessage } from "../../api/client";
@@ -129,6 +129,7 @@ export default function Accounts() {
                     <span className="ml-2 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-500">{ROLE_LABELS[user.role]}</span>
                     {user.removed_at && <span className="ml-2 rounded-full bg-brand-800 px-2 py-0.5 text-xs font-semibold text-white">Removed</span>}
                     {!user.removed_at && !user.is_active && <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">Switched off</span>}
+                    {user.two_factor_enabled && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-700">Two-step on</span>}
                   </p>
                   <p className="text-xs text-brand-400">
                     {user.email} · <span className="font-mono">{user.phone}</span> · {user.last_login ? `signed in ${formatDistanceToNow(new Date(user.last_login + "Z"), { addSuffix: true })}` : "no sign-ins recorded"}
@@ -152,6 +153,9 @@ export default function Accounts() {
                     >
                       <Power size={15} /> {user.is_active ? "Switch off" : "Switch on"}
                     </button>
+                    {user.two_factor_enabled && (
+                      <button className="btn-ghost px-3 py-1.5" onClick={() => update(user, { reset_two_factor: true }, `Two-step sign-in reset for ${user.full_name}. They can set it up again after signing in.`)}><ShieldOff size={15} /> Reset two-step</button>
+                    )}
                     <button className="btn bg-red-50 px-3 py-1.5 text-red-700 hover:bg-red-100" onClick={() => setRemoving(removing === user.id ? null : user.id)}><Trash2 size={15} /> Remove</button>
                   </div>
                 )}
