@@ -55,6 +55,7 @@ const LINKS = {
     { to: "/admin/library", label: "Library", icon: Library },
     { to: "/admin/transport", label: "Transport", icon: Bus },
     { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+    { to: "/admin/security", label: "Sign-in security", icon: ShieldCheck },
   ],
   teacher: [
     { to: "/teacher", label: "My Class", icon: LayoutDashboard },
@@ -72,6 +73,7 @@ const LINKS = {
     { to: "/teacher/notices", label: "Class notices", icon: Megaphone },
     { to: "/teacher/print", label: "ID cards & certificates", icon: Printer },
     { to: "/teacher/calendar", label: "Calendar", icon: CalendarDays },
+    { to: "/teacher/security", label: "Sign-in security", icon: ShieldCheck },
   ],
   parent: [
     { to: "/parent", label: "Home", icon: LayoutDashboard },
@@ -94,6 +96,7 @@ const LINKS = {
     { to: "/director/transport", label: "Transport", icon: Bus },
     { to: "/director/fees", label: "Fees", icon: Wallet },
     { to: "/director/calendar", label: "Calendar", icon: CalendarDays },
+    { to: "/director/security", label: "Sign-in security", icon: ShieldCheck },
   ],
   bursar: [
     { to: "/bursar", label: "Fees overview", icon: LayoutDashboard },
@@ -106,6 +109,7 @@ const LINKS = {
     { to: "/bursar/structure", label: "Fee structure", icon: Settings2 },
     { to: "/bursar/students", label: "Learners", icon: Users },
     { to: "/bursar/calendar", label: "Calendar", icon: CalendarDays },
+    { to: "/bursar/security", label: "Sign-in security", icon: ShieldCheck },
   ],
   exams: [
     { to: "/exams", label: "Mark entry", icon: GraduationCap },
@@ -113,11 +117,13 @@ const LINKS = {
     { to: "/exams/compare", label: "Compare classes", icon: ArrowLeftRight },
     { to: "/exams/performance", label: "Performance", icon: TrendingUp },
     { to: "/exams/calendar", label: "Calendar", icon: CalendarDays },
+    { to: "/exams/security", label: "Sign-in security", icon: ShieldCheck },
   ],
   superadmin: [
     { to: "/owner", label: "Security overview", icon: ShieldHalf },
     { to: "/owner/audit", label: "Audit trail", icon: ScrollText },
     { to: "/owner/accounts", label: "Accounts", icon: UserCog },
+    { to: "/owner/security", label: "Sign-in security", icon: ShieldCheck },
   ],
 };
 
