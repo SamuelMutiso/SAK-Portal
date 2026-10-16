@@ -5,10 +5,13 @@ import Loader from "../../components/Loader";
 import SmsPreview from "../../components/SmsPreview";
 import StatCard from "../../components/StatCard";
 import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { formatKes } from "../../constants";
+import { feesBase } from "../../roles";
 
 export default function Fees() {
-  const readOnly = useSelector((state) => state.auth.user.role) === "director";
+  const role = useSelector((state) => state.auth.user.role);
+  const readOnly = role === "director";
   const [data, setData] = useState(null);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState([]);
@@ -75,7 +78,7 @@ export default function Fees() {
           <label key={student.id} className="flex cursor-pointer items-center gap-4 px-5 py-3 hover:bg-brand-50">
             {!readOnly && <input type="checkbox" checked={selected.includes(student.id)} onChange={() => toggle(student.id)} className="h-4 w-4 accent-brand-700" />}
             <div className="flex-1">
-              <p className="font-semibold">{student.full_name}</p>
+              <Link to={`${feesBase(role)}/students/${student.id}`} className="font-semibold hover:underline" onClick={(event) => event.stopPropagation()}>{student.full_name}</Link>
               <p className="text-xs text-brand-400">
                 <span className="font-mono">{student.admission_number}</span> · {student.classroom_name} · {student.parent_name}
               </p>
