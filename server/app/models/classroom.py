@@ -8,6 +8,7 @@ class Classroom(db.Model):
     name = db.Column(db.String(40), nullable=False)
     level = db.Column(db.String(40), nullable=False)
     teacher_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    sort_order = db.Column(db.Integer, default=0, nullable=False, server_default="0")
 
     teacher = db.relationship("User", back_populates="classroom")
     students = db.relationship("Student", back_populates="classroom")
