@@ -6,6 +6,8 @@ from flask_jwt_extended import jwt_required
 from app.extensions import db, limiter
 from app.models import Payment
 from app.schemas import PaymentSchema, PayRequestSchema
+from app.routes.fees import receipt_message
+from app.services import ledger
 from app.services.mpesa import request_stk_push
 from app.services.sms import send_sms
 from app.utils.roles import roles_required, viewable_student
@@ -15,16 +17,9 @@ schema = PaymentSchema()
 
 
 def complete_payment(payment, receipt):
-    payment.status = "completed"
-    payment.receipt = receipt
-    student = payment.student
-    student.fee_balance = max(0, (student.fee_balance or 0) - payment.amount)
+    ledger.complete(payment, receipt)
     db.session.commit()
-    message = (
-        f"Success Academy: Received KES {payment.amount:,} for {student.first_name} ({student.admission_number}). "
-        f"Receipt {receipt}. New balance KES {student.fee_balance:,}."
-    )
-    send_sms([payment.phone], message)
+    send_sms([payment.phone], receipt_message(payment))
 
 
 @payments_bp.get("/student/<int:student_id>")
@@ -36,7 +31,7 @@ def statement(student_id):
 
 
 @payments_bp.post("/stk")
-@roles_required("parent", "admin")
+@roles_required("parent", "admin", "bursar")
 @limiter.limit("5 per minute")
 def start_payment():
     data = PayRequestSchema().load(request.get_json() or {})
@@ -45,7 +40,7 @@ def start_payment():
         return jsonify(error="Amount is more than the fee balance"), 400
 
     result = request_stk_push(data["phone"], data["amount"], student.admission_number)
-    payment = Payment(student_id=student.id, amount=data["amount"], phone=data["phone"], checkout_id=result["checkout_id"])
+    payment = Payment(student_id=student.id, amount=data["amount"], phone=data["phone"], checkout_id=result["checkout_id"], method="M-Pesa")
     db.session.add(payment)
     db.session.commit()
 
