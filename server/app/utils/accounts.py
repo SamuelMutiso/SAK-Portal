@@ -19,9 +19,16 @@ def find_account(identifier):
     return matches[0] if len(matches) == 1 else None
 
 
+COMMON = {"password1", "password123", "12345678a", "qwerty123", "abc12345", "admin123", "letmein1", "welcome1", "passw0rd", "iloveyou1"}
+
+
 def password_problem(password):
     if len(password or "") < 8:
         return "Use at least 8 characters"
+    if len(password) > 128:
+        return "Use 128 characters or fewer"
+    if password.lower() in COMMON:
+        return "That password is too common. Choose another"
     if not re.search(r"[A-Za-z]", password) or not re.search(r"\d", password):
         return "Use both letters and numbers"
     return None
