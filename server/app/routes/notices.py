@@ -14,7 +14,7 @@ schema = NoticeSchema()
 
 
 def recipients_for(notice):
-    query = Student.query
+    query = Student.query.filter_by(status="active")
     if notice.audience == "class":
         query = query.filter(Student.classroom_id == notice.classroom_id)
     elif notice.audience == "club":
