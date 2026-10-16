@@ -12,6 +12,7 @@ import SeenButton from "../../components/SeenButton";
 import { fetchEvents } from "../../store/slices/eventsSlice";
 import { fetchNotices } from "../../store/slices/noticesSlice";
 import { fetchStudents } from "../../store/slices/studentsSlice";
+import LearnerAvatar from "../../components/LearnerAvatar";
 
 export default function ParentDashboard() {
   const dispatch = useDispatch();
@@ -47,9 +48,7 @@ export default function ParentDashboard() {
       <div className="grid gap-4 sm:grid-cols-2">
         {children.map((child) => (
           <Link key={child.id} to={`/parent/children/${child.id}`} className="card flex items-center gap-4 transition hover:-translate-y-0.5 hover:shadow-md">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gold-400 font-display text-xl font-bold text-brand-900">
-              {child.first_name.charAt(0)}
-            </div>
+            <LearnerAvatar student={child} size={56} />
             <div className="flex-1">
               <p className="text-lg font-semibold text-brand-800">{child.full_name}</p>
               <p className="text-sm text-brand-500">{child.classroom_name}{child.clubs.length ? ` · ${child.clubs.join(", ")}` : ""}</p>
