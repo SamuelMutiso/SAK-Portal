@@ -1,7 +1,7 @@
 from app.schemas.user import UserSchema, UserCreateSchema, LoginSchema
 from app.schemas.classroom import ClassroomSchema
 from app.schemas.transport_route import TransportRouteSchema
-from app.schemas.student import StudentSchema
+from app.schemas.student import AdmissionSchema, HistorySchema, LeaveSchema, StudentSchema
 from app.schemas.club import ClubActivitySchema, ClubSchema
 from app.schemas.notice import NoticeSchema
 from app.schemas.event import EventSchema
