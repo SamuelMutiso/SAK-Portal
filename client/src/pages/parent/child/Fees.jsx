@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import api, { errorMessage } from "../../../api/client";
 import InvoiceCard from "../../../components/InvoiceCard";
 import Loader from "../../../components/Loader";
+import SlipUpload from "../../../components/SlipUpload";
 import { formatKes } from "../../../constants";
 import { METHOD_STYLES, balanceLabel } from "../../../fees";
 
@@ -80,6 +81,7 @@ export default function Fees({ student, onBalanceChange }) {
         {status && (
           <p className={`rounded-xl px-4 py-3 text-sm ${status.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>{status.text}</p>
         )}
+        <SlipUpload student={student} />
       </div>
 
       <div className="space-y-4">
