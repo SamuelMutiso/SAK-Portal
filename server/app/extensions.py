@@ -16,8 +16,7 @@ mail = Mail()
 
 
 def visitor_address():
-    forwarded = request.headers.get("X-Forwarded-For", "")
-    return forwarded.split(",")[0].strip() if forwarded else request.remote_addr
+    return request.remote_addr or "unknown"
 
 
 limiter = Limiter(key_func=visitor_address)
