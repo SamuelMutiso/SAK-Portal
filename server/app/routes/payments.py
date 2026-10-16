@@ -12,7 +12,7 @@ from app.routes.fees import receipt_message
 from app.services import ledger
 from app.services.mpesa import MpesaError, callback_token, is_live, query_stk, request_stk_push, result_message
 from app.services.sms import send_sms
-from app.utils.roles import roles_required, viewable_student
+from app.utils.roles import current_user, roles_required, viewable_student
 
 payments_bp = Blueprint("payments", __name__, url_prefix="/api/payments")
 schema = PaymentSchema()
@@ -59,7 +59,9 @@ def start_payment():
     except MpesaError as error:
         return jsonify(error=str(error)), 400 if "Safaricom number" in str(error) else 502
 
-    payment = Payment(student_id=student.id, amount=data["amount"], phone=result["phone"], checkout_id=result["checkout_id"], method="M-Pesa")
+    user = current_user()
+    payment = Payment(student_id=student.id, amount=data["amount"], phone=result["phone"], checkout_id=result["checkout_id"], method="M-Pesa",
+                      recorded_by_id=user.id if user.role != "parent" else None)
     db.session.add(payment)
     db.session.commit()
 
