@@ -36,10 +36,13 @@ def test_new_parent_must_change_password(client, admin_headers):
     assert weak.status_code == 400
     done = client.post("/api/auth/change-password", json={"current_password": temporary, "new_password": "Kitengela2026"}, headers=headers)
     assert done.get_json()["user"]["must_change_password"] is False
-    assert client.get("/api/students", headers=headers).status_code == 200
+    assert client.get("/api/students", headers=headers).status_code == 401
+    fresh = {"Authorization": f"Bearer {done.get_json()['access_token']}"}
+    assert client.get("/api/students", headers=fresh).status_code == 200
 
 
-def test_forgot_and_reset_with_sms_code(client):
+def test_forgot_and_reset_with_sms_code(app, client):
+    app.config["DEMO_MODE"] = True
     sent = client.post("/api/auth/forgot", json={"login": "0700000003"}).get_json()
     code = re.search(r"\b(\d{6})\b", sent["sms"]["message"]).group(1)
     assert client.post("/api/auth/reset", json={"login": "0700000003", "code": "000000" if code != "000000" else "111111", "new_password": "NewPass2026"}).status_code == 400
@@ -61,3 +64,8 @@ def test_reset_code_locks_after_five_tries(client):
     user = User.query.filter_by(email="parent@test.com").first()
     assert user.check_password("password123")
     assert db.session.query(User).count() > 0
+
+
+def test_reset_code_never_returned_outside_demo(client):
+    sent = client.post("/api/auth/forgot", json={"login": "0700000003"}).get_json()
+    assert "sms" not in sent and "code" not in str(sent).lower().replace("6-digit code", "")
