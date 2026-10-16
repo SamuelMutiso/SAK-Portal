@@ -31,4 +31,7 @@ def consent_gate():
     if user and needs_consent(user):
         g.consent_block = True
         return jsonify(error="Please accept the Terms and Privacy Policy to continue", consent_required=True), 403
+    if user and user.must_change_password:
+        g.consent_block = True
+        return jsonify(error="Please choose a new password to continue", password_change_required=True), 403
     return None
