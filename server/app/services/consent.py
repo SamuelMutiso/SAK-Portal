@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity, verify_jwt_in_request
 from app.extensions import db
 from app.policies import POLICY_VERSION
 
-EXEMPT = ("/api/auth/", "/api/consent", "/api/health", "/api/payments/callback", "/api/uploads/")
+EXEMPT = ("/api/auth/", "/api/consent", "/api/health", "/api/payments/callback", "/api/paybill/validation", "/api/paybill/confirmation", "/api/uploads/")
 
 
 def needs_consent(user):
