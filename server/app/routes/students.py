@@ -11,16 +11,12 @@ from app.schemas import AdmissionSchema, HistorySchema, LeaveSchema, StudentSche
 from app.schemas.student import HEALTH_FIELDS
 from app.services.school_year import leave_school, next_admission_number, readmit, record, this_year
 from app.services.sms import send_sms
+from app.utils.accounts import phone_key
 from app.utils.roles import can_view_student, current_user, roles_required, search_students, students_for
 
 students_bp = Blueprint("students", __name__, url_prefix="/api/students")
 schema = StudentSchema()
 PARENT_DOMAIN = "parents.successacademy.ac.ke"
-
-
-def phone_key(phone):
-    digits = "".join(character for character in str(phone or "") if character.isdigit())
-    return digits[-9:]
 
 
 def temporary_password():
@@ -116,6 +112,7 @@ def admit():
         email = guardian.get("email") or f"{phone_key(guardian['phone'])}@{PARENT_DOMAIN}"
         parent = User(full_name=guardian["full_name"], email=email.lower(), phone=guardian["phone"], role="parent")
         parent.set_password(password)
+        parent.must_change_password = True
         db.session.add(parent)
 
     if data.get("is_boarder"):
@@ -136,7 +133,7 @@ def admit():
 
     if password:
         message = (f"Welcome to Success Academy. {student.first_name} has been admitted to {classroom.name}, admission number {student.admission_number}. "
-                   f"Sign in to the parent portal with {parent.email} and password {password}. You will be asked to change it.")
+                   f"Sign in to the parent portal with your phone number {parent.phone} and password {password}. You will be asked to change it.")
     else:
         message = f"Success Academy: {student.first_name} has been admitted to {classroom.name}, admission number {student.admission_number}. You can see them in your parent portal."
     sms = send_sms([parent.phone], message)

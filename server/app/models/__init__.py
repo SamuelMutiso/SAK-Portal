@@ -26,3 +26,5 @@ from app.models.school_term import SchoolTerm
 from app.models.student_history import StudentHistory
 from app.models.promotion_run import PromotionRun
 from app.models.fees import Discount, FeeItem, FeeRate, Invoice, InvoiceLine, student_discounts
+from app.models.payment_slip import PaymentSlip
+from app.models.password_reset import PasswordReset

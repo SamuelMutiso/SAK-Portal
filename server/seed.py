@@ -26,6 +26,7 @@ from app.models import (
     PortfolioItem,
     SchoolTerm,
     Discount,
+    PaymentSlip,
     FeeItem,
     FeeRate,
     Student,
@@ -344,6 +345,70 @@ def seed_fees(students, classrooms, routes, bursar, siblings):
         payment.created_at = moment
 
 
+def slip_image(bank, reference, amount, when, account):
+    import os
+    import uuid
+
+    from app.services.uploads import private_folder
+
+    rows = [("Date", when.strftime("%d/%m/%Y")), ("Account name", "SUCCESS ACADEMY KITENGELA"), ("Account / Ref", account),
+            ("Amount (KES)", f"{amount:,}.00"), ("Transaction no.", reference), ("Depositor", "Parent")]
+    lines = "".join(
+        f'<text x="40" y="{130 + index * 60}" font-size="18" fill="#5a5a5a">{label}</text>'
+        f'<text x="250" y="{130 + index * 60}" font-size="22" font-family="monospace" fill="#141414">{value}</text>'
+        f'<line x1="240" y1="{140 + index * 60}" x2="860" y2="{140 + index * 60}" stroke="#d0d0d0"/>'
+        for index, (label, value) in enumerate(rows)
+    )
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" font-family="Arial, sans-serif">'
+        '<rect width="900" height="520" fill="#fcfbf6"/><rect width="900" height="70" fill="#284678"/>'
+        f'<text x="30" y="44" font-size="24" font-weight="bold" fill="#ffffff">{bank.upper()} · CASH DEPOSIT SLIP (DEMO)</text>'
+        f"{lines}"
+        '<ellipse cx="780" cy="455" rx="85" ry="50" fill="none" stroke="#a02828" stroke-width="4" transform="rotate(-12 780 455)"/>'
+        '<text x="722" y="463" font-size="24" font-weight="bold" fill="#a02828" transform="rotate(-12 780 455)">RECEIVED</text>'
+        "</svg>"
+    )
+    folder = private_folder()
+    os.makedirs(folder, exist_ok=True)
+    name = f"{uuid.uuid4().hex}.svg"
+    with open(os.path.join(folder, name), "w") as handle:
+        handle.write(svg)
+    return name
+
+
+def seed_slips(students, ethan, bursar):
+    import shutil
+
+    from app.services import ledger
+    from app.services.uploads import private_folder
+
+    shutil.rmtree(private_folder(), ignore_errors=True)
+
+    today = date.today()
+    owing = [student for student in students if student.fee_balance >= 6000 and student is not ethan]
+    picks = [(ethan, 8000, "Equity Bank")] + [(student, random.choice([5000, 6000, 10000]), random.choice(BANKS)) for student in random.sample(owing, 3)]
+    for index, (student, amount, bank) in enumerate(picks):
+        when = today - timedelta(days=index + 1)
+        reference = f"FT{when:%y%m%d}{random.randint(1000, 9999)}"
+        status = "pending" if index < 3 else "rejected"
+        slip = PaymentSlip(student=student, submitted_by_id=student.parent_id, amount=amount, bank_name=bank, reference=reference, paid_on=when,
+                           file_name=slip_image(bank, reference, amount, when, student.admission_number), status=status,
+                           created_at=datetime.combine(when, datetime.min.time()).replace(hour=18))
+        if status == "rejected":
+            slip.rejection_reason = "Not on the school bank statement yet. Please bring the original slip."
+            slip.reviewed_by_id = bursar.id
+            slip.reviewed_at = datetime.now()
+        db.session.add(slip)
+    approved_for = random.choice(owing)
+    when = today - timedelta(days=9)
+    reference = f"FT{when:%y%m%d}{random.randint(1000, 9999)}"
+    payment = ledger.record_payment(approved_for, 4000, "Bank", bursar, reference=reference, paid_on=when, bank_name="KCB",
+                                    note="From a slip uploaded by the parent", phone=approved_for.parent.phone if approved_for.parent else None)
+    db.session.add(PaymentSlip(student=approved_for, submitted_by_id=approved_for.parent_id, amount=4000, bank_name="KCB", reference=reference,
+                               paid_on=when, file_name=slip_image("KCB", reference, 4000, when, approved_for.admission_number), status="approved",
+                               reviewed_by_id=bursar.id, reviewed_at=datetime.now(), payment=payment))
+
+
 def seed():
     random.seed(7)
     ADMISSION_COUNTS.clear()
@@ -582,6 +647,7 @@ def seed():
             db.session.add(Loan(book=book, student=student, borrowed_on=borrowed, due_on=borrowed + timedelta(days=14)))
 
     seed_fees(students, classrooms, routes, bursar, [neema, amani])
+    seed_slips(students, ethan, bursar)
 
     db.session.add(TransportLog(student=ethan, route_id=routes[0].id, event="boarded",
                                 recorded_at=datetime.utcnow().replace(hour=4, minute=12), driver_id=drivers[0].id))

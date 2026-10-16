@@ -173,6 +173,7 @@ def create_account():
         return jsonify(error="Email already in use"), 409
     user = User(full_name=data["full_name"], email=email, phone=data["phone"], role=data["role"])
     user.set_password(data["password"])
+    user.must_change_password = True
     db.session.add(user)
     db.session.commit()
     return jsonify(account_dump(user, {}, {})), 201
@@ -195,6 +196,7 @@ def update_account(user_id):
         if len(data["password"]) < 8:
             return jsonify(error="Passwords need at least 8 characters"), 400
         user.set_password(data["password"])
+        user.must_change_password = True
     db.session.commit()
     return jsonify(account_dump(user, {}, {}))
 

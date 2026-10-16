@@ -12,7 +12,7 @@ from app.services.devices import describe_device
 
 WRITE_METHODS = ("POST", "PUT", "PATCH", "DELETE")
 SKIP_PATHS = ("/api/auth/login", "/api/auth/refresh", "/api/payments/callback")
-HIDDEN_FIELDS = ("password_hash", "allergies", "medical_conditions")
+HIDDEN_FIELDS = ("password_hash", "allergies", "medical_conditions", "code_hash")
 
 ACTIONS = {
     "users.create_user": "Created a user account",
@@ -65,6 +65,12 @@ ACTIONS = {
     "fees.cancel_invoice": "Cancelled an invoice",
     "fees.record_payment": "Recorded a fee payment",
     "fees.reverse_payment": "Reversed a fee payment",
+    "fees.upload_slip": "Uploaded a bank slip",
+    "fees.approve_slip": "Approved a bank slip",
+    "fees.reject_slip": "Rejected a bank slip",
+    "auth.change_password": "Changed their password",
+    "auth.forgot_password": "Asked for a password reset code",
+    "auth.reset_password": "Reset a password with an SMS code",
     "pickups.add_pickup": "Added a pick-up person",
     "pickups.remove_pickup": "Removed a pick-up person",
     "pickups.set_emergency_contact": "Changed an emergency contact",
@@ -120,6 +126,8 @@ TABLE_NAMES = {
     "discounts": "Discount",
     "invoices": "Invoice",
     "invoice_lines": "Invoice line",
+    "payment_slips": "Bank slip",
+    "password_resets": "Password reset",
     "student_discounts": "Learner discount",
 }
 

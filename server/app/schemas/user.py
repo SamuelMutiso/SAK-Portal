@@ -21,6 +21,6 @@ class UserCreateSchema(Schema):
 
 
 class LoginSchema(Schema):
-    email = fields.Email(required=True)
+    email = fields.String(required=True, validate=validate.Length(min=3, max=120))
     password = fields.String(required=True)
     role = fields.String(load_default=None, validate=validate.OneOf(ROLES))
