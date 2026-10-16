@@ -2,7 +2,7 @@ import hmac
 import time
 from datetime import datetime, timedelta
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import jwt_required
 
 from app.extensions import db, limiter
@@ -10,7 +10,7 @@ from app.models import Payment
 from app.schemas import PaymentSchema, PayRequestSchema
 from app.routes.fees import receipt_message
 from app.services import ledger
-from app.services.mpesa import MpesaError, callback_token, is_live, query_stk, request_stk_push, result_message
+from app.services.mpesa import MpesaError, callback_token, format_msisdn, is_live, query_stk, request_stk_push, result_message
 from app.services.sms import send_sms
 from app.utils.roles import current_user, roles_required, viewable_student
 
@@ -54,6 +54,15 @@ def start_payment():
     if data["amount"] > (student.fee_balance or 0):
         return jsonify(error="Amount is more than the fee balance"), 400
 
+    allowed = current_app.config["MPESA_ALLOWED_PHONES"]
+    if allowed and is_live():
+        try:
+            wanted = format_msisdn(data["phone"])
+            permitted = {format_msisdn(phone) for phone in allowed}
+        except MpesaError as error:
+            return jsonify(error=str(error)), 400
+        if wanted not in permitted:
+            return jsonify(error="This demo only sends M-Pesa prompts to approved test numbers."), 403
     try:
         result = request_stk_push(data["phone"], data["amount"], student.admission_number)
     except MpesaError as error:
