@@ -6,8 +6,10 @@ import { Link, useParams } from "react-router-dom";
 import api, { errorMessage } from "../../api/client";
 import Loader from "../../components/Loader";
 import { feesBase } from "../../roles";
+import LearnerAvatar from "../../components/LearnerAvatar";
+import StudentDocuments from "../../components/documents/StudentDocuments";
 
-const TABS = [["overview", "Overview"], ["guardians", "Guardians"], ["health", "Health"], ["attendance", "Attendance"], ["history", "History"]];
+const TABS = [["overview", "Overview"], ["guardians", "Guardians"], ["health", "Health"], ["attendance", "Attendance"], ["history", "History"], ["documents", "ID & certificates"]];
 
 const OUTCOME_STYLES = {
   admitted: "bg-sky-100 text-sky-700",
@@ -98,7 +100,7 @@ export default function StudentProfile() {
       <Link to={`/${user.role}/students`} className="inline-flex items-center gap-2 text-sm font-semibold text-brand-600 hover:underline"><ArrowLeft size={16} /> All learners</Link>
 
       <section className="flex flex-wrap items-center gap-5 rounded-3xl bg-brand-800 p-6 text-white">
-        <span className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-500 font-headline text-3xl font-extrabold text-brand-900">{student.first_name[0]}</span>
+        <LearnerAvatar student={student} size={64} />
         <div className="flex-1">
           <h1 className="font-headline text-4xl font-extrabold uppercase leading-none">{student.full_name}</h1>
           <p className="mt-1.5 flex flex-wrap items-center gap-3 text-sm text-brand-200">
@@ -182,6 +184,8 @@ export default function StudentProfile() {
           <div className="card"><p className="text-sm text-brand-500">Days absent</p><p className="font-mono text-3xl font-semibold text-red-700">{attendance.absent}</p></div>
         </div>
       )}
+
+      {tab === "documents" && <StudentDocuments studentId={student.id} staff />}
 
       {tab === "history" && (
         <ol className="card space-y-4 border-l-2 border-brand-100 pl-6">
