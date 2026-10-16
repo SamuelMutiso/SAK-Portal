@@ -93,3 +93,38 @@
   background-image: radial-gradient(rgba(30, 58, 107, 0.14) 1.2px, transparent 1.2px);
   background-size: 18px 18px;
 }
+
+@media print {
+  body.printing-doc * {
+    visibility: hidden;
+  }
+
+  body.printing-doc .doc-print,
+  body.printing-doc .doc-print * {
+    visibility: visible;
+  }
+
+  body.printing-doc {
+    background: #ffffff;
+  }
+
+  body.printing-doc .doc-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  body.printing-doc .doc-page {
+    break-after: page;
+  }
+
+  body.printing-doc .doc-page:last-child {
+    break-after: auto;
+  }
+
+  body.printing-doc * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

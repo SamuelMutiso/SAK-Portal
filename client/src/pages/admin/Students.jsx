@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../../api/client";
 import Loader from "../../components/Loader";
 import { fetchStudents } from "../../store/slices/studentsSlice";
+import LearnerAvatar from "../../components/LearnerAvatar";
 
 export default function Students() {
   const dispatch = useDispatch();
@@ -73,8 +74,13 @@ export default function Students() {
               {items.map((student) => (
                 <tr key={student.id} onClick={() => navigate(`/${role}/students/${student.id}`)} className="flex cursor-pointer flex-col gap-1 px-5 py-4 hover:bg-brand-50 md:table-row md:p-0">
                   <td className="md:px-5 md:py-3">
-                    <p className="font-semibold text-brand-800">{student.full_name}</p>
-                    <p className="font-mono text-xs text-brand-400">{student.admission_number}</p>
+                    <div className="flex items-center gap-3">
+                      <LearnerAvatar student={student} size={40} />
+                      <div>
+                        <p className="font-semibold text-brand-800">{student.full_name}</p>
+                        <p className="font-mono text-xs text-brand-400">{student.admission_number}</p>
+                      </div>
+                    </div>
                   </td>
                   <td className="md:px-5 md:py-3">{student.classroom_name || <span className="text-brand-400">{student.last_classroom_name} · {student.status}</span>}</td>
                   <td className="md:px-5 md:py-3">

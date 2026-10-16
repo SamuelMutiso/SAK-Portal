@@ -121,10 +121,10 @@ export default function Calendar() {
           <ul className="mt-3 divide-y divide-brand-100">
             {monthEvents.length === 0 && <li className="py-2 text-sm text-brand-400">No events this month.</li>}
             {monthEvents.map((event) => (
-              <li key={event.id} className="flex items-center gap-3 py-2.5">
+              <li key={event.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2.5">
                 <span className="w-14 font-mono text-xs font-semibold text-gold-600">{format(new Date(event.start_date), "d MMM")}</span>
-                <div className="flex-1">
-                  <p className="text-sm font-semibold">{event.title}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="break-words text-sm font-semibold">{event.title}</p>
                   {event.location && <p className="text-xs text-brand-400">{event.location}</p>}
                 </div>
                 <span className={`badge ${CATEGORY_STYLES[event.category]}`}>{event.category}</span>

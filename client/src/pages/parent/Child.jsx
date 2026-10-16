@@ -15,6 +15,8 @@ import Portfolio from "./child/Portfolio";
 import Progress from "./child/Progress";
 import Safety from "./child/Safety";
 import Timetable from "./child/Timetable";
+import LearnerAvatar from "../../components/LearnerAvatar";
+import StudentDocuments from "../../components/documents/StudentDocuments";
 
 function ReportTab({ student }) {
   const [data, setData] = useState(null);
@@ -72,6 +74,7 @@ export default function Child() {
     { key: "safety", label: "Pick-up & safety" },
     { key: "library", label: "Library" },
     student.is_boarder && { key: "leave", label: "Leave-out" },
+    { key: "documents", label: "ID & certificates" },
   ].filter(Boolean);
 
   return (
@@ -81,9 +84,7 @@ export default function Child() {
       </Link>
 
       <div className="card flex flex-wrap items-center gap-4 print:hidden">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gold-400 font-headline text-3xl font-extrabold text-brand-900">
-          {student.first_name.charAt(0)}
-        </div>
+        <LearnerAvatar student={student} size={64} />
         <div className="flex-1">
           <h1 className="page-title">{student.full_name}</h1>
           <p className="mt-1 text-brand-500">
@@ -124,6 +125,7 @@ export default function Child() {
       {tab === "safety" && <Safety student={student} />}
       {tab === "library" && <Library student={student} />}
       {tab === "leave" && <Leave student={student} />}
+      {tab === "documents" && <StudentDocuments studentId={student.id} />}
     </div>
   );
 }

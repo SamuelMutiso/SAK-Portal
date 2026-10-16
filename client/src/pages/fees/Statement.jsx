@@ -1,11 +1,12 @@
 import { format } from "date-fns";
-import { ArrowLeft, Banknote, FilePlus2, Printer, Tag } from "lucide-react";
+import { ArrowLeft, Banknote, FilePlus2, Printer, Smartphone, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useParams } from "react-router-dom";
 import api, { errorMessage } from "../../api/client";
 import InvoiceCard from "../../components/InvoiceCard";
 import Loader from "../../components/Loader";
+import MpesaPrompt from "../../components/MpesaPrompt";
 import { TERM, formatKes } from "../../constants";
 import { METHOD_STYLES, balanceLabel } from "../../fees";
 import { feesBase } from "../../roles";
@@ -21,6 +22,7 @@ export default function Statement() {
   const [cancelling, setCancelling] = useState(null);
   const [reason, setReason] = useState("");
   const [message, setMessage] = useState(null);
+  const [prompting, setPrompting] = useState(false);
 
   function load() {
     api.get(`/fees/students/${id}/statement`).then(({ data: result }) => setData(result));
@@ -69,6 +71,7 @@ export default function Statement() {
       <div className="flex flex-wrap items-center gap-3 print:hidden">
         <Link to={base} className="inline-flex flex-1 items-center gap-2 text-sm font-semibold text-brand-600 hover:underline"><ArrowLeft size={16} /> Fees</Link>
         <button className="btn-ghost" onClick={() => window.print()}><Printer size={16} /> Print statement</button>
+        {canEdit && balance > 0 && student.status === "active" && <button className="btn-ghost" onClick={() => setPrompting(!prompting)}><Smartphone size={16} /> Send M-Pesa prompt</button>}
         {canEdit && <Link to={`${base}/record?student=${student.id}`} className="btn-gold"><Banknote size={16} /> Record payment</Link>}
       </div>
 
@@ -85,6 +88,12 @@ export default function Statement() {
           <p className="font-mono text-4xl font-semibold">{formatKes(Math.abs(balance))}</p>
         </div>
       </section>
+
+      {prompting && (
+        <div className="max-w-xl print:hidden">
+          <MpesaPrompt student={student} balance={balance} defaultPhone={student.parent_phone} staff onPaid={load} />
+        </div>
+      )}
 
       {message && <p className={`rounded-xl px-4 py-3 text-sm ${message.type === "success" ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"}`}>{message.text}</p>}
 
