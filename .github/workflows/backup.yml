@@ -1,0 +1,61 @@
+name: Nightly database backup
+
+on:
+  schedule:
+    - cron: "30 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    services:
+      restore:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: restore
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Dump the database
+        env:
+          DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          docker run --rm --network host -e DATABASE_URL postgres:18 \
+            sh -c 'pg_dump --no-owner --no-privileges --format=custom "$DATABASE_URL"' > backup.dump
+          test -s backup.dump
+
+      - name: Encrypt the backup
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt -pass env:BACKUP_PASSPHRASE -in backup.dump -out "sak-backup-$(date -u +%Y-%m-%d).dump.enc"
+
+      - name: Prove the backup restores
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+          PGPASSWORD: restore
+        run: |
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -pass env:BACKUP_PASSPHRASE -in sak-backup-*.dump.enc -out restored.dump
+          docker run --rm --network host -e PGPASSWORD -v "$PWD:/work" postgres:18 \
+            pg_restore --no-owner --no-privileges -h 127.0.0.1 -U postgres -d postgres /work/restored.dump
+          for table in users students invoices payments audit_logs; do
+            count=$(docker run --rm --network host -e PGPASSWORD postgres:18 psql -h 127.0.0.1 -U postgres -d postgres -tAc "select count(*) from $table")
+            echo "$table: $count rows"
+            test "$count" -gt 0
+          done
+          rm -f backup.dump restored.dump
+
+      - name: Keep the encrypted backup for 30 days
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-backup
+          path: sak-backup-*.dump.enc
+          retention-days: 30
