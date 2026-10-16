@@ -1,6 +1,7 @@
 import {
   ArrowLeftRight,
   Banknote,
+  Landmark,
   Receipt,
   Settings2,
   Baby,
@@ -94,6 +95,7 @@ const LINKS = {
     { to: "/bursar", label: "Fees overview", icon: LayoutDashboard },
     { to: "/bursar/record", label: "Record payment", icon: Banknote },
     { to: "/bursar/payments", label: "Payments", icon: Receipt },
+    { to: "/bursar/slips", label: "Bank slips", icon: Landmark },
     { to: "/bursar/invoices", label: "Invoices", icon: FileText },
     { to: "/bursar/balances", label: "Balances & reminders", icon: Wallet },
     { to: "/bursar/structure", label: "Fee structure", icon: Settings2 },
