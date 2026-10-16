@@ -6,7 +6,7 @@ from flask_jwt_extended import jwt_required
 from sqlalchemy import func, or_
 
 from app.curriculum import current_term
-from app.extensions import db
+from app.extensions import db, limiter
 from app.models import Discount, FeeItem, FeeRate, Invoice, PaybillReceipt, Payment, PaymentSlip, SchoolTerm, Student
 from app.schemas import StudentSchema
 from app.schemas.fees import (
@@ -53,6 +53,7 @@ def list_balances():
 
 
 @fees_bp.post("/remind")
+@limiter.limit("20 per hour")
 @roles_required(*FEE_ROLES)
 def send_fee_reminders():
     student_ids = (request.get_json() or {}).get("student_ids")
@@ -438,6 +439,7 @@ def reference_taken(reference, exclude_slip=None):
 
 
 @fees_bp.post("/slips")
+@limiter.limit("20 per hour")
 @roles_required("parent", "admin", "bursar")
 def upload_slip():
     user = current_user()
@@ -508,8 +510,11 @@ def approve_slip(slip_id):
     if slip.status != "pending":
         return jsonify(error="This slip has already been checked"), 400
     data = request.get_json() or {}
-    amount = int(data.get("amount") or slip.amount)
-    if amount < 1:
+    try:
+        amount = int(data.get("amount") or slip.amount)
+    except (TypeError, ValueError):
+        return jsonify(error="Enter the amount as a number"), 400
+    if amount < 1 or amount > 1000000:
         return jsonify(error="Enter the amount the bank received"), 400
     if Payment.query.filter(Payment.reference == slip.reference, Payment.status == "completed").first():
         return jsonify(error=f"A payment with reference {slip.reference} is already recorded"), 400
