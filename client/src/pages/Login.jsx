@@ -1,9 +1,12 @@
-import { ArrowLeft, Bus, ClipboardList, Crown, GraduationCap, School, ShieldHalf, Users, Wallet } from "lucide-react";
+import { ArrowLeft, Bus, ClipboardList, Crown, GraduationCap, School, ShieldCheck, ShieldHalf, Users, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, Navigate } from "react-router-dom";
 import { homePath } from "../roles";
-import { clearAuthError, login } from "../store/slices/authSlice";
+import { cancelTwoFactor, clearAuthError, login, verifyTwoFactor } from "../store/slices/authSlice";
+
+const SHOW_DEMO = import.meta.env.VITE_SHOW_DEMO_LOGINS === "true";
+const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || "";
 
 const DEMO = [
   { label: "Parent", email: "parent@successacademy.ac.ke", icon: Users },
@@ -19,8 +22,9 @@ const DEMO = [
 
 export default function Login() {
   const dispatch = useDispatch();
-  const { user, status, error } = useSelector((state) => state.auth);
+  const { user, status, error, twoFactor } = useSelector((state) => state.auth);
   const [form, setForm] = useState({ email: "", password: "" });
+  const [code, setCode] = useState("");
 
   useEffect(() => {
     dispatch(clearAuthError());
@@ -37,6 +41,11 @@ export default function Login() {
   function handleSubmit(event) {
     event.preventDefault();
     dispatch(login(form));
+  }
+
+  function handleCode(event) {
+    event.preventDefault();
+    dispatch(verifyTwoFactor({ challenge: twoFactor.challenge, code }));
   }
 
   return (
@@ -77,6 +86,23 @@ export default function Login() {
           <h1 className="mt-6 font-headline text-5xl font-extrabold uppercase leading-none text-brand-800">Sign in to portal</h1>
           <p className="mt-2 text-sm text-brand-500">Parents, teachers, the office, the bursar, the exams officer and drivers all sign in here. Your account already knows who you are, so the portal opens the right page for you.</p>
 
+          {twoFactor ? (
+            <form onSubmit={handleCode} className="mt-8 space-y-4">
+              <div className="flex items-start gap-3 rounded-2xl bg-brand-50 p-4">
+                <ShieldCheck className="mt-0.5 shrink-0 text-emerald-600" />
+                <p className="text-sm text-brand-700">Hello {twoFactor.name}. Open your authenticator app and enter the 6-digit code for Success Academy.</p>
+              </div>
+              <div>
+                <label className="label" htmlFor="code">6-digit code</label>
+                <input id="code" inputMode="numeric" autoComplete="one-time-code" maxLength={6} className="input text-center font-mono text-2xl tracking-[0.5em]" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} autoFocus required />
+              </div>
+              {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+              <button type="submit" className="btn-primary w-full py-3" disabled={status === "loading" || code.length !== 6}>
+                {status === "loading" ? "Checking..." : "Confirm"}
+              </button>
+              <button type="button" className="w-full text-sm font-semibold text-brand-500 hover:underline" onClick={() => { setCode(""); dispatch(cancelTwoFactor()); }}>Start again</button>
+            </form>
+          ) : (
           <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div>
               <label className="label" htmlFor="email">Phone number or email</label>
@@ -94,20 +120,21 @@ export default function Login() {
               {status === "loading" ? "Signing in..." : "Sign in"}
             </button>
           </form>
+          )}
 
           <p className="mt-3 text-sm text-brand-500">Parents sign in with the phone number the school has. No account yet? Call the school office on 0748 065 956.</p>
 
-          <div className="mt-8 rounded-2xl bg-brand-50 p-4">
+          {SHOW_DEMO && !twoFactor && <div className="mt-8 rounded-2xl bg-brand-50 p-4">
             <p className="text-sm font-semibold text-brand-700">Demo accounts</p>
             <p className="text-xs text-brand-400">Tap one to fill in its email and password.</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {DEMO.map(({ label, email, icon: Icon }) => (
-                <button key={email} type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => setForm({ email, password: "Success@2026" })}>
+                <button key={email} type="button" className="btn-ghost px-3 py-1.5 text-sm" onClick={() => setForm({ email, password: DEMO_PASSWORD })}>
                   <Icon size={14} /> {label}
                 </button>
               ))}
             </div>
-          </div>
+          </div>}
 
           <p className="mt-4 text-xs text-brand-400">
             For security, sign-ins and changes on this portal are recorded with the device and network used. By signing in you agree to the{" "}

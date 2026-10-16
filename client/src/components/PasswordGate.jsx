@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import api, { errorMessage } from "../api/client";
 import { passwordProblem } from "../passwords";
-import { logout, passwordChanged } from "../store/slices/authSlice";
+import { logout, sessionRenewed } from "../store/slices/authSlice";
 
 export default function PasswordGate() {
   const dispatch = useDispatch();
@@ -22,7 +22,7 @@ export default function PasswordGate() {
     setSaving(true);
     try {
       const { data } = await api.post("/auth/change-password", { current_password: form.current, new_password: form.next });
-      dispatch(passwordChanged(data.user));
+      dispatch(sessionRenewed(data));
     } catch (err) {
       setError(errorMessage(err));
       setSaving(false);

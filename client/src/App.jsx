@@ -43,6 +43,7 @@ import Insights from "./pages/shared/Insights";
 import PickupCheck from "./pages/shared/PickupCheck";
 import Reports from "./pages/shared/Reports";
 import PrintCentre from "./pages/shared/PrintCentre";
+import TwoFactorSetup from "./components/TwoFactorSetup";
 import StudentProfile from "./pages/shared/StudentProfile";
 import Assessments from "./pages/teacher/Assessments";
 import Attendance from "./pages/teacher/Attendance";
@@ -66,6 +67,7 @@ export default function App() {
 
       <Route element={<ProtectedRoute roles={["admin"]} />}>
         <Route path="/admin" element={<DashboardLayout />}>
+          <Route path="security" element={<TwoFactorSetup />} />
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<Students />} />
           <Route path="students/new" element={<Admission />} />
@@ -100,6 +102,7 @@ export default function App() {
 
       <Route element={<ProtectedRoute roles={["teacher"]} />}>
         <Route path="/teacher" element={<DashboardLayout />}>
+          <Route path="security" element={<TwoFactorSetup />} />
           <Route index element={<TeacherDashboard />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="homework" element={<Homework />} />
@@ -130,12 +133,14 @@ export default function App() {
 
       <Route element={<ProtectedRoute roles={["driver"]} />}>
         <Route path="/driver" element={<DashboardLayout />}>
+          <Route path="security" element={<TwoFactorSetup />} />
           <Route index element={<Trip />} />
         </Route>
       </Route>
 
       <Route element={<ProtectedRoute roles={["director"]} />}>
         <Route path="/director" element={<DashboardLayout />}>
+          <Route path="security" element={<TwoFactorSetup />} />
           <Route index element={<DirectorHome />} />
           <Route path="performance" element={<Performance />} />
           <Route path="insights" element={<Insights />} />
@@ -167,6 +172,7 @@ export default function App() {
 
       <Route element={<ProtectedRoute roles={["bursar"]} />}>
         <Route path="/bursar" element={<DashboardLayout />}>
+          <Route path="security" element={<TwoFactorSetup />} />
           <Route index element={<FeesHome />} />
           <Route path="record" element={<RecordPayment />} />
           <Route path="payments" element={<Payments />} />
@@ -184,6 +190,7 @@ export default function App() {
 
       <Route element={<ProtectedRoute roles={["exams"]} />}>
         <Route path="/exams" element={<DashboardLayout />}>
+          <Route path="security" element={<TwoFactorSetup />} />
           <Route index element={<Assessments />} />
           <Route path="insights" element={<Insights />} />
           <Route path="compare" element={<Compare />} />
@@ -194,6 +201,7 @@ export default function App() {
 
       <Route element={<ProtectedRoute roles={["superadmin"]} />}>
         <Route path="/owner" element={<DashboardLayout />}>
+          <Route path="security" element={<TwoFactorSetup />} />
           <Route index element={<Security />} />
           <Route path="audit" element={<AuditTrail />} />
           <Route path="accounts" element={<Accounts />} />
