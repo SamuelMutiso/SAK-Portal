@@ -22,3 +22,6 @@ from app.models.timetable import TimetableSlot
 from app.models.audit_log import AuditLog
 from app.models.consent import Consent
 from app.models.mark_change import MarkChange
+from app.models.school_term import SchoolTerm
+from app.models.student_history import StudentHistory
+from app.models.promotion_run import PromotionRun
