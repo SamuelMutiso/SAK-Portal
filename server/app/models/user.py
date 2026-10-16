@@ -2,8 +2,8 @@ from datetime import datetime
 
 from app.extensions import bcrypt, db
 
-ROLES = ("superadmin", "director", "admin", "exams", "teacher", "parent", "driver")
-STAFF_ROLES = ("director", "admin", "exams", "teacher", "driver")
+ROLES = ("superadmin", "director", "admin", "bursar", "exams", "teacher", "parent", "driver")
+STAFF_ROLES = ("director", "admin", "bursar", "exams", "teacher", "driver")
 ADMIN_LIKE = ("admin", "director")
 
 
