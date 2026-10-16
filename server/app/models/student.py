@@ -43,6 +43,8 @@ class Student(db.Model):
     assessments = db.relationship("Assessment", back_populates="student", cascade="all, delete-orphan")
     pickups = db.relationship("AuthorizedPickup", back_populates="student", cascade="all, delete-orphan")
     payments = db.relationship("Payment", back_populates="student", cascade="all, delete-orphan")
+    invoices = db.relationship("Invoice", back_populates="student", order_by="Invoice.issued_on, Invoice.id")
+    discounts = db.relationship("Discount", secondary="student_discounts", back_populates="students")
     history = db.relationship("StudentHistory", back_populates="student", cascade="all, delete-orphan", order_by="StudentHistory.year.desc(), StudentHistory.id.desc()")
 
     @property
