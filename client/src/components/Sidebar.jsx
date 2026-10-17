@@ -27,6 +27,7 @@ import {
   ShieldHalf,
   UserCog,
   ShieldCheck,
+  Sparkles,
   TrendingUp,
   Trophy,
   Users,
@@ -39,6 +40,7 @@ import { NavLink } from "react-router-dom";
 const LINKS = {
   admin: [
     { to: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { to: "/admin/assistant", label: "Ask the assistant", icon: Sparkles },
     { to: "/admin/notices", label: "Notices & SMS", icon: Megaphone },
     { to: "/admin/students", label: "Students", icon: Users },
     { to: "/admin/print", label: "ID cards & certificates", icon: Printer },
@@ -82,6 +84,7 @@ const LINKS = {
   driver: [{ to: "/driver", label: "My bus", icon: Bus }],
   director: [
     { to: "/director", label: "Overview", icon: LayoutDashboard },
+    { to: "/director/assistant", label: "Ask the assistant", icon: Sparkles },
     { to: "/director/performance", label: "Performance", icon: TrendingUp },
     { to: "/director/insights", label: "Class insights", icon: Lightbulb },
     { to: "/director/compare", label: "Compare classes", icon: ArrowLeftRight },
@@ -100,6 +103,7 @@ const LINKS = {
   ],
   bursar: [
     { to: "/bursar", label: "Fees overview", icon: LayoutDashboard },
+    { to: "/bursar/assistant", label: "Ask the assistant", icon: Sparkles },
     { to: "/bursar/record", label: "Record payment", icon: Banknote },
     { to: "/bursar/payments", label: "Payments", icon: Receipt },
     { to: "/bursar/paybill", label: "M-Pesa Paybill", icon: Hash },
