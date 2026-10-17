@@ -22,38 +22,40 @@ export default function LeavingCertificate({ doc, remarks }) {
   ];
 
   return (
-    <div className="mx-auto aspect-[210/297] w-full max-w-[190mm] bg-white p-[12mm] shadow-md print:shadow-none">
-      <div className="flex items-center gap-4 border-b-4 border-double border-brand-700 pb-4">
-        <img src="/logo.png" alt="" className="h-[22mm] w-[22mm] object-contain" />
-        <div className="flex-1">
-          <p className="font-headline text-3xl font-extrabold uppercase text-brand-800">{school.name}</p>
-          <p className="text-sm text-brand-600">{school.address} · Tel {school.phone}</p>
-          <p className="text-xs italic text-gold-600">{school.motto}</p>
+    <div className="mx-auto w-full max-w-[190mm] [container-type:inline-size] print:max-w-[178mm]">
+      <div className="aspect-[210/297] w-full bg-white p-[6.3cqw] shadow-md print:shadow-none">
+        <div className="flex items-center gap-[2.2cqw] border-b-[max(3px,0.6cqw)] border-double border-brand-700 pb-[2.2cqw]">
+          <img src="/logo.png" alt="" className="h-[11.5cqw] w-[11.5cqw] object-contain" />
+          <div className="min-w-0 flex-1">
+            <p className="font-headline text-[4.2cqw] font-extrabold uppercase leading-tight text-brand-800">{school.name}</p>
+            <p className="text-[1.95cqw] leading-tight text-brand-600">{school.address} · Tel {school.phone}</p>
+            <p className="text-[1.7cqw] italic leading-tight text-gold-600">{school.motto}</p>
+          </div>
         </div>
-      </div>
-      <div className="mt-6 flex items-baseline justify-between">
-        <p className="font-headline text-3xl font-extrabold uppercase tracking-wide text-brand-800">School Leaving Certificate</p>
-        <p className="whitespace-nowrap font-mono text-xs text-brand-500">No. SAK/LC/{student.left_on ? student.left_on.slice(0, 4) : year}/{String(student.id).padStart(4, "0")}</p>
-      </div>
-      <p className="mt-4 text-sm text-brand-700">This is to certify that the learner named below was a pupil at this school. The details are taken from the school admission register.</p>
-      <table className="mt-5 w-full text-sm">
-        <tbody>
-          {rows.map(([label, value]) => (
-            <tr key={label} className="border-b border-brand-100">
-              <td className="w-[62mm] py-2 text-brand-500">{label}</td>
-              <td className="py-2 font-semibold text-brand-900">{value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="mt-6">
-        <p className="text-sm text-brand-500">Head Teacher&apos;s remarks on conduct and ability</p>
-        <p className="mt-2 min-h-[24mm] whitespace-pre-line border-b border-dotted border-brand-300 text-sm leading-7 text-brand-900">{remarks}</p>
-      </div>
-      <div className="mt-14 flex items-end justify-between text-sm text-brand-600">
-        <div className="w-[60mm] border-t border-brand-400 pt-1">Head Teacher&apos;s signature</div>
-        <div className="flex h-[28mm] w-[40mm] items-center justify-center rounded-full border-2 border-dashed border-brand-200 text-xs text-brand-300">School stamp</div>
-        <div className="w-[45mm] border-t border-brand-400 pt-1">Date: {format(new Date(), "d MMM yyyy")}</div>
+        <div className="mt-[3.3cqw] flex items-baseline justify-between gap-[2cqw]">
+          <p className="font-headline text-[4.2cqw] font-extrabold uppercase leading-tight tracking-wide text-brand-800">School Leaving Certificate</p>
+          <p className="whitespace-nowrap font-mono text-[1.6cqw] text-brand-500">No. SAK/LC/{student.left_on ? student.left_on.slice(0, 4) : year}/{String(student.id).padStart(4, "0")}</p>
+        </div>
+        <p className="mt-[2.2cqw] text-[1.95cqw] leading-snug text-brand-700">This is to certify that the learner named below was a pupil at this school. The details are taken from the school admission register.</p>
+        <table className="mt-[2.8cqw] w-full text-[1.95cqw]">
+          <tbody>
+            {rows.map(([label, value]) => (
+              <tr key={label} className="border-b border-brand-100">
+                <td className="w-[32cqw] py-[1.1cqw] align-top text-brand-500">{label}</td>
+                <td className="py-[1.1cqw] font-semibold text-brand-900">{value}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <div className="mt-[3.3cqw]">
+          <p className="text-[1.95cqw] text-brand-500">Head Teacher&apos;s remarks on conduct and ability</p>
+          <p className="mt-[1.1cqw] min-h-[12.5cqw] whitespace-pre-line border-b border-dotted border-brand-300 text-[1.95cqw] leading-relaxed text-brand-900">{remarks}</p>
+        </div>
+        <div className="mt-[7.8cqw] flex items-end justify-between text-[1.95cqw] text-brand-600">
+          <div className="w-[31cqw] border-t border-brand-400 pt-[0.6cqw]">Head Teacher&apos;s signature</div>
+          <div className="flex h-[14.6cqw] w-[21cqw] items-center justify-center rounded-full border-2 border-dashed border-brand-200 text-[1.6cqw] text-brand-300">School stamp</div>
+          <div className="w-[23.5cqw] border-t border-brand-400 pt-[0.6cqw]">Date: {format(new Date(), "d MMM yyyy")}</div>
+        </div>
       </div>
     </div>
   );

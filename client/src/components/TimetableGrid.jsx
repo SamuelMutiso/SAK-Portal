@@ -31,7 +31,7 @@ export default function TimetableGrid({ timetable, editable = false, onChange, h
                           <select
                             value={slot?.subject || ""}
                             onChange={(event) => onChange(dayIndex, bell.period, event.target.value)}
-                            className="w-full cursor-pointer rounded-lg bg-transparent px-2 py-2 text-xs font-semibold text-brand-800 outline-none focus:ring-2 focus:ring-brand-300"
+                            className="w-full cursor-pointer rounded-lg bg-transparent px-2 py-2 text-base font-semibold sm:text-xs text-brand-800 outline-none focus:ring-2 focus:ring-brand-300"
                             aria-label={`${day} lesson ${bell.period}`}
                           >
                             <option value="">Free</option>

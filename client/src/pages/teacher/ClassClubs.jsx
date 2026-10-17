@@ -74,7 +74,7 @@ export default function ClassClubs() {
                     <span className="font-semibold text-brand-800">Move from {clubName[clubId]} to</span>
                     <select
                       autoFocus
-                      className="rounded-full border-0 bg-white py-1 pl-2 pr-7 text-sm"
+                      className="rounded-full border-0 bg-white py-1 pl-2 pr-7 text-base sm:text-sm"
                       defaultValue=""
                       onChange={(event) => {
                         const target = Number(event.target.value);
@@ -98,7 +98,7 @@ export default function ClassClubs() {
               <label className="relative flex items-center">
                 <Plus size={14} className="pointer-events-none absolute left-2.5 text-brand-500" />
                 <select
-                  className="rounded-full border border-dashed border-brand-200 bg-white py-1 pl-7 pr-7 text-sm text-brand-500"
+                  className="rounded-full border border-dashed border-brand-200 bg-white py-1 pl-7 pr-7 text-base text-brand-500 sm:text-sm"
                   value=""
                   onChange={(event) => {
                     const target = Number(event.target.value);
