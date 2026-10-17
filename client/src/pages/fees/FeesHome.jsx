@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { AlertTriangle, ArrowRight, Banknote, FileText, Hash, Landmark, ListChecks, Receipt, Settings2, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, FileText, Hash, Landmark, ListChecks, Receipt, Settings2, Smartphone, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -35,13 +35,14 @@ export default function FeesHome() {
 
   const actions = [
     { to: `${base}/record`, label: "Record a payment", icon: Banknote },
+    { to: `${base}/prompt`, label: "Send M-Pesa prompt", icon: Smartphone },
     { to: `${base}/invoices`, label: "Term invoices", icon: FileText },
     { to: `${base}/payments`, label: "All payments", icon: Receipt },
     { to: `${base}/balances`, label: "Balances & reminders", icon: ListChecks },
     { to: `${base}/structure`, label: "Fee structure", icon: Settings2 },
     { to: `${base}/paybill`, label: "M-Pesa Paybill", icon: Hash },
     { to: `${base}/slips`, label: "Bank slips", icon: Landmark },
-  ].filter((action) => !readOnly || !["Record a payment", "Fee structure"].includes(action.label));
+  ].filter((action) => !readOnly || !["Record a payment", "Send M-Pesa prompt", "Fee structure"].includes(action.label));
 
   return (
     <div className="space-y-6">
