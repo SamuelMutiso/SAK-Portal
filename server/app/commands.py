@@ -17,3 +17,10 @@ def register_commands(app):
             click.echo(f"{event.title}: sent to {result['sent']} parents")
         if not events:
             click.echo("No events tomorrow")
+
+    @app.cli.command("add-demo-learning")
+    def add_demo_learning():
+        from app.services.learning_demo import add_demo_materials
+
+        added = add_demo_materials()
+        click.echo(f"Added {added} demo learning materials" if added else "Learning materials already exist, nothing added")
