@@ -36,6 +36,10 @@ class Config:
     MPESA_SHORTCODE = os.getenv("MPESA_SHORTCODE", "174379")
     MPESA_PASSKEY = os.getenv("MPESA_PASSKEY", "")
     MPESA_CALLBACK_URL = os.getenv("MPESA_CALLBACK_URL", "")
+    AI_API_KEY = os.getenv("AI_API_KEY", "")
+    AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.groq.com/openai/v1")
+    AI_MODEL = os.getenv("AI_MODEL", "openai/gpt-oss-120b")
+    AI_REASONING_EFFORT = os.getenv("AI_REASONING_EFFORT", "low")
     UPLOAD_FOLDER = os.getenv("UPLOAD_FOLDER", os.path.join(os.getcwd(), "instance", "uploads"))
     MAX_CONTENT_LENGTH = 5 * 1024 * 1024
     MAIL_SERVER = os.getenv("MAIL_SERVER", "smtp.gmail.com")
@@ -54,4 +58,8 @@ class TestConfig(Config):
     RATELIMIT_ENABLED = False
     DEMO_MODE = False
     RATELIMIT_STORAGE_URI = "memory://"
+    AI_API_KEY = os.getenv("AI_API_KEY", "")
+    AI_BASE_URL = os.getenv("AI_BASE_URL", "https://api.groq.com/openai/v1")
+    AI_MODEL = os.getenv("AI_MODEL", "openai/gpt-oss-120b")
+    AI_REASONING_EFFORT = os.getenv("AI_REASONING_EFFORT", "low")
     UPLOAD_FOLDER = os.path.join(tempfile.gettempdir(), "sak-test-uploads")

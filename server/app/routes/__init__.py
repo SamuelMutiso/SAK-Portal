@@ -1,6 +1,7 @@
 from app.routes.acknowledgements import acknowledgements_bp
 from app.routes.analytics import analytics_bp
 from app.routes.assessments import assessments_bp
+from app.routes.assistant import assistant_bp
 from app.routes.attendance import attendance_bp
 from app.routes.auth import auth_bp
 from app.routes.classes import classes_bp
@@ -58,6 +59,7 @@ BLUEPRINTS = (
     library_bp,
     timetable_bp,
     owner_bp,
+    assistant_bp,
     consent_bp,
     analytics_bp,
     insights_bp,
