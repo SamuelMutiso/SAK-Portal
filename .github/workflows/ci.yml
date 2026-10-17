@@ -12,13 +12,14 @@ permissions:
 
 jobs:
   server:
+    if: github.ref_name != 'frontend'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: server
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
       - run: pip install pipenv pip-audit
@@ -27,15 +28,16 @@ jobs:
       - run: pipenv requirements > requirements.txt && pip-audit -r requirements.txt --no-deps
 
   client:
+    if: github.ref_name != 'backend'
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: client
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: "22"
       - run: npm ci
       - run: npx eslint src --max-warnings 0
       - run: npm run build
@@ -45,7 +47,7 @@ jobs:
   secrets:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Look for leaked secrets in the whole history
