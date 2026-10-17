@@ -80,7 +80,7 @@ def school_overview(user, masker):
     classes = Classroom.query.order_by(Classroom.sort_order, Classroom.id).all()
     marked = Attendance.query.filter_by(date=today).all()
     result = {
-        "today": today.isoformat(),
+        "today": today.strftime("%A %Y-%m-%d"),
         "current_term": current_term(),
         "learners": active.count(),
         "boarders": active.filter_by(is_boarder=True).count(),
@@ -90,8 +90,9 @@ def school_overview(user, masker):
     if user.role in SCHOOL_ROLES:
         result.update({
             "teachers": User.query.filter_by(role="teacher", is_active=True).count(),
-            "class_teachers": {classroom.name: masker.teacher(classroom.teacher) for classroom in classes},
-            "attendance_today": {"marked": len(marked), "present": sum(1 for record in marked if record.status != "absent"), "late": sum(1 for record in marked if record.status == "late")},
+            "learner_attendance_today": {"learners_marked": len(marked), "present": sum(1 for record in marked if record.status != "absent"),
+                                         "late": sum(1 for record in marked if record.status == "late"),
+                                         "note": "Weekend, no school today." if today.weekday() >= 5 else ("Not marked yet today." if not marked else "")},
             "leave_requests_waiting": LeaveRequest.query.filter_by(status="pending").count(),
         })
     return result
