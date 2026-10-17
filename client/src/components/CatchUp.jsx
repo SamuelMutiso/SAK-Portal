@@ -1,4 +1,4 @@
-import { BookOpen, BookOpenCheck, CalendarCheck, ChevronRight, Megaphone, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { BookOpen, BookOpenCheck, CalendarCheck, ChevronRight, ListChecks, Megaphone, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/client";
@@ -48,6 +48,7 @@ export default function CatchUp({ child, showNotices = true }) {
 
   if (showNotices && notices.count) rows.push({ icon: Megaphone, tone: "bg-red-50 text-red-600", title: `${notices.count} notice${notices.count > 1 ? "s" : ""} you haven't opened`, detail: notices.titles.join(" · "), to: "#notices" });
   if (homework.count) rows.push({ icon: BookOpen, tone: "bg-gold-100 text-gold-600", title: `${homework.count} homework to do`, detail: homework.titles.join(" · ") });
+  if (data.quizzes_waiting?.count) rows.push({ icon: ListChecks, tone: "bg-sky-100 text-sky-700", title: `${data.quizzes_waiting.count} quiz${data.quizzes_waiting.count > 1 ? "zes" : ""} to try`, detail: data.quizzes_waiting.titles.join(" · "), to: `${page}?tab=quizzes` });
   if (data.new_materials) rows.push({ icon: BookOpenCheck, tone: "bg-violet-100 text-violet-700", title: `${data.new_materials} new learning material${data.new_materials > 1 ? "s" : ""} this week`, detail: "Notes and worksheets from the teacher", to: `${page}?tab=learning` });
   if (attendance.rate !== null) rows.push({
     icon: CalendarCheck, tone: attendance.rate >= 90 ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700",

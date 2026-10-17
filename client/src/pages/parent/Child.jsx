@@ -10,6 +10,7 @@ import Attendance from "./child/Attendance";
 import Diary from "./child/Diary";
 import Fees from "./child/Fees";
 import Learning from "./child/Learning";
+import Quizzes from "./child/Quizzes";
 import Leave from "./child/Leave";
 import Library from "./child/Library";
 import Portfolio from "./child/Portfolio";
@@ -73,6 +74,7 @@ export default function Child() {
     { key: "report", label: "Report card" },
     { key: "progress", label: "Progress" },
     { key: "learning", label: "Learning" },
+    { key: "quizzes", label: "Quizzes" },
     { key: "timetable", label: "Timetable" },
     { key: "fees", label: "Fees" },
     { key: "attendance", label: student.route_name ? "Attendance & bus" : "Attendance" },
@@ -125,6 +127,7 @@ export default function Child() {
       {tab === "report" && <ReportTab student={student} />}
       {tab === "progress" && <Progress student={student} />}
       {tab === "learning" && <Learning student={student} />}
+      {tab === "quizzes" && <Quizzes student={student} />}
       {tab === "timetable" && <Timetable student={student} />}
       {tab === "fees" && <Fees student={student} onBalanceChange={(balance) => setStudent({ ...student, fee_balance: balance })} />}
       {tab === "attendance" && <Attendance student={student} />}

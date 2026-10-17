@@ -42,6 +42,10 @@ import Calendar from "./pages/shared/Calendar";
 import Compare from "./pages/shared/Compare";
 import Insights from "./pages/shared/Insights";
 import Learning from "./pages/shared/Learning";
+import QuizBuilder from "./pages/shared/QuizBuilder";
+import QuizResults from "./pages/shared/QuizResults";
+import Quizzes from "./pages/shared/Quizzes";
+import Placement from "./pages/admin/Placement";
 import PickupCheck from "./pages/shared/PickupCheck";
 import Reports from "./pages/shared/Reports";
 import PrintCentre from "./pages/shared/PrintCentre";
@@ -70,6 +74,11 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["admin"]} />}>
         <Route path="/admin" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="quizzes" element={<Quizzes />} />
+          <Route path="quizzes/new" element={<QuizBuilder />} />
+          <Route path="quizzes/:id/edit" element={<QuizBuilder />} />
+          <Route path="quizzes/:id/results" element={<QuizResults />} />
+          <Route path="placement" element={<Placement />} />
           <Route path="learning" element={<Learning />} />
           <Route path="assistant" element={<Assistant />} />
           <Route index element={<AdminDashboard />} />
@@ -107,6 +116,10 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["teacher"]} />}>
         <Route path="/teacher" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="quizzes" element={<Quizzes />} />
+          <Route path="quizzes/new" element={<QuizBuilder />} />
+          <Route path="quizzes/:id/edit" element={<QuizBuilder />} />
+          <Route path="quizzes/:id/results" element={<QuizResults />} />
           <Route path="learning" element={<Learning />} />
           <Route index element={<TeacherDashboard />} />
           <Route path="attendance" element={<Attendance />} />
@@ -146,6 +159,9 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["director"]} />}>
         <Route path="/director" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="quizzes" element={<Quizzes />} />
+          <Route path="quizzes/:id/results" element={<QuizResults />} />
+          <Route path="placement" element={<Placement />} />
           <Route path="learning" element={<Learning />} />
           <Route path="assistant" element={<Assistant />} />
           <Route index element={<DirectorHome />} />
