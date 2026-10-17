@@ -226,3 +226,58 @@ def add_demo_quizzes():
             attempt.late = False
     db.session.commit()
     return added
+
+
+EXPENSES = [
+    (0, "Fuel & transport", "Diesel for school bus KCA 123X", 6500, "Rubis Kitengela", "M-Pesa", "TJH4K2LQ9P", True),
+    (0, "Food & kitchen", "Vegetables and tomatoes for lunch", 3200, "Mama Wanjiru, Kitengela market", "Cash", None, True),
+    (1, "Food & kitchen", "2 bags of maize flour and 1 bag of rice", 9800, "Naivas Kitengela", "M-Pesa", "TJG7P1XW3D", True),
+    (1, "Repairs & maintenance", "Fixing broken window in Grade 5 class", 2500, "Joseph Fundi", "Cash", None, False),
+    (2, "Fuel & transport", "Diesel for school bus KCB 456Y", 7000, "Total Energies Namanga Road", "M-Pesa", "TJF2M8RT5A", True),
+    (2, "Books & stationery", "Exercise books and chalk for the term", 4600, "Text Book Centre", "Bank", "FT26290ABC12", True),
+    (3, "Water, power & internet", "KPLC electricity tokens", 5000, "KPLC", "M-Pesa", "TJE9Q4LN2C", True),
+    (3, "Cleaning & hygiene", "Detergents, toilet paper and mops", 2850, "Quickmart Kitengela", "Cash", None, False),
+    (4, "Food & kitchen", "Milk for Pre-Primary break time", 1800, "Brookside milk vendor", "Cash", None, True),
+    (5, "Medical & first aid", "First aid kit refill", 1450, "Kitengela Pharmacy", "M-Pesa", "TJD3R7KS8B", True),
+    (6, "Events & trips", "Deposit for Grade 6 trip bus hire", 15000, "Safari Coaches Ltd", "Bank", "FT26285XYZ98", True),
+]
+
+
+def receipt_image(text):
+    from html import escape
+
+    lines = "".join(f'<text x="30" y="{120 + index * 44}" font-size="22" fill="#222">{escape(line)}</text>' for index, line in enumerate(text))
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="520" height="360" font-family="Arial, sans-serif">'
+        '<rect width="520" height="360" fill="#fffdf6" stroke="#999" stroke-width="2"/>'
+        '<text x="30" y="60" font-size="28" font-weight="bold" fill="#111">CASH SALE RECEIPT (DEMO)</text>'
+        f"{lines}</svg>"
+    ).encode()
+
+
+def add_demo_expenses():
+    from datetime import date
+
+    from app.models import Expense, User
+
+    if Expense.query.first():
+        return 0
+    bursar = User.query.filter_by(role="bursar").first()
+    if not bursar:
+        return 0
+    today = date.today()
+    for days_ago, category, description, amount, paid_to, method, reference, has_receipt in EXPENSES:
+        spent = today - timedelta(days=days_ago)
+        expense = Expense(spent_on=spent, category=category, description=description, amount=amount, paid_to=paid_to, method=method,
+                          reference=reference, recorded_by_id=bursar.id, created_at=datetime.utcnow() - timedelta(days=days_ago, hours=2))
+        if has_receipt:
+            expense.receipt_data = receipt_image([paid_to, description[:40], f"KES {amount:,}", spent.strftime("%d %b %Y")])
+            expense.receipt_name = f"receipt-{spent.isoformat()}.svg"
+            expense.receipt_type = "image/svg+xml"
+        db.session.add(expense)
+    wrong = Expense(spent_on=today - timedelta(days=1), category="Fuel & transport", description="Diesel for school bus KCA 123X", amount=65000,
+                    paid_to="Rubis Kitengela", method="Cash", recorded_by_id=bursar.id, voided_at=datetime.utcnow() - timedelta(hours=20),
+                    voided_by_id=bursar.id, void_reason="Typed 65,000 instead of 6,500. Correct entry recorded.")
+    db.session.add(wrong)
+    db.session.commit()
+    return len(EXPENSES)

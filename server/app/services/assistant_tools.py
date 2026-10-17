@@ -3,7 +3,7 @@ from datetime import date, timedelta
 
 from app.curriculum import current_term
 from app.extensions import db
-from app.models import Attendance, Classroom, Event, Invoice, LeaveRequest, Notice, Payment, SchoolTerm, Student, User
+from app.models import Attendance, Classroom, Event, Expense, Invoice, LeaveRequest, Notice, Payment, SchoolTerm, Student, User
 from app.services.insights import class_insights, student_insights
 
 FEE_ROLES = ("director", "admin", "bursar")
@@ -298,6 +298,31 @@ def notices_and_events(user, masker, days_ahead=30):
     }
 
 
+def expenses_report(user, masker, days=7, start_date=None, end_date=None):
+    try:
+        end = date.fromisoformat(end_date) if end_date else date.today()
+        start = date.fromisoformat(start_date) if start_date else end - timedelta(days=max(1, min(int(days or 7), 366)) - 1)
+    except ValueError:
+        return {"error": "Dates must look like 2026-10-17."}
+    items = Expense.query.filter(Expense.spent_on >= start, Expense.spent_on <= end).all()
+    live = [item for item in items if not item.voided_at]
+    by_category = {}
+    for item in live:
+        by_category[item.category] = by_category.get(item.category, 0) + item.amount
+    biggest = sorted(live, key=lambda item: -item.amount)[:5]
+    return {
+        "from": start.isoformat(),
+        "to": end.isoformat(),
+        "total_spent_kes": sum(item.amount for item in live),
+        "entries": len(live),
+        "by_category_kes": dict(sorted(by_category.items(), key=lambda pair: -pair[1])),
+        "without_receipt": sum(1 for item in live if not item.receipt_name),
+        "cancelled_entries": [{"description": item.description, "amount_kes": item.amount, "reason": item.void_reason} for item in items if item.voided_at],
+        "biggest": [{"date": item.spent_on.isoformat(), "category": item.category, "description": item.description, "amount_kes": item.amount,
+                     "paid_to": item.paid_to, "has_receipt": bool(item.receipt_name)} for item in biggest],
+    }
+
+
 def schema(name, description, properties=None):
     return {"type": "function", "function": {"name": name, "description": description,
                                              "parameters": {"type": "object", "properties": properties or {}, "additionalProperties": False}}}
@@ -319,6 +344,9 @@ TOOLS = {
         "class_name": CLASS, "term": TERM, "exam": {"type": "string", "enum": ["Opener", "Mid-Term", "End-Term"]}})),
     "learner_lookup": (learner_lookup, FEE_ROLES, schema("learner_lookup", "One learner's class, fee balance, recent payments, and for office staff attendance this term and latest results.", {
         "name": {"type": "string", "description": "The learner's token such as [L1], or part of their name or admission number."}})),
+    "expenses_report": (expenses_report, FEE_ROLES, schema("expenses_report", "Money the school spent: total, by category (fuel, food, repairs and so on), biggest items, entries with no receipt and cancelled entries, for the last N days or between two dates.", {
+        "days": {"type": "integer", "description": "How many days back. 1 is today only, 7 is a week."},
+        "start_date": {"type": "string", "description": "First day, YYYY-MM-DD."}, "end_date": {"type": "string", "description": "Last day, YYYY-MM-DD."}})),
     "notices_and_events": (notices_and_events, FEE_ROLES, schema("notices_and_events", "Upcoming school calendar events and the latest notices sent to parents.", {
         "days_ahead": {"type": "integer", "description": "How many days ahead to look for events."}})),
 }

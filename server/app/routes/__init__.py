@@ -12,6 +12,7 @@ from app.routes.dashboard import dashboard_bp
 from app.routes.diary import diary_bp
 from app.routes.owner import owner_bp
 from app.routes.events import events_bp
+from app.routes.expenses import expenses_bp
 from app.routes.fees import fees_bp
 from app.routes.paybill import paybill_bp
 from app.routes.homework import homework_bp
@@ -66,6 +67,7 @@ BLUEPRINTS = (
     learning_bp,
     catch_up_bp,
     quizzes_bp,
+    expenses_bp,
     consent_bp,
     analytics_bp,
     insights_bp,

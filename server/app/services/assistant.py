@@ -9,9 +9,9 @@ from app.services.assistant_tools import Masker, run_tool, tools_for
 
 ROLE_NAMES = {"director": "the School Director", "admin": "the school office administrator", "bursar": "the bursar"}
 PAGES = {
-    "director": "Overview, Performance, Class insights, Compare classes, Report cards, Notices, Learners, Fees, Calendar",
-    "admin": "Dashboard, Notices & SMS, Students, Report cards, Class insights, Fees, Leave-out, Timetable, Transport, Calendar",
-    "bursar": "Fees overview, Record payment, Payments, M-Pesa Paybill, Bank slips, Invoices, Balances & reminders, Fee structure",
+    "director": "Overview, Performance, Class insights, Compare classes, Report cards, Notices, Learners, Fees, Expenses, Calendar",
+    "admin": "Dashboard, Notices & SMS, Students, Report cards, Class insights, Fees, Expenses, Leave-out, Timetable, Transport, Calendar",
+    "bursar": "Fees overview, Record payment, Send M-Pesa prompt, Payments, M-Pesa Paybill, Bank slips, Invoices, Balances & reminders, Fee structure, Expenses",
 }
 ODD_SPACES = str.maketrans({"\u202f": " ", "\u00a0": " ", "\u2009": " ", "\u2007": " ", "\u2011": "-", "\u2010": "-"})
 MAX_ROUNDS = 5
