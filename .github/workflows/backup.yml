@@ -54,7 +54,7 @@ jobs:
           rm -f backup.dump restored.dump
 
       - name: Keep the encrypted backup for 30 days
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: database-backup
           path: sak-backup-*.dump.enc
