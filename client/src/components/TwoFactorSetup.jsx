@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import api, { errorMessage } from "../api/client";
 import { logout, sessionRenewed } from "../store/slices/authSlice";
+import PasswordInput from "./PasswordInput";
 
 export default function TwoFactorSetup({ required = false }) {
   const dispatch = useDispatch();
@@ -98,7 +99,7 @@ export default function TwoFactorSetup({ required = false }) {
       {user.two_factor_enabled && !required && (
         <form onSubmit={disable} className="card space-y-3">
           <p className="text-sm font-semibold text-brand-700">Turn it off</p>
-          <input type="password" className="input" placeholder="Your password" aria-label="Your password" value={password} onChange={(event) => setPassword(event.target.value)} required />
+          <PasswordInput className="input" placeholder="Your password" aria-label="Your password" value={password} onChange={(event) => setPassword(event.target.value)} required />
           <input inputMode="numeric" maxLength={6} className="input font-mono" placeholder="Code from the app" aria-label="Code from the app" value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))} required />
           <button className="btn-ghost" disabled={busy}>Turn off</button>
         </form>
