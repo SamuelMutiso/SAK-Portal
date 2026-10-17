@@ -37,6 +37,7 @@ import Accounts from "./pages/owner/Accounts";
 import AuditTrail from "./pages/owner/AuditTrail";
 import Security from "./pages/owner/Security";
 import Trip from "./pages/driver/Trip";
+import Assistant from "./pages/shared/Assistant";
 import Calendar from "./pages/shared/Calendar";
 import Compare from "./pages/shared/Compare";
 import Insights from "./pages/shared/Insights";
@@ -68,6 +69,7 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["admin"]} />}>
         <Route path="/admin" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="assistant" element={<Assistant />} />
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<Students />} />
           <Route path="students/new" element={<Admission />} />
@@ -141,6 +143,7 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["director"]} />}>
         <Route path="/director" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="assistant" element={<Assistant />} />
           <Route index element={<DirectorHome />} />
           <Route path="performance" element={<Performance />} />
           <Route path="insights" element={<Insights />} />
@@ -173,6 +176,7 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["bursar"]} />}>
         <Route path="/bursar" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="assistant" element={<Assistant />} />
           <Route index element={<FeesHome />} />
           <Route path="record" element={<RecordPayment />} />
           <Route path="payments" element={<Payments />} />
