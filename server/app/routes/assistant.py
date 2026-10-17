@@ -15,7 +15,7 @@ SUGGESTIONS = {
         "Which classes had the lowest attendance this month?",
         "How much fee has been collected this term?",
         "Which classes did best in the last exam?",
-        "What events are coming up?",
+        "How much did we spend this week and on what?",
     ],
     "admin": [
         "Who has been absent the most this week?",
@@ -29,7 +29,7 @@ SUGGESTIONS = {
         "Which class has the lowest fee collection this term?",
         "Who has the largest balances?",
         "Break down today's payments by method",
-        "How many learners have fully paid?",
+        "What did we spend this week compared to what we collected?",
     ],
 }
 
