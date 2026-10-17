@@ -29,3 +29,4 @@ from app.models.fees import Discount, FeeItem, FeeRate, Invoice, InvoiceLine, st
 from app.models.payment_slip import PaymentSlip
 from app.models.password_reset import PasswordReset
 from app.models.paybill import PaybillReceipt
+from app.models.learning import LearningMaterial
