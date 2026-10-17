@@ -22,6 +22,7 @@ from app.routes.library import library_bp
 from app.routes.meta import meta_bp
 from app.routes.notices import notices_bp
 from app.routes.payments import payments_bp
+from app.routes.quizzes import quizzes_bp
 from app.routes.pickups import pickups_bp
 from app.routes.portfolio import portfolio_bp
 from app.routes.reports import reports_bp
@@ -64,6 +65,7 @@ BLUEPRINTS = (
     assistant_bp,
     learning_bp,
     catch_up_bp,
+    quizzes_bp,
     consent_bp,
     analytics_bp,
     insights_bp,
