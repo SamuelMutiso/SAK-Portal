@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { AlertTriangle, ArrowRight, Banknote, FileText, Hash, Landmark, ListChecks, Receipt, Settings2, Smartphone, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowRight, Banknote, HandCoins, FileText, Hash, Landmark, ListChecks, Receipt, Settings2, Smartphone, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -11,14 +11,15 @@ import { TERM, formatKes } from "../../constants";
 import { METHOD_STYLES } from "../../fees";
 import { feesBase } from "../../roles";
 
-function Tile({ label, value, hint, tone = "text-brand-800" }) {
-  return (
-    <div className="card">
+function Tile({ label, value, hint, tone = "text-brand-800", to }) {
+  const body = (
+    <>
       <p className="text-sm font-semibold text-brand-500">{label}</p>
       <p className={`mt-1 font-mono text-2xl font-semibold ${tone}`}>{value}</p>
-      {hint && <p className="mt-0.5 text-xs text-brand-400">{hint}</p>}
-    </div>
+      {hint && <p className={`mt-0.5 text-xs ${to ? "flex items-center gap-1 font-semibold text-brand-600" : "text-brand-400"}`}>{hint}{to && <ArrowRight size={14} />}</p>}
+    </>
   );
+  return to ? <Link to={to} className="card block transition hover:-translate-y-0.5 hover:shadow-md">{body}</Link> : <div className="card">{body}</div>;
 }
 
 export default function FeesHome() {
@@ -42,6 +43,7 @@ export default function FeesHome() {
     { to: `${base}/structure`, label: "Fee structure", icon: Settings2 },
     { to: `${base}/paybill`, label: "M-Pesa Paybill", icon: Hash },
     { to: `${base}/slips`, label: "Bank slips", icon: Landmark },
+    { to: role === "bursar" ? "/bursar/expenses" : `/${role}/expenses`, label: "Expenses", icon: HandCoins },
   ].filter((action) => !readOnly || !["Record a payment", "Send M-Pesa prompt", "Fee structure"].includes(action.label));
 
   return (
@@ -90,7 +92,7 @@ export default function FeesHome() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Tile label={`Expected for ${data.term}`} value={formatKes(data.expected)} hint={`${data.invoiced} invoices`} />
             <Tile label="Collected" value={formatKes(data.collected)} hint={`${data.rate}% of expected · ${data.cleared} cleared`} tone="text-emerald-700" />
-            <Tile label="Still owed this term" value={formatKes(data.outstanding)} tone="text-amber-700" />
+            <Tile label="Still owed this term" value={formatKes(data.outstanding)} tone="text-amber-700" hint="See who owes, by class" to={`${base}/balances`} />
             <Tile label="Collected today" value={formatKes(data.today)} hint={`${formatKes(data.week)} in the last 7 days`} />
           </div>
 
@@ -101,12 +103,14 @@ export default function FeesHome() {
                 {data.classes.map((row) => {
                   const rate = row.expected ? Math.round((row.collected / row.expected) * 100) : 0;
                   return (
-                    <li key={row.name} className="grid grid-cols-[6.5rem_1fr_auto] items-center gap-3 text-sm">
+                    <li key={row.name}>
+                      <Link to={`${base}/balances?class=${encodeURIComponent(row.name)}`} className="-mx-2 grid grid-cols-[6.5rem_1fr_auto] items-center gap-3 rounded-lg px-2 py-1 text-sm hover:bg-brand-50">
                       <span className="font-semibold text-brand-700">{row.name}</span>
                       <div className="h-3 overflow-hidden rounded-full bg-brand-50">
                         <div className={`h-full rounded-full ${rate >= 80 ? "bg-emerald-500" : rate >= 50 ? "bg-gold-500" : "bg-red-400"}`} style={{ width: `${rate}%` }} />
                       </div>
                       <span className="w-40 text-right font-mono text-xs text-brand-500"><span className="font-semibold text-brand-800">{rate}%</span> · {formatKes(row.outstanding)} owed</span>
+                      </Link>
                     </li>
                   );
                 })}

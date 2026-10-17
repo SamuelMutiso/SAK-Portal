@@ -9,6 +9,7 @@ import FeeStructure from "./pages/fees/FeeStructure";
 import FeesHome from "./pages/fees/FeesHome";
 import Invoices from "./pages/fees/Invoices";
 import PromptPayment from "./pages/fees/PromptPayment";
+import Expenses from "./pages/fees/Expenses";
 import Paybill from "./pages/fees/Paybill";
 import Payments from "./pages/fees/Payments";
 import Slips from "./pages/fees/Slips";
@@ -75,6 +76,7 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["admin"]} />}>
         <Route path="/admin" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="expenses" element={<Expenses />} />
           <Route path="quizzes" element={<Quizzes />} />
           <Route path="quizzes/new" element={<QuizBuilder />} />
           <Route path="quizzes/:id/edit" element={<QuizBuilder />} />
@@ -161,6 +163,7 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["director"]} />}>
         <Route path="/director" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="expenses" element={<Expenses />} />
           <Route path="quizzes" element={<Quizzes />} />
           <Route path="quizzes/:id/results" element={<QuizResults />} />
           <Route path="placement" element={<Placement />} />
@@ -198,6 +201,7 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["bursar"]} />}>
         <Route path="/bursar" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="expenses" element={<Expenses />} />
           <Route path="assistant" element={<Assistant />} />
           <Route index element={<FeesHome />} />
           <Route path="record" element={<RecordPayment />} />
