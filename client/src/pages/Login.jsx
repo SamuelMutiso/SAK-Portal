@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, Navigate } from "react-router-dom";
 import { homePath } from "../roles";
 import { cancelTwoFactor, clearAuthError, login, verifyTwoFactor } from "../store/slices/authSlice";
+import PasswordInput from "../components/PasswordInput";
 
 const SHOW_DEMO = import.meta.env.VITE_SHOW_DEMO_LOGINS === "true";
 const DEMO_PASSWORD = import.meta.env.VITE_DEMO_PASSWORD || "";
@@ -113,7 +114,7 @@ export default function Login() {
                 <label className="label" htmlFor="password">Password</label>
                 <Link to="/forgot-password" className="text-xs font-semibold text-brand-600 hover:underline">Forgot password?</Link>
               </div>
-              <input id="password" name="password" type="password" autoComplete="current-password" className="input" value={form.password} onChange={handleChange} required />
+              <PasswordInput id="password" name="password" autoComplete="current-password" className="input" value={form.password} onChange={handleChange} required />
             </div>
             {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <button type="submit" className="btn-primary w-full py-3" disabled={status === "loading"}>

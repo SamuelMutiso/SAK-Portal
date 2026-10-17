@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import api, { errorMessage } from "../api/client";
 import { passwordProblem } from "../passwords";
 import { logout, sessionRenewed } from "../store/slices/authSlice";
+import PasswordInput from "./PasswordInput";
 
 export default function PasswordGate() {
   const dispatch = useDispatch();
@@ -39,15 +40,15 @@ export default function PasswordGate() {
         </div>
         <div>
           <label className="label" htmlFor="current">Temporary password</label>
-          <input id="current" type="password" autoComplete="current-password" className="input" value={form.current} onChange={(event) => setForm({ ...form, current: event.target.value })} required />
+          <PasswordInput id="current" autoComplete="current-password" className="input" value={form.current} onChange={(event) => setForm({ ...form, current: event.target.value })} required />
         </div>
         <div>
           <label className="label" htmlFor="next">New password</label>
-          <input id="next" type="password" autoComplete="new-password" className="input" value={form.next} onChange={(event) => setForm({ ...form, next: event.target.value })} required />
+          <PasswordInput id="next" autoComplete="new-password" className="input" value={form.next} onChange={(event) => setForm({ ...form, next: event.target.value })} required />
         </div>
         <div>
           <label className="label" htmlFor="again">New password again</label>
-          <input id="again" type="password" autoComplete="new-password" className="input" value={form.again} onChange={(event) => setForm({ ...form, again: event.target.value })} required />
+          <PasswordInput id="again" autoComplete="new-password" className="input" value={form.again} onChange={(event) => setForm({ ...form, again: event.target.value })} required />
         </div>
         {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
         <button className="btn-primary w-full py-3" disabled={saving}>{saving ? "Saving..." : "Save my password"}</button>

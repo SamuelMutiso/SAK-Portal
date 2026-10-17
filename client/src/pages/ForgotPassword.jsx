@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import api, { errorMessage } from "../api/client";
 import { passwordProblem } from "../passwords";
+import PasswordInput from "../components/PasswordInput";
 
 export default function ForgotPassword() {
   const [step, setStep] = useState("ask");
@@ -80,11 +81,11 @@ export default function ForgotPassword() {
             </div>
             <div>
               <label className="label" htmlFor="next">New password</label>
-              <input id="next" type="password" autoComplete="new-password" className="input" value={form.next} onChange={(event) => setForm({ ...form, next: event.target.value })} required />
+              <PasswordInput id="next" autoComplete="new-password" className="input" value={form.next} onChange={(event) => setForm({ ...form, next: event.target.value })} required />
             </div>
             <div>
               <label className="label" htmlFor="again">New password again</label>
-              <input id="again" type="password" autoComplete="new-password" className="input" value={form.again} onChange={(event) => setForm({ ...form, again: event.target.value })} required />
+              <PasswordInput id="again" autoComplete="new-password" className="input" value={form.again} onChange={(event) => setForm({ ...form, again: event.target.value })} required />
             </div>
             {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
             <button className="btn-primary w-full py-3" disabled={busy || form.code.length !== 6}>{busy ? "Saving..." : "Set new password"}</button>
