@@ -1,4 +1,4 @@
-import { Bus, CalendarDays, ChevronRight, GraduationCap, Trophy, UserCheck, Users, Wallet } from "lucide-react";
+import { Bus, CalendarDays, ChevronRight, GraduationCap, Sparkles, Trophy, UserCheck, Users, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -30,7 +30,10 @@ export default function DirectorHome() {
   return (
     <div className="space-y-6">
       <WelcomeBanner photo="/photos/graduation.jpg" title="Good day, Director" subtitle="How Success Academy is doing today: learners, results, clubs and school life.">
-        <Link to="/director/performance" className="btn-gold self-start md:self-auto">See performance</Link>
+        <div className="flex flex-wrap gap-2 self-start md:self-auto">
+          <Link to="/director/assistant" className="btn-gold"><Sparkles size={16} /> Ask the assistant</Link>
+          <Link to="/director/performance" className="btn bg-white/90 text-brand-800 hover:bg-white">See performance</Link>
+        </div>
       </WelcomeBanner>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
