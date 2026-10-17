@@ -112,3 +112,117 @@ def add_demo_materials():
             added += 1
     db.session.commit()
     return added
+
+
+def choice(prompt, options, right, explanation):
+    return {"kind": "choice", "prompt": prompt, "options": options, "answer": str(right), "explanation": explanation}
+
+
+def short(prompt, answers, explanation):
+    return {"kind": "short", "prompt": prompt, "options": None, "answer": "\n".join(answers), "explanation": explanation}
+
+
+QUIZZES = [
+    ("Grade 4", "practice", "Mathematics", "Fractions", "Fractions check", 10, [
+        choice("What fraction of a pizza is left if you eat 1 of 4 equal slices?", ["1/4", "3/4", "2/4", "4/4"], 1, "4 slices minus 1 eaten leaves 3 of 4, which is 3/4."),
+        choice("Which fraction is the biggest?", ["1/3", "1/5", "1/2", "1/4"], 2, "When the top number is 1, the smaller the bottom number, the bigger each part."),
+        short("In the fraction 5/8, what is the denominator?", ["8", "eight"], "The denominator is the bottom number. It shows how many equal parts make the whole."),
+        choice("Which fraction is equal to 1/2?", ["2/3", "3/6", "1/3", "2/5"], 1, "3 out of 6 is the same as half."),
+        short("Amina ate 2/8 of a chapati. What fraction is left?", ["6/8", "3/4"], "8/8 - 2/8 = 6/8, which is the same as 3/4."),
+        choice("How many quarters make one whole?", ["2", "3", "4", "8"], 2, "Four quarters make one whole."),
+    ]),
+    ("Grade 4", "practice", "Science and Technology", "Plants", "Parts of a plant", None, [
+        choice("Which part of a plant takes in water from the soil?", ["Leaves", "Roots", "Flowers", "Fruits"], 1, "Roots take in water and hold the plant firmly in the ground."),
+        choice("Which part makes food for the plant?", ["Stem", "Roots", "Leaves", "Seeds"], 2, "Leaves use sunlight to make food."),
+        short("Which part of a plant carries water from the roots to the leaves?", ["stem", "the stem"], "The stem carries water up to the leaves."),
+        choice("Seeds are usually found inside the...", ["Fruit", "Root", "Leaf", "Stem"], 0, "Fruits protect the seeds."),
+    ]),
+    ("Grade 7", "practice", "Integrated Science", "Mixtures", "Separating mixtures", 15, [
+        choice("Which method separates sand from water?", ["Evaporation", "Filtration", "Using a magnet", "Sieving"], 1, "Filter paper lets water pass but keeps the sand."),
+        choice("How can you get salt back from salty water?", ["Filtration", "Decantation", "Evaporation", "Sieving"], 2, "Heating evaporates the water and leaves the salt."),
+        short("Which tool would you use to separate iron filings from sulphur powder?", ["magnet", "a magnet"], "Iron is attracted to a magnet; sulphur is not."),
+        choice("Pouring off a liquid and leaving the solid at the bottom is called...", ["Decantation", "Filtration", "Evaporation", "Distillation"], 0, "Decantation is gently pouring off the liquid."),
+        choice("Which mixture can be separated by sieving?", ["Salt and water", "Sand and stones", "Sugar and tea", "Milk and water"], 1, "The stones are too big to pass through the sieve."),
+    ]),
+    ("Grade 1", "practice", "Mathematics", "Addition", "Adding up to 20", None, [
+        short("8 + 5 =", ["13", "thirteen"], "Start at 8 and count 5 more: 9, 10, 11, 12, 13."),
+        short("6 + 7 =", ["13", "thirteen"], "6 + 7 = 13."),
+        choice("Which sum makes 10?", ["4 + 5", "6 + 4", "3 + 5", "2 + 7"], 1, "6 + 4 = 10."),
+        short("9 + 9 =", ["18", "eighteen"], "Double 9 is 18."),
+    ]),
+    ("PP2", "practice", "Mathematics Activities", "Counting", "Counting fun", None, [
+        choice("Which number comes after 7?", ["6", "8", "9", "5"], 1, "7, then 8."),
+        choice("How many legs does a chicken have?", ["2", "4", "3", "6"], 0, "A chicken has 2 legs."),
+        choice("Which number is the biggest?", ["3", "9", "5", "1"], 1, "9 is the biggest."),
+    ]),
+    ("Grade 4", "placement", "General", "Joining Grade 4", "Grade 4 entry test", 20, [
+        short("25 + 17 =", ["42"], "25 + 17 = 42."),
+        short("63 - 28 =", ["35"], "63 - 28 = 35."),
+        short("7 x 6 =", ["42"], "7 times 6 is 42."),
+        choice("Which number is the largest?", ["908", "980", "899", "890"], 1, "980 has the most hundreds and tens."),
+        choice("Choose the correct sentence.", ["She go to school.", "She goes to school.", "She going to school.", "She gone to school."], 1, "With she, we say goes."),
+        choice("What is the plural of 'child'?", ["Childs", "Children", "Childes", "Childrens"], 1, "Child becomes children."),
+        short("Write the opposite of 'hot'.", ["cold"], "Hot and cold are opposites."),
+        choice("Which one is a living thing?", ["Stone", "Chair", "Tree", "Book"], 2, "A tree grows, feeds and reproduces."),
+    ]),
+    ("Grade 7", "placement", "General", "Joining Grade 7", "Grade 7 entry test", 25, [
+        short("What is 3/4 of 80?", ["60"], "80 / 4 = 20, and 20 x 3 = 60."),
+        short("0.6 + 0.75 =", ["1.35"], "Line up the decimal points: 0.60 + 0.75 = 1.35."),
+        choice("What is 15% of 200?", ["15", "20", "30", "300"], 2, "10% is 20 and 5% is 10, so 15% is 30."),
+        choice("Choose the correctly punctuated sentence.", ["where are you going", "Where are you going?", "Where are you going.", "where are you going?"], 1, "A question starts with a capital letter and ends with a question mark."),
+        choice("Which organ pumps blood around the body?", ["Lungs", "Liver", "Heart", "Kidney"], 2, "The heart pumps blood."),
+        short("Name the capital city of Kenya.", ["Nairobi"], "Nairobi is the capital city of Kenya."),
+    ]),
+]
+
+
+def add_demo_quizzes():
+    import random
+
+    from app.models import Quiz, QuizAttempt, QuizQuestion, User
+    from app.services.quizzes import mark
+
+    if Quiz.query.first():
+        return 0
+    admin = User.query.filter_by(role="admin").first()
+    pick = random.Random(7)
+    added = 0
+    now = datetime.utcnow()
+    for class_name, purpose, subject, topic, title, limit, questions in QUIZZES:
+        classroom = Classroom.query.filter_by(name=class_name).first()
+        if not classroom:
+            continue
+        quiz = Quiz(classroom_id=classroom.id, purpose=purpose, subject=subject, topic=topic, title=title, time_limit=limit, is_published=True,
+                    teacher_id=admin.id if purpose == "placement" else classroom.teacher_id, created_at=now - timedelta(days=2 + added),
+                    instructions="Read each question carefully. You can go back and change an answer before you hand in." if purpose == "practice" else
+                    "Give this test to the applicant on a school tablet or computer. Let them work alone.")
+        quiz.questions = [QuizQuestion(position=index, **question) for index, question in enumerate(questions)]
+        db.session.add(quiz)
+        db.session.flush()
+        added += 1
+        takers = []
+        if title == "Fractions check":
+            takers = [student for student in classroom.students if student.status == "active" and not (student.parent and student.parent.email.startswith("parent@"))]
+        elif purpose == "placement":
+            takers = [("Baraka Otieno", "0712345601"), ("Wanjiku Mwangi", "0712345602")]
+        for index, taker in enumerate(takers):
+            started = now - timedelta(days=1, hours=index)
+            if purpose == "placement":
+                attempt = QuizAttempt(quiz=quiz, candidate_name=taker[0], candidate_phone=taker[1], taken_by_id=admin.id, started_at=started)
+            else:
+                attempt = QuizAttempt(quiz=quiz, student_id=taker.id, taken_by_id=taker.parent_id or admin.id, started_at=started)
+            skill = pick.uniform(0.35, 0.95)
+            answers = {}
+            for question in quiz.questions:
+                if pick.random() < skill:
+                    answers[str(question.id)] = question.answer.split("\n")[0]
+                elif question.kind == "choice":
+                    answers[str(question.id)] = str((int(question.answer) + 1) % len(question.options))
+                else:
+                    answers[str(question.id)] = "?"
+            db.session.add(attempt)
+            mark(attempt, answers)
+            attempt.submitted_at = started + timedelta(minutes=pick.randint(4, 9))
+            attempt.late = False
+    db.session.commit()
+    return added
