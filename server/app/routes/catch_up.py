@@ -3,7 +3,7 @@ from datetime import date, timedelta
 from flask import Blueprint, jsonify
 
 from app.curriculum import current_term
-from app.models import Acknowledgement, Homework, LearningMaterial, Notice, SchoolTerm
+from app.models import Acknowledgement, Homework, LearningMaterial, Notice, Quiz, SchoolTerm
 from app.routes.notices import notices_for_parent
 from app.services.insights import student_insights
 from app.utils.roles import current_user, roles_required, viewable_student
@@ -33,6 +33,9 @@ def catch_up(student_id):
     week_ago = today - timedelta(days=7)
     materials = LearningMaterial.query.filter(LearningMaterial.classroom_id == student.classroom_id, LearningMaterial.created_at >= week_ago).count() if student.classroom_id else 0
 
+    quizzes = Quiz.query.filter_by(classroom_id=student.classroom_id, purpose="practice", is_published=True).all() if student.classroom_id else []
+    waiting = [quiz for quiz in quizzes if not any(attempt.student_id == student.id and attempt.submitted_at for attempt in quiz.attempts)]
+
     insight = student_insights(student)
     results = None if insight.get("empty") else {
         "label": insight["label"],
@@ -52,6 +55,7 @@ def catch_up(student_id):
                     "rate": round((len(records) - absent) / len(records) * 100) if records else None},
         homework_due={"count": len(homework), "titles": [item.title for item in sorted(homework, key=lambda item: item.due_date)[:3]]},
         new_materials=materials,
+        quizzes_waiting={"count": len(waiting), "titles": [quiz.title for quiz in waiting[:3]]},
         results=results,
         fee_balance=student.fee_balance or 0,
     )

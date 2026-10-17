@@ -20,7 +20,9 @@ def register_commands(app):
 
     @app.cli.command("add-demo-learning")
     def add_demo_learning():
-        from app.services.learning_demo import add_demo_materials
+        from app.services.learning_demo import add_demo_materials, add_demo_quizzes
 
-        added = add_demo_materials()
-        click.echo(f"Added {added} demo learning materials" if added else "Learning materials already exist, nothing added")
+        materials = add_demo_materials()
+        quizzes = add_demo_quizzes()
+        click.echo(f"Added {materials} demo learning materials" if materials else "Learning materials already exist, nothing added")
+        click.echo(f"Added {quizzes} demo quizzes" if quizzes else "Quizzes already exist, nothing added")
