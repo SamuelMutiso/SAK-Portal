@@ -3,7 +3,7 @@ import string
 from datetime import date, datetime, timedelta
 
 from app import create_app
-from app.services.learning_demo import add_demo_materials
+from app.services.learning_demo import add_demo_materials, add_demo_quizzes
 from app.curriculum import COMPETENCIES, CURRENT_TERM, VALUES, learning_areas_for, uses_marks
 from app.extensions import db
 from app.models import (
@@ -708,6 +708,7 @@ def seed():
     db.session.commit()
     seed_mark_changes()
     add_demo_materials()
+    add_demo_quizzes()
 
     for user in User.query.filter(User.role != "superadmin").all():
         db.session.add(Consent(
