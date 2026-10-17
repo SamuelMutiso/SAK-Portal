@@ -4,6 +4,7 @@ from app.routes.assessments import assessments_bp
 from app.routes.assistant import assistant_bp
 from app.routes.attendance import attendance_bp
 from app.routes.auth import auth_bp
+from app.routes.catch_up import catch_up_bp
 from app.routes.classes import classes_bp
 from app.routes.clubs import clubs_bp
 from app.routes.consent import consent_bp
@@ -15,6 +16,7 @@ from app.routes.fees import fees_bp
 from app.routes.paybill import paybill_bp
 from app.routes.homework import homework_bp
 from app.routes.insights import insights_bp
+from app.routes.learning import learning_bp
 from app.routes.leave import leave_bp
 from app.routes.library import library_bp
 from app.routes.meta import meta_bp
@@ -60,6 +62,8 @@ BLUEPRINTS = (
     timetable_bp,
     owner_bp,
     assistant_bp,
+    learning_bp,
+    catch_up_bp,
     consent_bp,
     analytics_bp,
     insights_bp,
