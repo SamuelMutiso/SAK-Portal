@@ -8,6 +8,7 @@ import Fees from "./pages/admin/Fees";
 import FeeStructure from "./pages/fees/FeeStructure";
 import FeesHome from "./pages/fees/FeesHome";
 import Invoices from "./pages/fees/Invoices";
+import PromptPayment from "./pages/fees/PromptPayment";
 import Paybill from "./pages/fees/Paybill";
 import Payments from "./pages/fees/Payments";
 import Slips from "./pages/fees/Slips";
@@ -97,6 +98,7 @@ export default function App() {
           <Route path="sba" element={<Sba />} />
           <Route path="fees" element={<FeesHome />} />
           <Route path="fees/record" element={<RecordPayment />} />
+          <Route path="fees/prompt" element={<PromptPayment />} />
           <Route path="fees/payments" element={<Payments />} />
           <Route path="fees/slips" element={<Slips />} />
           <Route path="fees/paybill" element={<Paybill />} />
@@ -199,6 +201,7 @@ export default function App() {
           <Route path="assistant" element={<Assistant />} />
           <Route index element={<FeesHome />} />
           <Route path="record" element={<RecordPayment />} />
+          <Route path="prompt" element={<PromptPayment />} />
           <Route path="payments" element={<Payments />} />
           <Route path="slips" element={<Slips />} />
           <Route path="paybill" element={<Paybill />} />

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { CheckCircle2, FlaskConical, Hash, Search } from "lucide-react";
+import { CheckCircle2, FlaskConical, Hash, Search, Smartphone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -105,9 +105,12 @@ export default function Paybill() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="page-title">M-Pesa Paybill</h1>
-        <p className="mt-2 text-brand-500">Parents who pay through the Paybill with the admission number as the account are matched automatically. Anything else waits here for you.</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h1 className="page-title">M-Pesa Paybill</h1>
+          <p className="mt-2 text-brand-500">Parents who pay through the Paybill with the admission number as the account are matched automatically. Anything else waits here for you.</p>
+        </div>
+        {!readOnly && <Link to={`${base}/prompt`} className="btn-gold"><Smartphone size={18} /> Send M-Pesa prompt</Link>}
       </div>
 
       {data?.simulation && !readOnly && (
