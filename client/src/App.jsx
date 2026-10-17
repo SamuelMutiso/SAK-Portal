@@ -41,6 +41,7 @@ import Assistant from "./pages/shared/Assistant";
 import Calendar from "./pages/shared/Calendar";
 import Compare from "./pages/shared/Compare";
 import Insights from "./pages/shared/Insights";
+import Learning from "./pages/shared/Learning";
 import PickupCheck from "./pages/shared/PickupCheck";
 import Reports from "./pages/shared/Reports";
 import PrintCentre from "./pages/shared/PrintCentre";
@@ -69,6 +70,7 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["admin"]} />}>
         <Route path="/admin" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="learning" element={<Learning />} />
           <Route path="assistant" element={<Assistant />} />
           <Route index element={<AdminDashboard />} />
           <Route path="students" element={<Students />} />
@@ -105,6 +107,7 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["teacher"]} />}>
         <Route path="/teacher" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="learning" element={<Learning />} />
           <Route index element={<TeacherDashboard />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="homework" element={<Homework />} />
@@ -143,6 +146,7 @@ export default function App() {
       <Route element={<ProtectedRoute roles={["director"]} />}>
         <Route path="/director" element={<DashboardLayout />}>
           <Route path="security" element={<TwoFactorSetup />} />
+          <Route path="learning" element={<Learning />} />
           <Route path="assistant" element={<Assistant />} />
           <Route index element={<DirectorHome />} />
           <Route path="performance" element={<Performance />} />
