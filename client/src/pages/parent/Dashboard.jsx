@@ -13,6 +13,7 @@ import { fetchEvents } from "../../store/slices/eventsSlice";
 import { fetchNotices } from "../../store/slices/noticesSlice";
 import { fetchStudents } from "../../store/slices/studentsSlice";
 import LearnerAvatar from "../../components/LearnerAvatar";
+import CatchUp from "../../components/CatchUp";
 
 export default function ParentDashboard() {
   const dispatch = useDispatch();
@@ -59,8 +60,12 @@ export default function ParentDashboard() {
         ))}
       </div>
 
+      <div className="grid gap-4 lg:grid-cols-2">
+        {children.map((child, index) => <CatchUp key={child.id} child={child} showNotices={index === 0} />)}
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+        <div id="notices" className="scroll-mt-20 space-y-4 lg:col-span-2">
           <h2 className="text-lg font-semibold text-brand-800">Notices for you</h2>
           {notices.map((notice) => (
             <NoticeCard key={notice.id} notice={notice} showSms={false} seenKeys={seen} onSeen={(key) => setSeen([...seen, key])} />

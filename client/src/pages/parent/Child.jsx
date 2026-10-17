@@ -1,6 +1,6 @@
 import { ArrowLeft, BedDouble, Bus, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import api from "../../api/client";
 import ExamPicker from "../../components/ExamPicker";
 import Loader from "../../components/Loader";
@@ -9,6 +9,7 @@ import { formatKes } from "../../constants";
 import Attendance from "./child/Attendance";
 import Diary from "./child/Diary";
 import Fees from "./child/Fees";
+import Learning from "./child/Learning";
 import Leave from "./child/Leave";
 import Library from "./child/Library";
 import Portfolio from "./child/Portfolio";
@@ -55,7 +56,12 @@ function ReportTab({ student }) {
 export default function Child() {
   const { id } = useParams();
   const [student, setStudent] = useState(null);
-  const [tab, setTab] = useState("report");
+  const [params] = useSearchParams();
+  const [tab, setTab] = useState(params.get("tab") || "report");
+
+  useEffect(() => {
+    setTab(params.get("tab") || "report");
+  }, [params]);
 
   useEffect(() => {
     api.get(`/students/${id}`).then(({ data }) => setStudent(data));
@@ -66,6 +72,7 @@ export default function Child() {
   const tabs = [
     { key: "report", label: "Report card" },
     { key: "progress", label: "Progress" },
+    { key: "learning", label: "Learning" },
     { key: "timetable", label: "Timetable" },
     { key: "fees", label: "Fees" },
     { key: "attendance", label: student.route_name ? "Attendance & bus" : "Attendance" },
@@ -117,6 +124,7 @@ export default function Child() {
 
       {tab === "report" && <ReportTab student={student} />}
       {tab === "progress" && <Progress student={student} />}
+      {tab === "learning" && <Learning student={student} />}
       {tab === "timetable" && <Timetable student={student} />}
       {tab === "fees" && <Fees student={student} onBalanceChange={(balance) => setStudent({ ...student, fee_balance: balance })} />}
       {tab === "attendance" && <Attendance student={student} />}
