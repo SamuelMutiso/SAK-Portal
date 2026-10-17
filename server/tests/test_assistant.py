@@ -12,8 +12,11 @@ class Reply:
     def __init__(self, message, status=200):
         self.status_code = status
         self.message = message
+        self.headers = {"retry-after": "0.1"}
 
     def json(self):
+        if self.status_code != 200:
+            return {"error": {"code": "rate_limit_exceeded", "message": "slow down"}}
         return {"choices": [{"message": self.message}]}
 
 
@@ -98,9 +101,16 @@ def test_unknown_class_lists_real_ones(client, provider):
     assert "Grade 4" in result["classes"]
 
 
+def test_busy_provider_is_tried_again(client, provider):
+    sent, replies = provider
+    replies += [Reply({}, status=429), Reply({"content": "All good\u202ftoday"})]
+    response = client.post("/api/assistant/ask", json={"question": "Summary please"}, headers=login(client, "admin@test.com"))
+    assert response.status_code == 200 and response.get_json()["answer"] == "All good today" and len(sent) == 2
+
+
 def test_provider_failure_is_a_friendly_error(client, provider):
     sent, replies = provider
-    replies.append(Reply({}, status=429))
+    replies.append(Reply({}, status=401))
     response = client.post("/api/assistant/ask", json={"question": "Summary please"}, headers=login(client, "admin@test.com"))
     assert response.status_code == 503 and "try again" in response.get_json()["error"]
 
