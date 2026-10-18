@@ -1,6 +1,7 @@
 import { Bus, Phone, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../../api/client";
+import BusBoard from "../../components/BusBoard";
 import Loader from "../../components/Loader";
 import RouteMap from "../../components/RouteMap";
 
@@ -23,8 +24,10 @@ export default function Transport() {
     <div className="space-y-6">
       <div>
         <h1 className="page-title">Transport</h1>
-        <p className="text-brand-500">School bus routes for day scholars around Kitengela.</p>
+        <p className="text-brand-500">School bus routes for day scholars around Kitengela, and where every learner is right now.</p>
       </div>
+
+      <BusBoard />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-3">
@@ -52,7 +55,7 @@ export default function Transport() {
             <RouteMap stops={selected.stops} height={420} />
             <ol className="mt-4 flex flex-wrap gap-2 text-sm">
               {selected.stops.map((stop, index) => (
-                <li key={stop.name} className="badge bg-brand-50 text-brand-700">
+                <li key={stop.name} className={`badge ${index === 0 ? "bg-gold-100 text-gold-600" : "bg-brand-50 text-brand-700"}`}>
                   {index + 1}. {stop.name}
                 </li>
               ))}

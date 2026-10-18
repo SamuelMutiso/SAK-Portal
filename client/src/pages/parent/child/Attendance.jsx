@@ -61,16 +61,18 @@ export default function Attendance({ student }) {
         <div className="card">
           <h3 className="flex items-center gap-2 font-semibold text-brand-800"><Bus size={18} /> {route.name}</h3>
           <p className="text-sm text-brand-500">Driver {route.driver_name} · {route.driver_phone} · {route.vehicle}</p>
-          <ul className="my-4 space-y-1 text-sm">
-            {trips.length === 0 && <li className="text-brand-400">No bus updates yet today.</li>}
+          {student.transport_stop && <p className="mt-1 text-sm text-brand-700">{student.first_name}'s stop: <span className="font-semibold">{student.transport_stop}</span></p>}
+          <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-brand-400">Today</p>
+          <ol className="mb-4 mt-2 space-y-2 text-sm">
+            {trips.length === 0 && <li className="text-brand-400">No bus updates yet today. You get an SMS at each step.</li>}
             {trips.map((trip) => (
-              <li key={trip.recorded_at} className="flex items-center gap-2 font-semibold text-emerald-700">
-                <CheckCircle2 size={16} />
-                {trip.event === "boarded" ? "Boarded the bus" : "Dropped off"} at {format(new Date(trip.recorded_at + "Z"), "h:mm a")}
+              <li key={`${trip.event}-${trip.recorded_at}`} className="flex items-center gap-2 font-semibold text-emerald-700">
+                <CheckCircle2 size={16} className="shrink-0" />
+                {trip.label}{(trip.event === "boarded" || trip.event === "dropped") && trip.stop ? ` at ${trip.stop}` : ""} · {format(new Date(trip.recorded_at + "Z"), "h:mm a")}
               </li>
             ))}
-          </ul>
-          <RouteMap stops={route.stops} height={300} />
+          </ol>
+          <RouteMap stops={route.stops} height={300} highlight={student.transport_stop} />
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip } from "react-leaflet";
 
-export default function RouteMap({ stops, height = 360 }) {
+export default function RouteMap({ stops, height = 360, highlight = null }) {
   if (!stops?.length) {
     return <p className="text-sm text-brand-400">No stops added for this route yet.</p>;
   }
@@ -18,11 +18,11 @@ export default function RouteMap({ stops, height = 360 }) {
         <CircleMarker
           key={stop.name}
           center={[stop.lat, stop.lng]}
-          radius={index === 0 ? 10 : 7}
-          pathOptions={{ color: "#1E3A6B", fillColor: index === 0 ? "#DDA22E" : "#ffffff", fillOpacity: 1, weight: 3 }}
+          radius={index === 0 || stop.name === highlight ? 10 : 7}
+          pathOptions={{ color: "#1E3A6B", fillColor: index === 0 ? "#DDA22E" : stop.name === highlight ? "#059669" : "#ffffff", fillOpacity: 1, weight: 3 }}
         >
-          <Tooltip direction="top" offset={[0, -8]}>
-            {index + 1}. {stop.name}
+          <Tooltip direction="top" offset={[0, -8]} permanent={stop.name === highlight}>
+            {index === 0 ? "School" : stop.name === highlight ? `Your stop: ${stop.name}` : `${index + 1}. ${stop.name}`}
           </Tooltip>
         </CircleMarker>
       ))}
