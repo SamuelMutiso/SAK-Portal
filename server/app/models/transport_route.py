@@ -11,6 +11,9 @@ class TransportRoute(db.Model):
     vehicle = db.Column(db.String(40))
     stops = db.Column(db.JSON, default=list)
     driver_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+    live_lat = db.Column(db.Float)
+    live_lng = db.Column(db.Float)
+    live_at = db.Column(db.DateTime)
 
     driver = db.relationship("User")
 
