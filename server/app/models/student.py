@@ -21,6 +21,7 @@ class Student(db.Model):
     classroom_id = db.Column(db.Integer, db.ForeignKey("classrooms.id"))
     parent_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     transport_route_id = db.Column(db.Integer, db.ForeignKey("transport_routes.id"))
+    transport_stop = db.Column(db.String(80))
     status = db.Column(db.String(20), nullable=False, default="active", server_default="active")
     admission_date = db.Column(db.Date)
     left_on = db.Column(db.Date)
