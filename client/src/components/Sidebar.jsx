@@ -156,7 +156,7 @@ export default function Sidebar({ open, onClose }) {
     <>
       {open && <div className="fixed inset-0 z-30 bg-brand-900/40 md:hidden print:hidden" onClick={onClose} />}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 print:hidden flex-col bg-brand-900 text-brand-100 transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 print:hidden flex-col bg-brand-900 pt-[env(safe-area-inset-top)] md:pt-0 text-brand-100 transition-transform md:sticky md:top-0 md:h-screen md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
