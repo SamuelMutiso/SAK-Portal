@@ -1,4 +1,5 @@
-import { BookOpen, BookOpenCheck, CalendarCheck, ChevronRight, ListChecks, Megaphone, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { BookOpen, BookOpenCheck, Bus, CalendarCheck, ChevronRight, ListChecks, Megaphone, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import api from "../api/client";
@@ -46,6 +47,8 @@ export default function CatchUp({ child, showNotices = true }) {
   const { unread_notices: notices, attendance, homework_due: homework, results } = data;
   const rows = [];
 
+  if (data.bus) rows.push({ icon: Bus, tone: data.bus.event === "arrived" ? "bg-emerald-100 text-emerald-700" : "bg-sky-100 text-sky-700",
+    title: `${data.bus.label} at ${format(new Date(`${data.bus.at}Z`), "h:mm a")}`, detail: data.bus.event === "arrived" ? "Safely at school today" : data.bus.stop ? `Stop: ${data.bus.stop}` : "School bus", to: `${page}?tab=attendance` });
   if (showNotices && notices.count) rows.push({ icon: Megaphone, tone: "bg-red-50 text-red-600", title: `${notices.count} notice${notices.count > 1 ? "s" : ""} you haven't opened`, detail: notices.titles.join(" · "), to: "#notices" });
   if (homework.count) rows.push({ icon: BookOpen, tone: "bg-gold-100 text-gold-600", title: `${homework.count} homework to do`, detail: homework.titles.join(" · ") });
   if (data.quizzes_waiting?.count) rows.push({ icon: ListChecks, tone: "bg-sky-100 text-sky-700", title: `${data.quizzes_waiting.count} quiz${data.quizzes_waiting.count > 1 ? "zes" : ""} to try`, detail: data.quizzes_waiting.titles.join(" · "), to: `${page}?tab=quizzes` });
