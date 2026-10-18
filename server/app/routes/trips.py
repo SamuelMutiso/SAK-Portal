@@ -1,6 +1,7 @@
-from datetime import date, datetime, time, timezone
+import math
+from datetime import date, datetime, time, timedelta, timezone
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import jwt_required
 
 from app.extensions import db, limiter
@@ -83,6 +84,8 @@ def my_route():
         route=TransportRouteSchema().dump(route),
         students=StudentSchema(many=True).dump(students),
         logs=[log_dump(log) for log in logs],
+        sharing=is_live(route),
+        practice=current_app.config["BUS_PRACTICE"],
     )
 
 
@@ -164,7 +167,7 @@ def today_board():
         if user.role == "teacher" and not rows:
             continue
         board.append({
-            "id": route.id, "name": route.name, "vehicle": route.vehicle, "driver_name": route.driver_name, "driver_phone": route.driver_phone,
+            "id": route.id, "name": route.name, "vehicle": route.vehicle, "live": is_live(route), "driver_name": route.driver_name, "driver_phone": route.driver_phone,
             "counts": {"waiting": sum(1 for row in rows if row["status"] is None),
                        "on_bus": sum(1 for row in rows if row["status"] in ON_BUS),
                        "at_school": sum(1 for row in rows if row["status"] == "arrived"),
@@ -179,3 +182,89 @@ def today_board():
 def student_trips(student_id):
     student = viewable_student(student_id)
     return jsonify([{**log_dump(log), "stop": student.transport_stop} for log in today_logs([student.id])])
+
+
+LIVE_FOR = timedelta(minutes=3)
+BUS_SPEED_KMH = 22
+
+
+def distance_km(lat1, lng1, lat2, lng2):
+    radius = 6371
+    dlat = math.radians(lat2 - lat1)
+    dlng = math.radians(lng2 - lng1)
+    a = math.sin(dlat / 2) ** 2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlng / 2) ** 2
+    return radius * 2 * math.asin(math.sqrt(a))
+
+
+def is_live(route):
+    return bool(route.live_at and datetime.utcnow() - route.live_at <= LIVE_FOR)
+
+
+@trips_bp.post("/location")
+@limiter.limit("1200 per hour")
+@roles_required("driver")
+def share_location():
+    route = driver_route()
+    if not route:
+        return jsonify(error="You have not been assigned a route"), 403
+    data = request.get_json() or {}
+    try:
+        lat, lng = float(data.get("lat")), float(data.get("lng"))
+    except (TypeError, ValueError):
+        return jsonify(error="Location not understood"), 400
+    if not (-5 <= lat <= 5 and 33 <= lng <= 42.5):
+        return jsonify(error="That location is outside Kenya"), 400
+    route.live_lat, route.live_lng, route.live_at = round(lat, 6), round(lng, 6), datetime.utcnow()
+    db.session.commit()
+    return jsonify(live=True, at=route.live_at.isoformat())
+
+
+@trips_bp.post("/location/stop")
+@roles_required("driver")
+def stop_location():
+    route = driver_route()
+    if route:
+        route.live_lat = route.live_lng = route.live_at = None
+        db.session.commit()
+    return jsonify(live=False)
+
+
+@trips_bp.get("/live/<int:route_id>")
+@jwt_required()
+def live_bus(route_id):
+    user = current_user()
+    route = db.get_or_404(TransportRoute, route_id)
+    if user.role == "parent":
+        children = [child for child in user.children if child.transport_route_id == route.id and child.status == "active"]
+        if not children:
+            return jsonify(error="You do not have access to this"), 403
+    elif user.role == "driver":
+        if route.driver_id != user.id:
+            return jsonify(error="You do not have access to this"), 403
+        children = []
+    elif user.role in ("admin", "director", "teacher"):
+        children = []
+    else:
+        return jsonify(error="You do not have access to this"), 403
+    live = is_live(route)
+    stops = {stop.get("name"): stop for stop in route.stops or []}
+    latest = latest_by_student(today_logs([child.id for child in children]))
+    eta = []
+    if live:
+        for child in children:
+            stop = stops.get(child.transport_stop)
+            last = latest.get(child.id)
+            heading = last.event if last else None
+            target = stops.get((route.stops or [{}])[0].get("name")) if heading == "boarded" else stop
+            if not target or heading in ("arrived", "dropped"):
+                continue
+            km = distance_km(route.live_lat, route.live_lng, target["lat"], target["lng"]) * 1.3
+            eta.append({"student_id": child.id, "first_name": child.first_name, "to": "school" if heading == "boarded" else child.transport_stop,
+                        "km": round(km, 1), "minutes": max(1, round(km / BUS_SPEED_KMH * 60))})
+    return jsonify(
+        route_id=route.id, name=route.name, live=live,
+        lat=route.live_lat if live else None, lng=route.live_lng if live else None,
+        at=route.live_at.isoformat() if live else None,
+        stops=route.stops or [], eta=eta,
+        practice=current_app.config["BUS_PRACTICE"] and user.role == "driver",
+    )
