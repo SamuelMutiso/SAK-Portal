@@ -1,10 +1,10 @@
 import os
 import uuid
+from io import BytesIO
 
-from flask import current_app
+from flask import abort, current_app, send_file, send_from_directory
 
 ALLOWED = {"jpg", "jpeg", "png", "webp"}
-
 
 DOCUMENTS = {"jpg", "jpeg", "png", "webp", "pdf"}
 
@@ -14,6 +14,8 @@ SIGNATURES = {
     "png": (b"\x89PNG\r\n\x1a\n",),
     "pdf": (b"%PDF-",),
 }
+
+CONTENT_TYPES = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp", "pdf": "application/pdf", "svg": "image/svg+xml"}
 
 
 def looks_like(file, extension):
@@ -28,23 +30,39 @@ def private_folder():
     return os.path.join(os.path.dirname(current_app.config["UPLOAD_FOLDER"].rstrip("/")), "private")
 
 
-def save_private(file):
-    extension = file.filename.rsplit(".", 1)[-1].lower() if "." in (file.filename or "") else ""
-    if extension not in DOCUMENTS or not looks_like(file, extension):
-        raise ValueError("Upload a photo (JPG, PNG) or a PDF of the slip")
-    folder = private_folder()
-    os.makedirs(folder, exist_ok=True)
+def store_bytes(data, extension):
+    from app.extensions import db
+    from app.models import StoredFile
+
     name = f"{uuid.uuid4().hex}.{extension}"
-    file.save(os.path.join(folder, name))
+    db.session.add(StoredFile(name=name, content_type=CONTENT_TYPES[extension], data=data))
     return name
+
+
+def store(file, allowed, message):
+    extension = file.filename.rsplit(".", 1)[-1].lower() if "." in (file.filename or "") else ""
+    if extension not in allowed or not looks_like(file, extension):
+        raise ValueError(message)
+    data = file.read()
+    if not data:
+        raise ValueError("That file is empty")
+    return store_bytes(data, extension)
+
+
+def save_private(file):
+    return store(file, DOCUMENTS, "Upload a photo (JPG, PNG) or a PDF of the slip")
 
 
 def save_image(file):
-    extension = file.filename.rsplit(".", 1)[-1].lower() if "." in (file.filename or "") else ""
-    if extension not in ALLOWED or not looks_like(file, extension):
-        raise ValueError("Upload a JPG, PNG or WEBP image")
-    folder = current_app.config["UPLOAD_FOLDER"]
-    os.makedirs(folder, exist_ok=True)
-    name = f"{uuid.uuid4().hex}.{extension}"
-    file.save(os.path.join(folder, name))
-    return name
+    return store(file, ALLOWED, "Upload a JPG, PNG or WEBP image")
+
+
+def send_stored(name, folder):
+    from app.models import StoredFile
+
+    row = StoredFile.query.filter_by(name=name).first()
+    if row:
+        return send_file(BytesIO(row.data), mimetype=row.content_type, download_name=name)
+    if name and os.path.isfile(os.path.join(folder, name)):
+        return send_from_directory(folder, name)
+    abort(404)
