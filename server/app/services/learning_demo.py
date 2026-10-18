@@ -281,3 +281,42 @@ def add_demo_expenses():
     db.session.add(wrong)
     db.session.commit()
     return len(EXPENSES)
+
+
+def slip_svg(bank, reference, amount, when, account):
+    from html import escape
+
+    rows = [("Date", when.strftime("%d/%m/%Y")), ("Account name", "SUCCESS ACADEMY KITENGELA"), ("Account / Ref", account),
+            ("Amount (KES)", f"{amount:,}.00"), ("Transaction no.", reference), ("Depositor", "Parent")]
+    lines = "".join(
+        f'<text x="40" y="{130 + index * 60}" font-size="18" fill="#5a5a5a">{label}</text>'
+        f'<text x="250" y="{130 + index * 60}" font-size="22" font-family="monospace" fill="#141414">{escape(str(value))}</text>'
+        f'<line x1="240" y1="{140 + index * 60}" x2="860" y2="{140 + index * 60}" stroke="#d0d0d0"/>'
+        for index, (label, value) in enumerate(rows)
+    )
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" font-family="Arial, sans-serif">'
+        '<rect width="900" height="520" fill="#fcfbf6"/><rect width="900" height="70" fill="#284678"/>'
+        f'<text x="30" y="44" font-size="24" font-weight="bold" fill="#ffffff">{escape(bank.upper())} · CASH DEPOSIT SLIP (DEMO)</text>'
+        f"{lines}"
+        '<ellipse cx="780" cy="455" rx="85" ry="50" fill="none" stroke="#a02828" stroke-width="4" transform="rotate(-12 780 455)"/>'
+        '<text x="722" y="463" font-size="24" font-weight="bold" fill="#a02828" transform="rotate(-12 780 455)">RECEIVED</text>'
+        "</svg>"
+    ).encode()
+
+
+def repair_demo_slips():
+    import os
+
+    from app.models import PaymentSlip, StoredFile
+    from app.services.uploads import private_folder
+
+    fixed = 0
+    for slip in PaymentSlip.query.all():
+        if StoredFile.query.filter_by(name=slip.file_name).first() or os.path.isfile(os.path.join(private_folder(), slip.file_name)):
+            continue
+        data = slip_svg(slip.bank_name, slip.reference, slip.amount, slip.paid_on, slip.student.admission_number if slip.student else "")
+        db.session.add(StoredFile(name=slip.file_name, content_type="image/svg+xml", data=data))
+        fixed += 1
+    db.session.commit()
+    return fixed
