@@ -3,7 +3,7 @@ import string
 from datetime import date, datetime, timedelta
 
 from app import create_app
-from app.services.learning_demo import add_demo_expenses, add_demo_materials, add_demo_quizzes, add_demo_stops
+from app.services.learning_demo import DEMO_STOPS, add_demo_expenses, add_demo_materials, add_demo_quizzes, add_demo_stops
 from app.curriculum import COMPETENCIES, CURRENT_TERM, VALUES, learning_areas_for, uses_marks
 from app.extensions import db
 from app.models import (
@@ -83,24 +83,14 @@ ROUTES = [
         "driver_name": "John Muli",
         "driver_phone": "0711000001",
         "vehicle": "KDA 123A",
-        "stops": [
-            {"name": "Success Academy", "lat": -1.4805, "lng": 36.9585},
-            {"name": "Kitengela Town Centre", "lat": -1.4746, "lng": 36.9620},
-            {"name": "EPZ Gate", "lat": -1.4600, "lng": 36.9750},
-            {"name": "Yukos", "lat": -1.4520, "lng": 36.9690},
-        ],
+        "stops": DEMO_STOPS["Kitengela Town Route"],
     },
     {
         "name": "Noonkopir Route",
         "driver_name": "Paul Kioko",
         "driver_phone": "0711000002",
         "vehicle": "KDB 456B",
-        "stops": [
-            {"name": "Success Academy", "lat": -1.4805, "lng": 36.9585},
-            {"name": "Milimani", "lat": -1.4870, "lng": 36.9500},
-            {"name": "Noonkopir", "lat": -1.4950, "lng": 36.9420},
-            {"name": "Acacia", "lat": -1.5020, "lng": 36.9530},
-        ],
+        "stops": DEMO_STOPS["Noonkopir Route"],
     },
 ]
 
