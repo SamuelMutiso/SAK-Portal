@@ -387,34 +387,10 @@ def seed_fees(students, classrooms, routes, bursar, siblings):
 
 
 def slip_image(bank, reference, amount, when, account):
-    import os
-    import uuid
+    from app.services.learning_demo import slip_svg
+    from app.services.uploads import store_bytes
 
-    from app.services.uploads import private_folder
-
-    rows = [("Date", when.strftime("%d/%m/%Y")), ("Account name", "SUCCESS ACADEMY KITENGELA"), ("Account / Ref", account),
-            ("Amount (KES)", f"{amount:,}.00"), ("Transaction no.", reference), ("Depositor", "Parent")]
-    lines = "".join(
-        f'<text x="40" y="{130 + index * 60}" font-size="18" fill="#5a5a5a">{label}</text>'
-        f'<text x="250" y="{130 + index * 60}" font-size="22" font-family="monospace" fill="#141414">{value}</text>'
-        f'<line x1="240" y1="{140 + index * 60}" x2="860" y2="{140 + index * 60}" stroke="#d0d0d0"/>'
-        for index, (label, value) in enumerate(rows)
-    )
-    svg = (
-        '<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" font-family="Arial, sans-serif">'
-        '<rect width="900" height="520" fill="#fcfbf6"/><rect width="900" height="70" fill="#284678"/>'
-        f'<text x="30" y="44" font-size="24" font-weight="bold" fill="#ffffff">{bank.upper()} · CASH DEPOSIT SLIP (DEMO)</text>'
-        f"{lines}"
-        '<ellipse cx="780" cy="455" rx="85" ry="50" fill="none" stroke="#a02828" stroke-width="4" transform="rotate(-12 780 455)"/>'
-        '<text x="722" y="463" font-size="24" font-weight="bold" fill="#a02828" transform="rotate(-12 780 455)">RECEIVED</text>'
-        "</svg>"
-    )
-    folder = private_folder()
-    os.makedirs(folder, exist_ok=True)
-    name = f"{uuid.uuid4().hex}.svg"
-    with open(os.path.join(folder, name), "w") as handle:
-        handle.write(svg)
-    return name
+    return store_bytes(slip_svg(bank, reference, amount, when, account), "svg")
 
 
 def seed_paybill(students):

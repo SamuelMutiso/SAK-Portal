@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
-from flask import Blueprint, current_app, jsonify, request, send_from_directory
+from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import jwt_required
 from sqlalchemy import func, or_
 
@@ -14,7 +14,7 @@ from app.schemas.fees import (
 )
 from app.services import ledger
 from app.services.sms import send_sms
-from app.services.uploads import private_folder, save_private
+from app.services.uploads import private_folder, save_private, send_stored
 from app.utils.roles import current_user, roles_required, search_students, viewable_student
 
 fees_bp = Blueprint("fees", __name__, url_prefix="/api/fees")
@@ -500,7 +500,9 @@ def student_slips(student_id):
 def slip_file(slip_id):
     slip = db.get_or_404(PaymentSlip, slip_id)
     viewable_student(slip.student_id)
-    return send_from_directory(private_folder(), slip.file_name)
+    response = send_stored(slip.file_name, private_folder())
+    response.headers["Cache-Control"] = "private, no-store"
+    return response
 
 
 @fees_bp.post("/slips/<int:slip_id>/approve")

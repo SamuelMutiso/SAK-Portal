@@ -32,3 +32,4 @@ from app.models.paybill import PaybillReceipt
 from app.models.learning import LearningMaterial
 from app.models.quiz import Quiz, QuizAttempt, QuizQuestion
 from app.models.expense import Expense
+from app.models.stored_file import StoredFile

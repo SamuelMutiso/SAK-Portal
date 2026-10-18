@@ -12,7 +12,7 @@ from app.services.devices import describe_device
 
 WRITE_METHODS = ("POST", "PUT", "PATCH", "DELETE")
 SKIP_PATHS = ("/api/auth/login", "/api/auth/refresh", "/api/payments/callback")
-HIDDEN_FIELDS = ("password_hash", "allergies", "medical_conditions", "code_hash", "totp_secret", "totp_pending", "file_data", "receipt_data")
+HIDDEN_FIELDS = ("password_hash", "allergies", "medical_conditions", "code_hash", "totp_secret", "totp_pending", "file_data", "receipt_data", "data")
 
 ACTIONS = {
     "users.create_user": "Created a user account",
@@ -117,6 +117,7 @@ TABLE_NAMES = {
     "learning_materials": "Learning material",
     "quizzes": "Quiz",
     "expenses": "Expense",
+    "stored_files": "Uploaded file",
     "quiz_questions": "Quiz question",
     "quiz_attempts": "Quiz attempt",
     "assessments": "Grade",

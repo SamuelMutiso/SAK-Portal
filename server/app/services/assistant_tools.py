@@ -356,6 +356,18 @@ def tools_for(role):
     return [item[2] for item in TOOLS.values() if role in item[1]]
 
 
+def money(value):
+    return f"KES {value:,}" if isinstance(value, int) and not isinstance(value, bool) else value
+
+
+def for_model(value, is_money=False):
+    if isinstance(value, dict):
+        return {key: for_model(item, is_money or key.endswith("_kes")) for key, item in value.items()}
+    if isinstance(value, list):
+        return [for_model(item, is_money) for item in value]
+    return money(value) if is_money else value
+
+
 def run_tool(user, masker, name, arguments):
     entry = TOOLS.get(name)
     if not entry or user.role not in entry[1]:
