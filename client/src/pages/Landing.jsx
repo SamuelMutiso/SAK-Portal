@@ -67,19 +67,129 @@ function FloatingCard({ className, delay, children }) {
   );
 }
 
+const EASE = [0.22, 1, 0.36, 1];
+
+function RisingHeadline({ text, className }) {
+  const reduce = useReducedMotion();
+  const words = text.split(" ");
+  return (
+    <h1 className={className} aria-label={text}>
+      {words.map((word, index) => (
+        <span key={index} aria-hidden="true" className="inline-block overflow-hidden pb-[0.06em] align-bottom">
+          <motion.span
+            className="inline-block"
+            initial={reduce ? false : { y: "105%" }}
+            animate={{ y: 0 }}
+            transition={{ delay: 0.1 + index * 0.08, duration: 0.7, ease: EASE }}
+          >
+            {word}
+          </motion.span>
+          {index < words.length - 1 && "\u00a0"}
+        </span>
+      ))}
+    </h1>
+  );
+}
+
+function DayTimeline() {
+  const reduce = useReducedMotion();
+  const step = 0.28;
+  return (
+    <div className="relative mt-12">
+      <motion.div
+        aria-hidden="true"
+        className="absolute left-0 right-0 top-[5px] hidden h-0.5 origin-left bg-gradient-to-r from-gold-500 via-gold-400 to-gold-500/30 md:block"
+        initial={reduce ? false : { scaleX: 0 }}
+        whileInView={{ scaleX: 1 }}
+        viewport={{ once: true, amount: 0.4 }}
+        transition={{ duration: step * DAY.length + 0.4, ease: "easeInOut" }}
+      />
+      <ol className="relative grid gap-4 md:grid-cols-5">
+        {DAY.map(({ time, icon: Icon, title, text, tone }, index) => (
+          <motion.li
+            key={time}
+            className="relative"
+            initial={reduce ? false : { opacity: 0.25 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ delay: 0.2 + index * step, duration: 0.5 }}
+          >
+            <div className="mb-4 hidden items-center gap-2 md:flex">
+              <motion.span
+                className="h-3 w-3 rounded-full bg-gold-400 ring-4 ring-brand-900"
+                initial={reduce ? false : { scale: 0 }}
+                whileInView={{ scale: 1 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ delay: 0.2 + index * step, type: "spring", stiffness: 400, damping: 15 }}
+              />
+            </div>
+            <div className="h-full rounded-2xl bg-white/[0.06] p-5 ring-1 ring-white/10 transition-colors duration-300 hover:bg-white/[0.1]">
+              <p className="font-mono text-sm text-gold-400">{time}</p>
+              <span className={`mt-4 flex h-10 w-10 items-center justify-center rounded-full ${tone}`}><Icon size={18} /></span>
+              <h3 className="mt-4 font-semibold leading-snug">{title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-brand-200">{text}</p>
+            </div>
+          </motion.li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+const TREND = [[5, 62], [45, 56], [85, 47], [125, 47], [165, 40], [205, 36], [245, 37], [295, 30]];
+
+function TrendChart() {
+  const reduce = useReducedMotion();
+  const view = { once: true, amount: 0.6 };
+  return (
+    <svg viewBox="0 0 300 90" className="mt-4 w-full" aria-label="Mean mark rising across the year from 64 to 81 percent">
+      {[20, 45, 70].map((y) => <line key={y} x1="0" x2="300" y1={y} y2={y} stroke="#E1EAF5" />)}
+      <motion.polyline
+        points={TREND.map((point) => point.join(",")).join(" ")}
+        fill="none"
+        stroke="#1E3A6B"
+        strokeWidth="3"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        initial={reduce ? false : { pathLength: 0 }}
+        whileInView={{ pathLength: 1 }}
+        viewport={view}
+        transition={{ duration: 1.4, ease: "easeInOut" }}
+      />
+      {TREND.map(([x, y], index) => (
+        <motion.circle
+          key={x}
+          cx={x}
+          cy={y}
+          r="4"
+          fill="#DDA22E"
+          stroke="#1E3A6B"
+          strokeWidth="1.5"
+          initial={reduce ? false : { scale: 0 }}
+          whileInView={{ scale: 1 }}
+          viewport={view}
+          transition={{ delay: 0.15 + index * 0.17, type: "spring", stiffness: 500, damping: 18 }}
+          style={{ transformOrigin: `${x}px ${y}px` }}
+        />
+      ))}
+    </svg>
+  );
+}
+
 function HeroCollage() {
+  const reduce = useReducedMotion();
   return (
     <div className="relative mx-auto h-[460px] w-full max-w-[540px] sm:h-[520px]">
-      <div className="absolute right-6 top-4 h-[300px] w-[62%] rotate-2 overflow-hidden rounded-[2rem] border-[6px] border-white shadow-2xl sm:h-[340px]">
+      <motion.div initial={reduce ? false : { opacity: 0, y: 30, rotate: 0 }} animate={{ opacity: 1, y: 0, rotate: 2 }} transition={{ delay: 0.15, duration: 0.9, ease: EASE }} className="absolute right-6 top-4 h-[300px] w-[62%] overflow-hidden rounded-[2rem] border-[6px] border-white shadow-2xl sm:h-[340px]">
         <img src="/photos/smiling-girls.jpg" alt="Smiling Success Academy learners in uniform" className="h-full w-full object-cover object-[35%_center]" />
-      </div>
-      <div className="absolute bottom-6 left-2 h-[220px] w-[52%] -rotate-3 overflow-hidden rounded-[2rem] border-[6px] border-white shadow-2xl sm:h-[250px]">
+      </motion.div>
+      <motion.div initial={reduce ? false : { opacity: 0, y: 30, rotate: 0 }} animate={{ opacity: 1, y: 0, rotate: -3 }} transition={{ delay: 0.3, duration: 0.9, ease: EASE }} className="absolute bottom-6 left-2 h-[220px] w-[52%] overflow-hidden rounded-[2rem] border-[6px] border-white shadow-2xl sm:h-[250px]">
         <img src="/photos/thumbs-up.jpg" alt="Learners giving a thumbs up" className="h-full w-full object-cover object-[60%_30%]" />
-      </div>
+      </motion.div>
       <div className="absolute bottom-0 right-0 h-28 w-28 rounded-full bg-gold-400/80 blur-2xl" />
 
       <FloatingCard className="left-0 top-10 w-60" delay={0.5}>
-        <p className="flex items-center gap-1.5 text-[11px] font-semibold text-brand-400"><MessageSquare size={12} /> SMS · SUCCESSACAD</p>
+        <p className="flex items-center gap-1.5 text-[11px] text-brand-400"><MessageSquare size={12} /> <span className="font-semibold text-brand-800">Success Academy</span> <span className="ml-auto">7:12 AM</span></p>
         <p className="mt-1.5 text-xs leading-snug text-brand-800">Ethan boarded the school bus at 7:12 AM (Kitengela Town Route).</p>
       </FloatingCard>
 
@@ -158,9 +268,7 @@ export default function Landing() {
             <p className="inline-flex items-center gap-2 rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-700 ring-1 ring-brand-100">
               <ShieldCheck size={15} className="text-gold-600" /> For Success Academy families
             </p>
-            <h1 className="mt-5 font-headline text-6xl font-extrabold uppercase leading-[0.9] text-brand-800 sm:text-7xl lg:text-8xl">
-              School, right in your pocket
-            </h1>
+            <RisingHeadline text="School, right in your pocket" className="mt-5 font-headline text-6xl font-extrabold uppercase leading-[0.9] text-brand-800 sm:text-7xl lg:text-8xl" />
             <p className="mt-6 max-w-md text-lg leading-relaxed text-brand-600">
               Report cards, the bus, homework, clubs and fees for your child at Success Academy Kitengela. On any phone, with SMS for the important bits.
             </p>
@@ -183,16 +291,7 @@ export default function Landing() {
         <div className="mx-auto max-w-6xl px-4 md:px-8">
           <p className="font-headline text-xl font-bold text-gold-400">#InPursuitOfExcellence</p>
           <h2 className="mt-2 max-w-2xl font-headline text-5xl font-extrabold uppercase leading-[0.95] md:text-6xl">One school day, as a parent sees it</h2>
-          <ol className="mt-12 grid gap-4 md:grid-cols-5">
-            {DAY.map(({ time, icon: Icon, title, text, tone }) => (
-              <li key={time} className="relative rounded-2xl bg-white/[0.06] p-5 ring-1 ring-white/10">
-                <p className="font-mono text-sm text-gold-400">{time}</p>
-                <span className={`mt-4 flex h-10 w-10 items-center justify-center rounded-full ${tone}`}><Icon size={18} /></span>
-                <h3 className="mt-4 font-semibold leading-snug">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-brand-200">{text}</p>
-              </li>
-            ))}
-          </ol>
+          <DayTimeline />
         </div>
       </section>
 
@@ -237,11 +336,7 @@ export default function Landing() {
               </div>
               <span className="ml-auto rounded-full bg-emerald-100 px-2.5 py-1 font-mono text-xs font-semibold text-emerald-700">81% EE</span>
             </div>
-            <svg viewBox="0 0 300 90" className="mt-4 w-full" aria-label="Mean mark rising across the year from 64 to 81 percent">
-              {[20, 45, 70].map((y) => <line key={y} x1="0" x2="300" y1={y} y2={y} stroke="#E1EAF5" />)}
-              <polyline points="5,62 45,56 85,47 125,47 165,40 205,36 245,37 295,30" fill="none" stroke="#1E3A6B" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
-              {[[5, 62], [45, 56], [85, 47], [125, 47], [165, 40], [205, 36], [245, 37], [295, 30]].map(([x, y]) => <circle key={x} cx={x} cy={y} r="4" fill="#DDA22E" stroke="#1E3A6B" strokeWidth="1.5" />)}
-            </svg>
+            <TrendChart />
             <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
               {[["Mathematics", "+7", true], ["Science and Technology", "+13", true], ["English", "+5", true], ["Creative Arts", "-3", false]].map(([area, change, up]) => (
                 <div key={area} className="flex items-center justify-between rounded-lg bg-brand-50 px-2.5 py-1.5">
