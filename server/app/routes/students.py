@@ -134,8 +134,9 @@ def admit():
         parent.must_change_password = True
         db.session.add(parent)
 
-    if data.get("is_boarder"):
+    if data.get("is_boarder") or not data.get("transport_route_id"):
         data["transport_route_id"] = None
+        data["transport_stop"] = None
     student = Student(
         **data,
         admission_number=next_admission_number(),
