@@ -16,8 +16,10 @@ export default function ReceiptPage() {
   const [asking, setAsking] = useState(false);
   const [error, setError] = useState(null);
 
+  const [missing, setMissing] = useState(null);
+
   function load() {
-    api.get(`/fees/payments/${id}`).then(({ data: result }) => setData(result));
+    api.get(`/fees/payments/${id}`).then(({ data: result }) => setData(result)).catch((err) => setMissing(errorMessage(err)));
   }
 
   useEffect(load, [id]);
@@ -33,6 +35,15 @@ export default function ReceiptPage() {
     }
   }
 
+  if (missing) {
+    return (
+      <div className="mx-auto max-w-md space-y-4 py-10 text-center">
+        <p className="text-lg font-semibold text-brand-800">No receipt for this payment</p>
+        <p className="text-brand-500">{missing}</p>
+        <button type="button" onClick={() => window.history.back()} className="btn-ghost">Go back</button>
+      </div>
+    );
+  }
   if (!data) return <Loader />;
   const back = role === "parent" ? `/parent/children/${data.payment.student_id}` : `${feesBase(role)}/students/${data.payment.student_id}`;
 
