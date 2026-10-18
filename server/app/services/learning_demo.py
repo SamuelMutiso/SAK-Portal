@@ -320,3 +320,48 @@ def repair_demo_slips():
         fixed += 1
     db.session.commit()
     return fixed
+
+
+SCHOOL_STOP = {"name": "Success Academy", "lat": -1.4805, "lng": 36.9585}
+DEMO_STOPS = {
+    "Kitengela Town Route": [
+        SCHOOL_STOP,
+        {"name": "Kitengela Town Centre", "lat": -1.4746, "lng": 36.9620},
+        {"name": "Kitengela Mall", "lat": -1.4705, "lng": 36.9668},
+        {"name": "Muigai Inn", "lat": -1.4662, "lng": 36.9601},
+        {"name": "Yukos", "lat": -1.4520, "lng": 36.9690},
+        {"name": "EPZ Gate", "lat": -1.4600, "lng": 36.9750},
+        {"name": "Chuna", "lat": -1.4575, "lng": 36.9860},
+        {"name": "Kaputiei North", "lat": -1.4450, "lng": 36.9800},
+    ],
+    "Noonkopir Route": [
+        SCHOOL_STOP,
+        {"name": "Milimani", "lat": -1.4870, "lng": 36.9500},
+        {"name": "New Valley", "lat": -1.4905, "lng": 36.9610},
+        {"name": "Noonkopir", "lat": -1.4950, "lng": 36.9420},
+        {"name": "Acacia", "lat": -1.5020, "lng": 36.9530},
+        {"name": "Korompoi", "lat": -1.5100, "lng": 36.9655},
+        {"name": "Isinya Road Junction", "lat": -1.5180, "lng": 36.9560},
+        {"name": "Kisaju", "lat": -1.5600, "lng": 36.9700},
+    ],
+}
+
+
+def add_demo_stops():
+    from app.models import TransportRoute
+
+    changed = 0
+    for route in TransportRoute.query.order_by(TransportRoute.id).all():
+        stops = DEMO_STOPS.get(route.name)
+        if stops and len(route.stops or []) < len(stops):
+            route.stops = stops
+            changed += 1
+        names = [stop["name"] for stop in (route.stops or [])[1:]]
+        if not names:
+            continue
+        for index, student in enumerate(sorted(route.students, key=lambda item: item.id)):
+            if not student.transport_stop or student.transport_stop not in names:
+                student.transport_stop = names[index % len(names)]
+                changed += 1
+    db.session.commit()
+    return changed

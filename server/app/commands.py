@@ -20,7 +20,7 @@ def register_commands(app):
 
     @app.cli.command("add-demo-learning")
     def add_demo_learning():
-        from app.services.learning_demo import add_demo_expenses, add_demo_materials, add_demo_quizzes, repair_demo_slips
+        from app.services.learning_demo import add_demo_expenses, add_demo_materials, add_demo_quizzes, add_demo_stops, repair_demo_slips
 
         materials = add_demo_materials()
         quizzes = add_demo_quizzes()
@@ -28,5 +28,7 @@ def register_commands(app):
         click.echo(f"Added {quizzes} demo quizzes" if quizzes else "Quizzes already exist, nothing added")
         expenses = add_demo_expenses()
         click.echo(f"Added {expenses} demo expenses" if expenses else "Expenses already exist, nothing added")
+        stops = add_demo_stops()
+        click.echo(f"Set up bus stops ({stops} changes)" if stops else "Bus stops are already set up")
         slips = repair_demo_slips()
         click.echo(f"Restored {slips} bank slip pictures" if slips else "Bank slip pictures are fine")
