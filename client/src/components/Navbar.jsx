@@ -15,7 +15,7 @@ export default function Navbar({ onMenuClick }) {
   }
 
   return (
-    <header className="print:hidden sticky top-0 z-20 flex items-center gap-3 border-b border-brand-100 bg-cream/90 px-4 py-3 backdrop-blur md:px-8">
+    <header className="print:hidden sticky top-0 z-20 flex items-center gap-3 border-b border-brand-100 bg-cream/90 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur md:px-8">
       <button onClick={onMenuClick} className="rounded-lg p-2 hover:bg-brand-100 md:hidden" aria-label="Open menu">
         <Menu size={22} />
       </button>
