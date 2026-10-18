@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { Bus, CheckCircle2, Home, MapPin, School, Sun, Sunset } from "lucide-react";
 import { useEffect, useState } from "react";
 import api, { errorMessage } from "../../api/client";
+import LiveShare from "../../components/LiveShare";
 import Loader from "../../components/Loader";
 
 const STATUS = {
@@ -78,6 +79,8 @@ export default function Trip() {
           ))}
         </div>
       </section>
+
+      <LiveShare stops={data.route.stops} initiallySharing={data.sharing} practice={data.practice} />
 
       <div className="grid grid-cols-2 gap-2 rounded-2xl bg-brand-100/60 p-1">
         {[["morning", "Morning", Sun], ["afternoon", "Afternoon", Sunset]].map(([key, label, Icon]) => (
