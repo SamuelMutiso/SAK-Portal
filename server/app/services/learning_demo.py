@@ -326,25 +326,36 @@ SCHOOL_STOP = {"name": "Success Academy", "lat": -1.4805, "lng": 36.9585}
 DEMO_STOPS = {
     "Kitengela Town Route": [
         SCHOOL_STOP,
-        {"name": "Kitengela Town Centre", "lat": -1.4746, "lng": 36.9620},
-        {"name": "Kitengela Mall", "lat": -1.4705, "lng": 36.9668},
-        {"name": "Muigai Inn", "lat": -1.4662, "lng": 36.9601},
-        {"name": "Yukos", "lat": -1.4520, "lng": 36.9690},
-        {"name": "EPZ Gate", "lat": -1.4600, "lng": 36.9750},
-        {"name": "Chuna", "lat": -1.4575, "lng": 36.9860},
-        {"name": "Kaputiei North", "lat": -1.4450, "lng": 36.9800},
+        {"name": "Kitengela Township", "lat": -1.48241, "lng": 36.95749},
+        {"name": "Milimani", "lat": -1.49258, "lng": 36.95423},
+        {"name": "New Valley", "lat": -1.4924, "lng": 36.96013},
+        {"name": "Balozi", "lat": -1.49427, "lng": 36.96919},
+        {"name": "Chuna", "lat": -1.50355, "lng": 36.96415},
+        {"name": "Chuna Shopping Centre", "lat": -1.50841, "lng": 36.96548},
+        {"name": "Yukos", "lat": -1.50751, "lng": 36.95331},
+        {"name": "Muigai Prestige", "lat": -1.51797, "lng": 36.94837},
     ],
     "Noonkopir Route": [
         SCHOOL_STOP,
-        {"name": "Milimani", "lat": -1.4870, "lng": 36.9500},
-        {"name": "New Valley", "lat": -1.4905, "lng": 36.9610},
-        {"name": "Noonkopir", "lat": -1.4950, "lng": 36.9420},
-        {"name": "Acacia", "lat": -1.5020, "lng": 36.9530},
-        {"name": "Korompoi", "lat": -1.5100, "lng": 36.9655},
-        {"name": "Isinya Road Junction", "lat": -1.5180, "lng": 36.9560},
-        {"name": "Kisaju", "lat": -1.5600, "lng": 36.9700},
+        {"name": "Naivas Kitengela", "lat": -1.47885, "lng": 36.95813},
+        {"name": "Kitengela Bus Stage", "lat": -1.47065, "lng": 36.95993},
+        {"name": "EPZ Road", "lat": -1.46896, "lng": 36.96102},
+        {"name": "Kitengela Police Station", "lat": -1.46884, "lng": 36.95946},
+        {"name": "Kitengela Hospital", "lat": -1.46965, "lng": 36.95437},
+        {"name": "Noonkopir", "lat": -1.4656, "lng": 36.94926},
     ],
 }
+OLD_DEMO_NAMES = {
+    "Success Academy", "Kitengela Town Centre", "Kitengela Mall", "Muigai Inn", "Yukos", "EPZ Gate", "Chuna", "Kaputiei North",
+    "Milimani", "New Valley", "Noonkopir", "Acacia", "Korompoi", "Isinya Road Junction", "Kisaju",
+}
+
+
+def needs_new_stops(route, stops):
+    current = route.stops or []
+    if current == stops:
+        return False
+    return not current or all(stop.get("name") in OLD_DEMO_NAMES for stop in current)
 
 
 def add_demo_stops():
@@ -353,7 +364,7 @@ def add_demo_stops():
     changed = 0
     for route in TransportRoute.query.order_by(TransportRoute.id).all():
         stops = DEMO_STOPS.get(route.name)
-        if stops and len(route.stops or []) < len(stops):
+        if stops and needs_new_stops(route, stops):
             route.stops = stops
             changed += 1
         names = [stop["name"] for stop in (route.stops or [])[1:]]
