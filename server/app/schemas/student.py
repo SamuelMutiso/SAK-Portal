@@ -52,6 +52,7 @@ class AdmissionSchema(Schema):
     classroom_id = fields.Integer(required=True)
     is_boarder = fields.Boolean(load_default=False)
     transport_route_id = fields.Integer(load_default=None, allow_none=True)
+    transport_stop = fields.String(load_default=None, allow_none=True, validate=validate.Length(max=80))
     admission_date = fields.Date(load_default=None, allow_none=True)
     guardian = fields.Nested(GuardianSchema, required=True)
     guardian2 = fields.Nested(SecondGuardianSchema, load_default=dict)
