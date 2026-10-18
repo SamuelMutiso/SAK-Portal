@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { Bus } from "lucide-react";
 import { useEffect, useState } from "react";
 import api, { errorMessage } from "../../api/client";
 import Loader from "../../components/Loader";
@@ -15,10 +16,16 @@ export default function Attendance() {
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [marks, setMarks] = useState({});
   const [message, setMessage] = useState(null);
+  const [bus, setBus] = useState({});
 
   useEffect(() => {
     api.get("/classes").then(({ data }) => setClassroom(data[0]));
     api.get("/students").then(({ data }) => setStudents(data));
+    api.get("/trips/today").then(({ data }) => {
+      const seen = {};
+      data.routes.forEach((route) => route.learners.forEach((learner) => { if (learner.status) seen[learner.id] = learner; }));
+      setBus(seen);
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -75,6 +82,11 @@ export default function Attendance() {
               <div className="flex-1">
                 <p className="font-semibold">{student.full_name}</p>
                 <p className="font-mono text-xs text-brand-400">{student.admission_number}</p>
+                {date === format(new Date(), "yyyy-MM-dd") && bus[student.id] && (
+                  <span className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${bus[student.id].status === "arrived" ? "bg-emerald-100 text-emerald-800" : "bg-sky-100 text-sky-800"}`}>
+                    <Bus size={12} /> {bus[student.id].label} {format(new Date(`${bus[student.id].at}Z`), "h:mm a")}
+                  </span>
+                )}
               </div>
               <div className="flex gap-1 rounded-xl bg-brand-50 p-1">
                 {STATUSES.map((status) => (
