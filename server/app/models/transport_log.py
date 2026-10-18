@@ -2,7 +2,7 @@ from datetime import datetime
 
 from app.extensions import db
 
-TRIP_EVENTS = ("boarded", "dropped")
+TRIP_EVENTS = ("boarded", "arrived", "left", "dropped")
 
 
 class TransportLog(db.Model):
