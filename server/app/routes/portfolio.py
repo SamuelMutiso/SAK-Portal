@@ -1,11 +1,11 @@
-from flask import Blueprint, abort, current_app, jsonify, request, send_from_directory
+from flask import Blueprint, abort, current_app, jsonify, request
 from flask_jwt_extended import jwt_required
 
 from app.extensions import db, limiter
 from app.models import PortfolioItem
 from app.schemas import PortfolioSchema
 from app.services.signed_files import signature_ok
-from app.services.uploads import save_image
+from app.services.uploads import save_image, send_stored
 from app.utils.roles import current_user, roles_required, viewable_student
 
 portfolio_bp = Blueprint("portfolio", __name__, url_prefix="/api")
@@ -64,6 +64,6 @@ def delete_item(item_id):
 def uploaded_file(name):
     if not signature_ok(name, request.args.get("sig")):
         abort(404)
-    response = send_from_directory(current_app.config["UPLOAD_FOLDER"], name)
+    response = send_stored(name, current_app.config["UPLOAD_FOLDER"])
     response.headers["Cache-Control"] = "private, max-age=3600"
     return response
