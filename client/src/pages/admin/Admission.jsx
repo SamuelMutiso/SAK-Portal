@@ -9,7 +9,7 @@ const RELATIONSHIPS = ["Mother", "Father", "Guardian", "Grandparent", "Aunt", "U
 
 const EMPTY = {
   first_name: "", last_name: "", gender: "", date_of_birth: "", upi: "", assessment_number: "", previous_school: "", home_address: "",
-  classroom_id: "", is_boarder: false, transport_route_id: "", admission_date: new Date().toISOString().slice(0, 10),
+  classroom_id: "", is_boarder: false, transport_route_id: "", transport_stop: "", admission_date: new Date().toISOString().slice(0, 10),
   guardian: { full_name: "", phone: "", email: "", relationship: "Mother" },
   guardian2: { full_name: "", phone: "", relationship: "Father" },
   emergency_contact_name: "", emergency_contact_phone: "",
@@ -195,9 +195,17 @@ export default function Admission() {
             </Field>
             {!form.is_boarder && (
               <Field label="School bus">
-                <select className="input" value={form.transport_route_id} onChange={(event) => set("transport_route_id", event.target.value)}>
+                <select className="input" value={form.transport_route_id} onChange={(event) => setForm({ ...form, transport_route_id: event.target.value, transport_stop: "" })}>
                   <option value="">Does not use the bus</option>
                   {routes.map((route) => <option key={route.id} value={route.id}>{route.name}</option>)}
+                </select>
+              </Field>
+            )}
+            {!form.is_boarder && form.transport_route_id && (
+              <Field label="Bus stop">
+                <select className="input" value={form.transport_stop} onChange={(event) => set("transport_stop", event.target.value)}>
+                  <option value="">Choose the stop</option>
+                  {(routes.find((route) => route.id === Number(form.transport_route_id))?.stops || []).slice(1).map((stop) => <option key={stop.name}>{stop.name}</option>)}
                 </select>
               </Field>
             )}
