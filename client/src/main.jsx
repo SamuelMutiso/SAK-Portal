@@ -16,3 +16,13 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     </Provider>
   </React.StrictMode>
 );
+
+window.addEventListener("unhandledrejection", (event) => {
+  if (event.reason?.isAxiosError && !event.reason.response) event.preventDefault();
+});
+
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
