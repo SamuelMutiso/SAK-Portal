@@ -34,8 +34,10 @@ def receipt_message(payment):
     student = payment.student
     balance = student.fee_balance
     balance_text = f"New balance KES {balance:,}." if balance > 0 else ("Fees fully paid. Thank you." if balance == 0 else f"Credit KES {-balance:,}.")
-    return (f"Success Academy: Received KES {payment.amount:,} for {student.first_name} ({student.admission_number}) by {payment.method}. "
-            f"Receipt {payment.receipt_number}. {balance_text}")
+    link = f" View receipt: {current_app.config['PORTAL_URL']}/parent/receipts/{payment.id}" if payment.id else ""
+    return (f"Success Academy: Received KES {payment.amount:,} for {student.first_name} ({student.admission_number}) by {payment.method}"
+            f"{f' (M-Pesa {payment.receipt})' if payment.receipt and payment.method in ('M-Pesa', 'Paybill') else ''}. "
+            f"Receipt {payment.receipt_number}. {balance_text}{link}")
 
 
 def selected_term():
@@ -329,6 +331,8 @@ def list_payments():
 def get_payment(payment_id):
     payment = db.get_or_404(Payment, payment_id)
     student = viewable_student(payment.student_id)
+    if payment.status not in ("completed", "reversed"):
+        return jsonify(error="There is no receipt because this payment did not go through"), 404
     return jsonify(
         payment=LedgerPaymentSchema().dump(payment),
         student={"full_name": student.full_name, "admission_number": student.admission_number,
