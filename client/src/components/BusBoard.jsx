@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { Bus, Phone, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import api from "../api/client";
+import LiveBusMap from "./LiveBusMap";
 
 const TONE = {
   boarded: "bg-sky-100 text-sky-800",
@@ -45,7 +46,7 @@ export default function BusBoard() {
             <button type="button" onClick={() => setOpen(open === route.id ? null : route.id)} className="w-full p-4 text-left" aria-expanded={open === route.id}>
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="font-semibold text-brand-800">{route.name}</p>
+                  <p className="flex items-center gap-2 font-semibold text-brand-800">{route.name}{route.live && <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">● Live</span>}</p>
                   <p className="flex items-center gap-1 text-xs text-brand-400"><Phone size={12} /> {route.driver_name} · {route.driver_phone} · {route.vehicle}</p>
                 </div>
                 <span className="shrink-0 text-xs font-semibold text-brand-500">{open === route.id ? "Hide" : "See learners"}</span>
@@ -59,6 +60,9 @@ export default function BusBoard() {
                 ))}
               </div>
             </button>
+            {open === route.id && route.live && (
+              <div className="border-t border-brand-100 p-3"><LiveBusMap routeId={route.id} stops={[]} height={260} /></div>
+            )}
             {open === route.id && (
               <ul className="max-h-80 divide-y divide-brand-50 overflow-y-auto border-t border-brand-100">
                 {route.learners.map((learner) => (

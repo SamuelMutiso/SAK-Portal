@@ -128,3 +128,17 @@
     print-color-adjust: exact;
   }
 }
+
+.bus-pin {
+  @apply grid h-10 w-10 place-items-center rounded-full border-[3px] border-white bg-gold-500 text-xl shadow-lg;
+  animation: bus-pulse 2s ease-out infinite;
+}
+
+@keyframes bus-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(221, 162, 46, 0.6); }
+  100% { box-shadow: 0 0 0 16px rgba(221, 162, 46, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bus-pin { animation: none; }
+}

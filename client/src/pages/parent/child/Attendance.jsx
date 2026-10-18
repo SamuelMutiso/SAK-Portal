@@ -3,7 +3,7 @@ import { Bus, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../../../api/client";
 import Loader from "../../../components/Loader";
-import RouteMap from "../../../components/RouteMap";
+import LiveBusMap from "../../../components/LiveBusMap";
 
 const STATUS_STYLES = {
   present: "bg-emerald-500",
@@ -72,7 +72,7 @@ export default function Attendance({ student }) {
               </li>
             ))}
           </ol>
-          <RouteMap stops={route.stops} height={300} highlight={student.transport_stop} />
+          <LiveBusMap routeId={route.id} stops={route.stops} highlight={student.transport_stop} />
         </div>
       )}
     </div>

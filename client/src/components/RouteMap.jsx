@@ -1,6 +1,9 @@
-import { CircleMarker, MapContainer, Polyline, TileLayer, Tooltip } from "react-leaflet";
+import L from "leaflet";
+import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, Tooltip } from "react-leaflet";
 
-export default function RouteMap({ stops, height = 360, highlight = null }) {
+const busIcon = L.divIcon({ className: "", html: '<div class="bus-pin" aria-label="School bus">🚌</div>', iconSize: [40, 40], iconAnchor: [20, 20] });
+
+export default function RouteMap({ stops, height = 360, highlight = null, bus = null }) {
   if (!stops?.length) {
     return <p className="text-sm text-brand-400">No stops added for this route yet.</p>;
   }
@@ -26,6 +29,7 @@ export default function RouteMap({ stops, height = 360, highlight = null }) {
           </Tooltip>
         </CircleMarker>
       ))}
+      {bus && <Marker position={[bus.lat, bus.lng]} icon={busIcon} zIndexOffset={1000} keyboard={false} />}
     </MapContainer>
   );
 }

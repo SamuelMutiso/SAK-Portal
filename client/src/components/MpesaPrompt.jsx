@@ -1,13 +1,19 @@
-import { Loader2, Smartphone } from "lucide-react";
+import { CheckCircle2, Loader2, ReceiptText, Smartphone } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import api, { errorMessage } from "../api/client";
 import { formatKes } from "../constants";
+import { feesBase } from "../roles";
 
 export default function MpesaPrompt({ student, balance, defaultPhone, onPaid, staff = false }) {
   const [form, setForm] = useState({ amount: balance > 0 ? String(balance) : "", phone: defaultPhone || "" });
   const [waiting, setWaiting] = useState(null);
   const [status, setStatus] = useState(null);
   const [sending, setSending] = useState(false);
+  const [paidPayment, setPaidPayment] = useState(null);
+  const role = useSelector((state) => state.auth.user.role);
+  const receiptPath = (payment) => (role === "parent" ? `/parent/receipts/${payment.id}` : `${feesBase(role)}/receipts/${payment.id}`);
   const timer = useRef(null);
 
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -26,11 +32,12 @@ export default function MpesaPrompt({ student, balance, defaultPhone, onPaid, st
       }
       if (current.status === "completed") {
         setWaiting(null);
-        setStatus({ type: "success", text: `Payment received. Receipt ${current.receipt_number}${current.receipt ? ` (M-Pesa ${current.receipt})` : ""}. An SMS receipt is on its way.` });
+        setStatus(null);
+        setPaidPayment(current);
         onPaid(current);
       } else if (current.status === "failed") {
         setWaiting(null);
-        setStatus({ type: "error", text: current.note || "M-Pesa did not complete the payment." });
+        setStatus({ type: "error", text: `${current.note || "M-Pesa did not complete the payment."} No money was taken and no receipt was issued.` });
       } else if (tries >= 30) {
         setWaiting(null);
         setStatus({ type: "info", text: "No answer from M-Pesa yet. If the PIN was entered, the receipt will appear within a few minutes." });
@@ -47,7 +54,7 @@ export default function MpesaPrompt({ student, balance, defaultPhone, onPaid, st
     try {
       const { data } = await api.post("/payments/stk", { student_id: student.id, amount: Number(form.amount), phone: form.phone });
       if (data.simulated) {
-        setStatus({ type: "success", text: `Demo payment of ${formatKes(data.payment.amount)} recorded. Receipt ${data.payment.receipt_number}.` });
+        setPaidPayment(data.payment);
         onPaid(data.payment);
       } else {
         setWaiting(data.payment);
@@ -60,6 +67,28 @@ export default function MpesaPrompt({ student, balance, defaultPhone, onPaid, st
   }
 
   const phone = waiting ? waiting.phone.replace(/^254/, "0") : "";
+
+  if (paidPayment) {
+    return (
+      <div className="card space-y-3 border-emerald-200 bg-emerald-50" role="status">
+        <div className="flex items-start gap-3">
+          <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={26} />
+          <div className="min-w-0">
+            <p className="text-lg font-semibold text-emerald-800">Payment received</p>
+            <p className="text-sm text-emerald-700">
+              {formatKes(paidPayment.amount)} for {student.first_name}. Receipt <span className="font-mono font-semibold">{paidPayment.receipt_number}</span>
+              {paidPayment.receipt ? <> · M-Pesa <span className="font-mono font-semibold">{paidPayment.receipt}</span></> : null}.
+              {" "}{staff ? "The parent gets the receipt by SMS." : "A copy is on its way by SMS."}
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link to={receiptPath(paidPayment)} className="btn-primary"><ReceiptText size={16} /> View receipt</Link>
+          <button type="button" onClick={() => setPaidPayment(null)} className="btn-ghost">Make another payment</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
