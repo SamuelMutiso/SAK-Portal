@@ -211,7 +211,7 @@ def forgot_password():
                                  expires_at=datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(minutes=10)))
     db.session.commit()
     message = f"Success Academy: Your password reset code is {code}. It expires in 10 minutes. If you did not ask for it, ignore this message."
-    sms = send_sms([user.phone], message)
+    sms = send_sms([user.phone], message, log_message=message.replace(code, "••••••"))
     if sms["mode"] == "preview" and current_app.config["DEMO_MODE"]:
         reply["sms"] = {"message": message, **sms}
     return jsonify(reply)

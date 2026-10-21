@@ -63,21 +63,21 @@ def send_fee_reminders():
     if student_ids:
         query = query.filter(Student.id.in_(student_ids))
 
-    sent = 0
+    sent = delivered = 0
     recipients = []
     sample = None
-    mode = "none"
     for student in query.all():
         if not student.parent or not student.parent.is_active:
             continue
         message = fee_message(student)
         result = send_sms([student.parent.phone], message)
         sent += result["sent"]
+        delivered += result["delivered"]
         recipients += result["recipients"]
-        mode = result["mode"]
         sample = sample or message
 
-    return jsonify(sms={"sent": sent, "mode": mode, "recipients": recipients, "message": sample})
+    mode = "live" if delivered else "preview" if sent else "none"
+    return jsonify(sms={"sent": sent, "delivered": delivered, "mode": mode, "recipients": recipients, "message": sample})
 
 
 @fees_bp.get("/items")

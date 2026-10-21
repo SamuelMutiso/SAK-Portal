@@ -28,6 +28,10 @@ class Config:
     SMS_USERNAME = os.getenv("AT_USERNAME", "sandbox")
     SMS_API_KEY = os.getenv("AT_API_KEY", "")
     SMS_SENDER_ID = os.getenv("AT_SENDER_ID", "")
+    TEXTBEE_API_KEY = os.getenv("TEXTBEE_API_KEY", "")
+    TEXTBEE_DEVICE_ID = os.getenv("TEXTBEE_DEVICE_ID", "")
+    SMS_LIVE_PHONES = os.getenv("SMS_LIVE_PHONES", "")
+    SMS_DAILY_LIMIT = int(os.getenv("SMS_DAILY_LIMIT", "50"))
     SCHOOL_PAYBILL = os.getenv("SCHOOL_PAYBILL", "")
     PAYBILL_SIMULATION = os.getenv("PAYBILL_SIMULATION", "1") == "1"
     BUS_PRACTICE = os.getenv("BUS_PRACTICE", "1") == "1"
