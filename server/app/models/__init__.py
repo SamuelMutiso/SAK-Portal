@@ -28,6 +28,7 @@ from app.models.promotion_run import PromotionRun
 from app.models.fees import Discount, FeeItem, FeeRate, Invoice, InvoiceLine, student_discounts
 from app.models.payment_slip import PaymentSlip
 from app.models.password_reset import PasswordReset
+from app.models.sms_message import SmsMessage
 from app.models.paybill import PaybillReceipt
 from app.models.learning import LearningMaterial
 from app.models.quiz import Quiz, QuizAttempt, QuizQuestion
