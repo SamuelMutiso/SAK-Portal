@@ -1,5 +1,6 @@
 import {
   ArrowLeftRight,
+  MessageSquareText,
   Banknote,
   Hash,
   HandCoins,
@@ -66,6 +67,7 @@ const LINKS = {
     { to: "/admin/library", label: "Library", icon: Library },
     { to: "/admin/transport", label: "Transport", icon: Bus },
     { to: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+    { to: "/admin/sms", label: "SMS outbox", icon: MessageSquareText },
     { to: "/admin/security", label: "Sign-in security", icon: ShieldCheck },
   ],
   teacher: [
@@ -114,6 +116,7 @@ const LINKS = {
     { to: "/director/fees", label: "Fees", icon: Wallet },
     { to: "/director/expenses", label: "Expenses", icon: HandCoins },
     { to: "/director/calendar", label: "Calendar", icon: CalendarDays },
+    { to: "/director/sms", label: "SMS outbox", icon: MessageSquareText },
     { to: "/director/security", label: "Sign-in security", icon: ShieldCheck },
   ],
   bursar: [
