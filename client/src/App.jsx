@@ -23,6 +23,7 @@ import Sba from "./pages/admin/Sba";
 import SchoolYear from "./pages/admin/SchoolYear";
 import Students from "./pages/admin/Students";
 import Timetable from "./pages/admin/Timetable";
+import SmsOutbox from "./pages/admin/SmsOutbox";
 import Transport from "./pages/admin/Transport";
 import Landing from "./pages/Landing";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -113,6 +114,7 @@ export default function App() {
           <Route path="pickup" element={<PickupCheck />} />
           <Route path="library" element={<Library />} />
           <Route path="transport" element={<Transport />} />
+          <Route path="sms" element={<SmsOutbox />} />
           <Route path="calendar" element={<Calendar />} />
         </Route>
       </Route>
@@ -184,6 +186,7 @@ export default function App() {
           <Route path="clubs/:id" element={<ClubDetail />} />
           <Route path="timetable" element={<Timetable />} />
           <Route path="transport" element={<Transport />} />
+          <Route path="sms" element={<SmsOutbox />} />
           <Route path="fees" element={<FeesHome />} />
           <Route path="fees/record" element={<RecordPayment />} />
           <Route path="fees/payments" element={<Payments />} />
