@@ -12,6 +12,7 @@ ROLES = ("director", "admin", "bursar")
 SUGGESTIONS = {
     "director": [
         "Give me a quick summary of the school today",
+        "How many girls and boys do we have in each class?",
         "Which classes had the lowest attendance this month?",
         "How much fee has been collected this term?",
         "Which classes did best in the last exam?",
@@ -28,6 +29,7 @@ SUGGESTIONS = {
         "How much did we collect this week?",
         "Which class has the lowest fee collection this term?",
         "Who has the largest balances?",
+        "Draft an SMS reminding parents to clear fee balances before closing day",
         "Break down today's payments by method",
         "What did we spend this week compared to what we collected?",
     ],

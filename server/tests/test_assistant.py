@@ -134,3 +134,22 @@ def test_money_is_written_out_and_k_amounts_are_fixed(client, provider):
     response = client.post("/api/assistant/ask", json={"question": "Spending?"}, headers=login(client, "admin@test.com"))
     assert response.get_json()["answer"] == "Food cost KES 14,800 and fuel KES 13,500."
     assert json.loads(sent[1]["messages"][-1]["content"])["total_kes"] == "KES 0"
+
+
+def test_learner_numbers_split_girls_and_boys(client, app, provider):
+    from app.models import Student
+
+    sent, replies = provider
+    staff("bursar")
+    active = Student.query.filter_by(status="active").all()
+    for index, student in enumerate(active):
+        student.gender = "Female" if index % 2 else "Male"
+    db.session.commit()
+    replies += [Reply(tool_call("learner_numbers", {})), Reply({"content": "Done"})]
+    client.post("/api/assistant/ask", json={"question": "How many boys and girls?"}, headers=login(client, "bursar@test.com"))
+    assert "learner_numbers" in {tool["function"]["name"] for tool in sent[0]["tools"]}
+    result = json.loads(sent[1]["messages"][-1]["content"])
+    assert result["learners"] == len(active) and result["girls"] + result["boys"] == len(active)
+    assert result["girls"] == len(active) // 2 and sum(row["learners"] for row in result["per_class"].values()) == len(active)
+    assert "Grade 4" in result["per_class"] and "gender" not in json.dumps(result).replace("gender_not_recorded", "")
+    assert "your own knowledge" in sent[0]["messages"][0]["content"]
