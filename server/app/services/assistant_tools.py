@@ -83,6 +83,8 @@ def school_overview(user, masker):
         "today": today.strftime("%A %Y-%m-%d"),
         "current_term": current_term(),
         "learners": active.count(),
+        "girls": active.filter_by(gender="Female").count(),
+        "boys": active.filter_by(gender="Male").count(),
         "boarders": active.filter_by(is_boarder=True).count(),
         "learners_per_class": {classroom.name: sum(1 for student in classroom.students if student.status == "active") for classroom in classes},
         "fees_outstanding_kes": sum(max(student.fee_balance or 0, 0) for student in active),
@@ -323,6 +325,54 @@ def expenses_report(user, masker, days=7, start_date=None, end_date=None):
     }
 
 
+def age_on(born, today):
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+
+def counts(students):
+    return {
+        "learners": len(students),
+        "girls": sum(1 for student in students if student.gender == "Female"),
+        "boys": sum(1 for student in students if student.gender == "Male"),
+        "gender_not_recorded": sum(1 for student in students if student.gender not in ("Female", "Male")),
+        "boarders": sum(1 for student in students if student.is_boarder),
+        "day_scholars": sum(1 for student in students if not student.is_boarder),
+        "use_school_bus": sum(1 for student in students if student.transport_route_id),
+    }
+
+
+def learner_numbers(user, masker, class_name=None):
+    today = date.today()
+    query = Student.query.filter_by(status="active")
+    if class_name:
+        classroom = find_class(class_name)
+        if not classroom:
+            return unknown_class(class_name)
+        query = query.filter_by(classroom_id=classroom.id)
+    students = query.all()
+    ages = {}
+    for student in students:
+        if student.date_of_birth:
+            age = age_on(student.date_of_birth, today)
+            ages[age] = ages.get(age, 0) + 1
+    routes = {}
+    for student in students:
+        if student.transport_route:
+            routes[student.transport_route.name] = routes.get(student.transport_route.name, 0) + 1
+    result = {
+        "scope": class_name or "whole school",
+        **counts(students),
+        "on_each_bus_route": routes,
+        "learners_by_age": dict(sorted(ages.items())),
+        "admitted_this_year": sum(1 for student in students if student.admission_date and student.admission_date.year == today.year),
+        "left_this_year": Student.query.filter(Student.status != "active", Student.left_on >= date(today.year, 1, 1)).count() if not class_name else None,
+    }
+    if not class_name:
+        classes = Classroom.query.order_by(Classroom.sort_order, Classroom.id).all()
+        result["per_class"] = {classroom.name: counts([student for student in students if student.classroom_id == classroom.id]) for classroom in classes}
+    return result
+
+
 def schema(name, description, properties=None):
     return {"type": "function", "function": {"name": name, "description": description,
                                              "parameters": {"type": "object", "properties": properties or {}, "additionalProperties": False}}}
@@ -333,6 +383,8 @@ TERM = {"type": "string", "description": "Term such as 'Term 3 2026'. Leave out 
 
 TOOLS = {
     "school_overview": (school_overview, FEE_ROLES, schema("school_overview", "Today's date, current term, number of learners per class, boarders, total fee balances, and for office staff attendance today and class teachers.")),
+    "learner_numbers": (learner_numbers, FEE_ROLES, schema("learner_numbers", "Head counts of current learners: total, girls and boys, boarders and day scholars, school bus users per route, ages, admitted and left this year, and the same split for every class.", {
+        "class_name": CLASS})),
     "attendance_report": (attendance_report, SCHOOL_ROLES, schema("attendance_report", "Attendance rates by class and by day, and the learners absent most, over the last N days.", {
         "days": {"type": "integer", "description": "How many days back, 1 to 120. 7 is a week, 30 is a month."}, "class_name": CLASS})),
     "fees_report": (fees_report, FEE_ROLES, schema("fees_report", "Fees billed and paid for a term, collection rate by class, how many learners owe, and the largest balances.", {
